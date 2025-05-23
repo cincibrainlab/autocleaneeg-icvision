@@ -57,6 +57,7 @@ dev = [
     "bandit[toml]>=1.7.5",
     "pydocstyle>=6.3.0",
     "isort>=5.12.0",
+    "pytest-mock>=3.5.0",
 ]
 docs = [
     "sphinx>=5.0.0",
@@ -67,7 +68,7 @@ docs = [
 test = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
-    "pytest-mock>=3.10.0",
+    "pytest-mock>=3.5.0",
 ]
 
 [project.urls]
@@ -187,3 +188,10 @@ include = [
     "LICENSE",
     "CHANGELOG.md",
 ]
+
+# Optional: Add specific dependencies for your documentation build environment here
+# For example, if you had a separate environment for docs in hatch:
+# [tool.hatch.envs.docs.dependencies]
+# numpydoc = ">=1.5.0"
+
+# Ensure there are no empty or misplaced tool.hatch.envs.docs.dependencies sections.
