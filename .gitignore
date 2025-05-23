@@ -177,3 +177,4 @@ docs/your_package.rst
 # Performance and profiling
 *.prof
 .benchmarks/ 
+/icvision_results
