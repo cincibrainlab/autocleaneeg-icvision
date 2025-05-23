@@ -28,8 +28,8 @@ def _create_summary_table_page(
     pdf_pages: PdfPages,
     results_df: pd.DataFrame,
     component_indices: List[int],
-    report_title_prefix: str = "ICVision Report"
-):
+    report_title_prefix: str = "ICVision Report",
+) -> None:
     """
     Creates summary table pages for the PDF report.
 
@@ -39,8 +39,10 @@ def _create_summary_table_page(
         component_indices: List of component indices to include in this summary.
         report_title_prefix: Prefix for the report title.
     """
-    matplotlib.use("Agg") # Ensure non-interactive backend
-    components_per_page = 20 # Fit more components by reducing font and adjusting layout
+    matplotlib.use("Agg")  # Ensure non-interactive backend
+    components_per_page = (
+        20  # Fit more components by reducing font and adjusting layout
+    )
     num_total_components = len(component_indices)
 
     if num_total_components == 0:
@@ -57,37 +59,44 @@ def _create_summary_table_page(
         if not page_component_indices:
             continue
 
-        fig_table = plt.figure(figsize=(11, 8.5)) # US Letter size
+        fig_table = plt.figure(figsize=(11, 8.5))  # US Letter size
         ax_table = fig_table.add_subplot(111)
-        ax_table.axis('off')
+        ax_table.axis("off")
 
         table_data = []
         table_cell_colors = []
 
         for comp_idx in page_component_indices:
             if comp_idx not in results_df.index:
-                logger.warning(f"Component IC{comp_idx} not in results. Skipping in summary table.")
+                logger.warning(
+                    f"Component IC{comp_idx} not in results. Skipping in summary table."
+                )
                 continue
 
             comp_info = results_df.loc[comp_idx]
-            label = comp_info.get('label', 'N/A')
-            mne_label = comp_info.get('mne_label', 'N/A')
-            confidence = comp_info.get('confidence', 0.0)
-            excluded_text = "Yes" if comp_info.get('exclude_vision', False) else "No"
-            reason_snippet = str(comp_info.get('reason', ''))[:45] + "..." \
-                             if len(str(comp_info.get('reason', ''))) > 45 else str(comp_info.get('reason', ''))
-            
-            table_data.append([
-                f"IC{comp_idx}",
-                str(label).title(),
-                str(mne_label).title(),
-                f"{confidence:.2f}",
-                excluded_text,
-                reason_snippet
-            ])
-            
-            row_color = COLOR_MAP.get(label, "#ffffff") # Default to white
-            table_cell_colors.append([row_color] * 6) # 6 columns
+            label = comp_info.get("label", "N/A")
+            mne_label = comp_info.get("mne_label", "N/A")
+            confidence = comp_info.get("confidence", 0.0)
+            excluded_text = "Yes" if comp_info.get("exclude_vision", False) else "No"
+            reason_snippet = (
+                str(comp_info.get("reason", ""))[:45] + "..."
+                if len(str(comp_info.get("reason", ""))) > 45
+                else str(comp_info.get("reason", ""))
+            )
+
+            table_data.append(
+                [
+                    f"IC{comp_idx}",
+                    str(label).title(),
+                    str(mne_label).title(),
+                    f"{confidence:.2f}",
+                    excluded_text,
+                    reason_snippet,
+                ]
+            )
+
+            row_color = COLOR_MAP.get(label, "#ffffff")  # Default to white
+            table_cell_colors.append([row_color] * 6)  # 6 columns
 
         if not table_data:
             plt.close(fig_table)
@@ -95,34 +104,48 @@ def _create_summary_table_page(
 
         table = ax_table.table(
             cellText=table_data,
-            colLabels=["Component", "Vision Label", "MNE Label", "Confidence", "Excluded?", "Reason (Brief)"],
-            loc='center',
-            cellLoc='left',
+            colLabels=[
+                "Component",
+                "Vision Label",
+                "MNE Label",
+                "Confidence",
+                "Excluded?",
+                "Reason (Brief)",
+            ],
+            loc="center",
+            cellLoc="left",
             cellColours=table_cell_colors,
-            colWidths=[0.1, 0.15, 0.15, 0.12, 0.12, 0.36] # Adjusted for content
+            colWidths=[0.1, 0.15, 0.15, 0.12, 0.12, 0.36],  # Adjusted for content
         )
         table.auto_set_font_size(False)
-        table.set_fontsize(7) # Smaller font for more rows
-        table.scale(1.0, 1.1) # Adjust scale
+        table.set_fontsize(7)  # Smaller font for more rows
+        table.scale(1.0, 1.1)  # Adjust scale
 
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         page_info = f"(Page {page_num + 1} of {num_summary_pages})"
         fig_table.suptitle(
             f"{report_title_prefix} - Classification Summary\n"
             f"{page_info} - Generated: {timestamp}",
-            fontsize=10, y=0.97 # Adjusted y for smaller font
+            fontsize=10,
+            y=0.97,  # Adjusted y for smaller font
         )
-        
+
         # Add legend for label colors
-        legend_patches = [plt.Rectangle((0,0), 1, 1, facecolor=color, label=label.title()) 
-                          for label, color in COLOR_MAP.items()]
+        legend_patches = [
+            plt.Rectangle((0, 0), 1, 1, facecolor=color, label=label.title())
+            for label, color in COLOR_MAP.items()
+        ]
         if legend_patches:
-            ax_table.legend(handles=legend_patches, loc='upper right', 
-                            bbox_to_anchor=(1.02, 0.92), # Adjusted position
-                            title="Vision Labels", fontsize=6)
+            ax_table.legend(
+                handles=legend_patches,
+                loc="upper right",
+                bbox_to_anchor=(1.02, 0.92),  # Adjusted position
+                title="Vision Labels",
+                fontsize=6,
+            )
 
         plt.subplots_adjust(left=0.03, right=0.97, top=0.90, bottom=0.05)
-        pdf_pages.savefig(fig_table, bbox_inches='tight')
+        pdf_pages.savefig(fig_table, bbox_inches="tight")
         plt.close(fig_table)
 
 
@@ -132,7 +155,7 @@ def generate_classification_report(
     results_df: pd.DataFrame,
     output_dir: Path,
     report_filename_prefix: str = "icvision_report",
-    components_to_detail: str = "all" # "all" or "artifacts_only"
+    components_to_detail: str = "all",  # "all" or "artifacts_only"
 ) -> Optional[Path]:
     """
     Generates a comprehensive PDF report for ICA component classifications.
@@ -149,7 +172,7 @@ def generate_classification_report(
     Returns:
         Path to the generated PDF report, or None if generation failed.
     """
-    matplotlib.use("Agg") # Ensure non-interactive backend
+    matplotlib.use("Agg")  # Ensure non-interactive backend
 
     if not output_dir.exists():
         try:
@@ -158,7 +181,9 @@ def generate_classification_report(
             logger.error(f"Could not create output directory {output_dir}: {e_mkdir}")
             return None
 
-    report_type_suffix = "all_comps" if components_to_detail == "all" else "artifacts_only"
+    report_type_suffix = (
+        "all_comps" if components_to_detail == "all" else "artifacts_only"
+    )
     pdf_filename = f"{report_filename_prefix}_{report_type_suffix}.pdf"
     pdf_path = output_dir / pdf_filename
 
@@ -175,43 +200,61 @@ def generate_classification_report(
         if components_to_detail == "all":
             detail_plot_indices = list(results_df.index)
         elif components_to_detail == "artifacts_only":
-            if 'exclude_vision' in results_df.columns:
+            if "exclude_vision" in results_df.columns:
                 detail_plot_indices = list(
-                    results_df[results_df['exclude_vision'] == True].index
+                    results_df[results_df["exclude_vision"]].index
                 )
             else:
-                logger.warning("'exclude_vision' column not in results. Cannot filter artifacts for report.")
-                detail_plot_indices = list(results_df.index) # Fallback to all
-    
+                logger.warning(
+                    "'exclude_vision' column not in results. "
+                    "Cannot filter artifacts for report."
+                )
+                detail_plot_indices = list(results_df.index)  # Fallback to all
+
     # Ensure indices are valid and sorted
     valid_indices = [idx for idx in detail_plot_indices if idx < ica_obj.n_components_]
     detail_plot_indices = sorted(list(set(valid_indices)))
 
     if not detail_plot_indices and results_df.empty:
-        logger.info("No classification results available. Skipping PDF report generation.")
+        logger.info(
+            "No classification results available. Skipping PDF report generation."
+        )
         return None
     if not detail_plot_indices and not results_df.empty:
-        logger.info(f"No components meet criteria '{components_to_detail}' for detail plots. Report will contain summary only.")
-    
+        logger.info(
+            f"No components meet criteria '{components_to_detail}' for detail plots. "
+            f"Report will contain summary only."
+        )
+
     logger.info(f"Generating PDF report ('{report_type_suffix}') to {pdf_path}...")
 
     try:
         with PdfPages(pdf_path) as pdf:
             report_title = f"ICVision Report - {report_filename_prefix}"
-            
+
             # 1. Summary Table Page(s)
             # Include all classified components in the summary table, regardless of detail_plot_indices
-            all_classified_indices = list(results_df.index) if not results_df.empty else []
-            all_classified_indices = sorted([idx for idx in all_classified_indices if idx < ica_obj.n_components_])
+            all_classified_indices = (
+                list(results_df.index) if not results_df.empty else []
+            )
+            all_classified_indices = sorted(
+                [idx for idx in all_classified_indices if idx < ica_obj.n_components_]
+            )
             if all_classified_indices:
-                _create_summary_table_page(pdf, results_df, all_classified_indices, report_title)
+                _create_summary_table_page(
+                    pdf, results_df, all_classified_indices, report_title
+                )
             else:
                 logger.info("No components classified to include in summary table.")
 
             # 2. Component Topographies Overview Page (for components in detail_plot_indices)
             if detail_plot_indices:
-                logger.debug(f"Plotting topographies overview for {len(detail_plot_indices)} components.")
-                topo_overview_figs = plot_ica_topographies_overview(ica_obj, detail_plot_indices)
+                logger.debug(
+                    f"Plotting topographies overview for {len(detail_plot_indices)} components."
+                )
+                topo_overview_figs = plot_ica_topographies_overview(
+                    ica_obj, detail_plot_indices
+                )
                 for fig_topo_batch in topo_overview_figs:
                     pdf.savefig(fig_topo_batch)
                     plt.close(fig_topo_batch)
@@ -220,60 +263,83 @@ def generate_classification_report(
 
             # 3. Individual Component Detail Pages (for components in detail_plot_indices)
             if detail_plot_indices:
-                logger.debug(f"Generating detail pages for {len(detail_plot_indices)} components.")
+                logger.debug(
+                    f"Generating detail pages for {len(detail_plot_indices)} components."
+                )
                 for comp_idx_detail in detail_plot_indices:
                     if comp_idx_detail not in results_df.index:
-                        logger.warning(f"Skipping IC{comp_idx_detail} detail: not in classification results.")
+                        logger.warning(
+                            f"Skipping IC{comp_idx_detail} detail: "
+                            f"not in classification results."
+                        )
                         continue
-                    
+
                     comp_info = results_df.loc[comp_idx_detail]
-                    label = comp_info.get('label', 'N/A')
-                    conf = comp_info.get('confidence', 0.0)
-                    reason = comp_info.get('reason', 'N/A')
+                    label = comp_info.get("label", "N/A")
+                    conf = comp_info.get("confidence", 0.0)
+                    reason = comp_info.get("reason", "N/A")
 
                     fig_detail = plot_component_for_classification(
                         ica_obj=ica_obj,
-                        raw_obj=raw_obj, # Pass raw for context
+                        raw_obj=raw_obj,  # Pass raw for context
                         component_idx=comp_idx_detail,
-                        output_dir=output_dir, # Needed for temp saving if not returning fig
+                        output_dir=output_dir,  # Needed for temp saving if not returning fig
                         classification_label=label,
                         classification_confidence=conf,
                         classification_reason=reason,
-                        return_fig_object=True
+                        return_fig_object=True,
                     )
 
                     if fig_detail:
                         try:
                             pdf.savefig(fig_detail)
                         except Exception as e_save_detail:
-                            logger.error(f"Error saving detail page for IC{comp_idx_detail} to PDF: {e_save_detail}")
+                            logger.error(
+                                f"Error saving detail page for IC{comp_idx_detail} to PDF: "
+                                f"{e_save_detail}"
+                            )
                             # Create a fallback error page in PDF for this component
                             fig_err_s = plt.figure()
                             ax_err_s = fig_err_s.add_subplot(111)
-                            ax_err_s.text(0.5,0.5, f"Plot save for IC{comp_idx_detail}\nfailed.", ha='center',va='center')
+                            ax_err_s.text(
+                                0.5,
+                                0.5,
+                                f"Plot save for IC{comp_idx_detail}\nfailed.",
+                                ha="center",
+                                va="center",
+                            )
                             pdf.savefig(fig_err_s)
                             plt.close(fig_err_s)
                         finally:
-                            plt.close(fig_detail) # Ensure figure is always closed
+                            plt.close(fig_detail)  # Ensure figure is always closed
                     else:
-                        logger.warning(f"Failed to generate plot object for IC{comp_idx_detail} for PDF detail page.")
+                        logger.warning(
+                            f"Failed to generate plot object for IC{comp_idx_detail} "
+                            f"for PDF detail page."
+                        )
                         fig_err_g = plt.figure()
                         ax_err_g = fig_err_g.add_subplot(111)
-                        ax_err_g.text(0.5,0.5,f"Plot gen for IC{comp_idx_detail}\nfailed.", ha='center',va='center')
+                        ax_err_g.text(
+                            0.5,
+                            0.5,
+                            f"Plot gen for IC{comp_idx_detail}\nfailed.",
+                            ha="center",
+                            va="center",
+                        )
                         pdf.savefig(fig_err_g)
                         plt.close(fig_err_g)
             else:
                 logger.info("No components selected for individual detail pages.")
-            
+
             # Add metadata to PDF
             d = pdf.infodict()
-            d['Title'] = report_title
-            d['Author'] = u'ICVision Package'
-            d['Subject'] = 'ICA Component Classification Report'
-            d['Keywords'] = 'EEG ICA OpenAI Vision Classification'
-            d['CreationDate'] = datetime.now()
-            d['ModDate'] = datetime.now()
-            
+            d["Title"] = report_title
+            d["Author"] = "ICVision Package"
+            d["Subject"] = "ICA Component Classification Report"
+            d["Keywords"] = "EEG ICA OpenAI Vision Classification"
+            d["CreationDate"] = datetime.now()
+            d["ModDate"] = datetime.now()
+
         logger.info(f"Successfully generated ICVision PDF report: {pdf_path}")
         return pdf_path
 
@@ -284,4 +350,4 @@ def generate_classification_report(
         logger.error(f"Major error during PDF report generation: {e_pdf_main}")
         # import traceback
         # logger.error(traceback.format_exc()) # For detailed debugging if needed
-        return None 
+        return None
