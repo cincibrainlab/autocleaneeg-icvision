@@ -221,7 +221,7 @@ class Config:
     api_key: str
     timeout: int = 30
     debug: bool = False
-    
+
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'Config':
         """Create config from dictionary."""
@@ -318,9 +318,9 @@ your-package-name/
 ## Next Steps
 
 1. **Customize the template** for your specific use case
-2. **Write comprehensive tests** for your functionality  
+2. **Write comprehensive tests** for your functionality
 3. **Update documentation** to reflect your project
 4. **Set up CI/CD** with your GitHub repository
 5. **Publish to PyPI** when ready for distribution
 
-This template provides a solid foundation for professional Python packages. Customize it to fit your needs while maintaining the quality standards and best practices included. 
+This template provides a solid foundation for professional Python packages. Customize it to fit your needs while maintaining the quality standards and best practices included.

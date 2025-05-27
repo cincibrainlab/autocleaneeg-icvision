@@ -15,4 +15,4 @@ API interactions, utility functions, and CLI.
 # def global_test_resource():
 #     print("Setting up global test resource")
 #     yield "resource_data"
-#     print("Tearing down global test resource") 
+#     print("Tearing down global test resource")

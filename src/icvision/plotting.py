@@ -8,7 +8,7 @@ ICA data, adapted from the original ica.py functionality.
 import logging
 import math
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -61,7 +61,10 @@ def plot_component_for_classification(
         ValueError: If output_dir is None and return_fig_object is False.
     """
     # Ensure non-interactive backend for scripts/batch processing
-    matplotlib.use("Agg")
+    matplotlib.use("Agg", force=True)
+
+    # Clear any existing plots to prevent interference
+    plt.close("all")
 
     fig_height = 9.5
     gridspec_bottom = 0.05
@@ -103,9 +106,17 @@ def plot_component_for_classification(
     ax_psd = fig.add_subplot(gs[2, 1])
 
     try:
+        # Get ICA sources with error handling
         sources = ica_obj.get_sources(raw_obj)
         sfreq = sources.info["sfreq"]
         component_data_array = sources.get_data(picks=[component_idx])[0]
+
+        # Validate that we got valid data
+        if len(component_data_array) == 0:
+            logger.error(f"No data available for IC{component_idx}")
+            plt.close(fig)
+            return None
+
     except Exception as e:
         logger.error(f"Failed to get ICA sources for IC{component_idx}: {e}")
         plt.close(fig)
@@ -407,6 +418,95 @@ def plot_component_for_classification(
         finally:
             plt.close(fig)  # Ensure figure is closed
         return filepath
+
+
+def plot_components_batch(
+    ica_obj: mne.preprocessing.ICA,
+    raw_obj: mne.io.Raw,
+    component_indices: List[int],
+    output_dir: Path,
+    batch_size: int = 1,
+) -> Dict[int, Optional[Path]]:
+    """
+    Generate component plots with improved error handling and memory management.
+
+    This function processes components sequentially with proper cleanup to avoid
+    matplotlib threading issues while maintaining reasonable performance.
+
+    Args:
+        ica_obj: The MNE ICA object.
+        raw_obj: The MNE Raw object used for ICA.
+        component_indices: List of component indices to plot.
+        output_dir: Directory to save the component images.
+        batch_size: Number of components to process before cleanup (default: 1).
+
+    Returns:
+        Dictionary mapping component_idx to image path (or None if plotting failed).
+
+    Example:
+        >>> indices = list(range(ica_obj.n_components_))
+        >>> results = plot_components_batch(ica, raw, indices, output_dir)
+        >>> successful_plots = {k: v for k, v in results.items() if v is not None}
+        >>> print(f"Successfully plotted {len(successful_plots)} components")
+    """
+    if not component_indices:
+        logger.info("No components to plot.")
+        return {}
+
+    # Ensure matplotlib backend is set properly
+    matplotlib.use("Agg", force=True)
+
+    logger.info(
+        f"Plotting {len(component_indices)} components sequentially with enhanced error handling"
+    )
+
+    results_dict = {}
+    completed_count = 0
+
+    for i, component_idx in enumerate(component_indices):
+        try:
+            # Clear any existing plots to prevent memory issues
+            plt.close("all")
+
+            # Plot the component with enhanced error handling
+            image_path = plot_component_for_classification(
+                ica_obj, raw_obj, component_idx, output_dir, return_fig_object=False
+            )
+
+            results_dict[component_idx] = image_path
+            completed_count += 1
+
+            # Log progress every 10% or at completion
+            if completed_count % max(
+                1, len(component_indices) // 10
+            ) == 0 or completed_count == len(component_indices):
+                logger.info(
+                    f"Plotting progress: {completed_count}/{len(component_indices)} components completed"
+                )
+
+            # Periodic cleanup to prevent memory accumulation
+            if (i + 1) % batch_size == 0:
+                plt.close("all")
+                # Force garbage collection if needed
+                import gc
+
+                gc.collect()
+
+        except Exception as e:
+            logger.warning(f"Failed to plot component IC{component_idx}: {e}")
+            results_dict[component_idx] = None
+            # Ensure cleanup even on failure
+            plt.close("all")
+
+    # Final cleanup
+    plt.close("all")
+
+    successful_plots = sum(1 for path in results_dict.values() if path is not None)
+    logger.info(
+        f"Plotting completed: {successful_plots}/{len(component_indices)} components plotted successfully"
+    )
+
+    return results_dict
 
 
 def save_ica_data(

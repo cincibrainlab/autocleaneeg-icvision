@@ -132,7 +132,7 @@ def label_components(
     # Create output directory
     output_path = create_output_directory(output_dir)
 
-    logger.info(
+    logger.debug(
         f"Configuration: {ica.n_components_} components, "
         f"confidence_threshold={confidence_threshold}, "
         f"model={model_name}, batch_size={batch_size}"

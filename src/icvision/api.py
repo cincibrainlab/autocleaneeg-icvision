@@ -23,7 +23,7 @@ from .config import (
     ICVISION_TO_MNE_LABEL_MAP,
     OPENAI_ICA_PROMPT,
 )
-from .plotting import plot_component_for_classification
+from .plotting import plot_component_for_classification, plot_components_batch
 
 # Set up logging for the module
 logger = logging.getLogger(__name__)
@@ -62,34 +62,39 @@ def classify_component_image_openai(
         client = openai.OpenAI(api_key=api_key)
         logger.debug(f"Sending {image_path.name} to OpenAI (model: {model_name})...")
 
-        response = client.chat.completions.create(
+        with client.responses.create(
             model=model_name,
-            messages=[
+            input=[
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": prompt_to_use},
+                        {"type": "input_text", "text": prompt_to_use},
                         {
-                            "type": "image_url",
+                            "type": "input_image",
                             "image_url": {
                                 "url": f"data:image/webp;base64,{base64_image}",
-                                "detail": "high",
                             },
                         },
                     ],
                 }
             ],
-            max_tokens=300,
-            temperature=0.1,  # Low temperature for more deterministic output
-        )
+            temperature=0.2,  # Low temperature for more deterministic output
+        ) as response:
+            # Access the parsed response data
+            completion = response.parsed
 
-        resp_text = None
-        if (
-            response.choices
-            and response.choices[0].message
-            and response.choices[0].message.content
-        ):
-            resp_text = response.choices[0].message.content.strip()
+            resp_text = None
+            if (
+                completion.choices
+                and completion.choices[0].message
+                and completion.choices[0].message.content
+            ):
+                resp_text = completion.choices[0].message.content.strip()
+
+            # Log response metadata if needed
+            logger.debug(
+                f"Response ID: {completion.id}, Usage: {getattr(completion, 'usage', 'N/A')}"
+            )
 
         if resp_text:
             logger.debug(
@@ -219,7 +224,9 @@ def classify_components_batch(
     Returns:
         pd.DataFrame with classification results for each component.
     """
-    logger.info(f"Starting batch classification of {ica_obj.n_components_} components.")
+    logger.debug(
+        f"Starting batch classification of {ica_obj.n_components_} components."
+    )
 
     if labels_to_exclude is None:
         labels_to_exclude = [lbl for lbl in COMPONENT_LABELS if lbl != "brain"]
@@ -236,22 +243,24 @@ def classify_components_batch(
 
     try:
         logger.info(f"Generating component images in: {image_output_path}")
+
+        # Use improved batch plotting with better error handling
+        component_indices = list(range(num_components))
+        plotting_results = plot_components_batch(
+            ica_obj,
+            raw_obj,
+            component_indices,
+            image_output_path,
+            batch_size=5,  # Process in small batches to manage memory
+        )
+
+        # Convert plotting results to the format expected by the classification pipeline
         component_plot_args = []
         for i in range(num_components):
-            try:
-                image_path = plot_component_for_classification(
-                    ica_obj, raw_obj, i, image_output_path, return_fig_object=False
-                )
-                component_plot_args.append(
-                    (i, image_path, api_key, model_name, custom_prompt)
-                )
-            except Exception as plot_err:
-                logger.warning(
-                    f"Failed to plot component IC{i}: {plot_err}. Will mark as plotting_failed."
-                )
-                component_plot_args.append(
-                    (i, None, api_key, model_name, custom_prompt)
-                )
+            image_path = plotting_results.get(i, None)
+            component_plot_args.append(
+                (i, image_path, api_key, model_name, custom_prompt)
+            )
 
         processed_count = 0
         # Process in batches for concurrency management

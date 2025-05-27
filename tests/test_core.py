@@ -42,10 +42,10 @@ logger.setLevel(logging.DEBUG)  # Show detailed logs during testing
 def temp_test_dir(tmp_path_factory: TempPathFactory) -> Iterator[Path]:
     """Create a temporary directory for test artifacts."""
     tdir = tmp_path_factory.mktemp("icvision_core_tests")
-    logger.info(f"Created temporary test directory: {tdir}")
+    logger.info("Created temporary test directory: %s", tdir)
     yield tdir
     # No explicit shutil.rmtree(tdir) needed due to tmp_path_factory
-    logger.info(f"Temporary test directory {tdir} will be cleaned up.")
+    logger.info("Temporary test directory %s will be cleaned up.", tdir)
 
 
 # Create a fixture for dummy raw data
@@ -64,7 +64,7 @@ def dummy_raw_data(temp_test_dir: Path) -> mne.io.Raw:
     # Save to a file to also test file loading path
     raw_path = temp_test_dir / "dummy_raw.fif"
     raw.save(raw_path, overwrite=True)
-    logger.debug(f"Created and saved dummy raw data to {raw_path}")
+    logger.debug("Created and saved dummy raw data to %s", raw_path)
     return raw
 
 
@@ -82,7 +82,7 @@ def dummy_ica_data(
     # Save to a file to also test file loading path
     ica_path = temp_test_dir / "dummy_ica.fif"
     ica.save(ica_path, overwrite=True)
-    logger.debug(f"Created and saved dummy ICA data to {ica_path}")
+    logger.debug("Created and saved dummy ICA data to %s", ica_path)
     return ica
 
 

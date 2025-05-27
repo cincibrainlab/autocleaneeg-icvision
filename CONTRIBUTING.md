@@ -144,4 +144,4 @@ If you have questions or need to discuss something, you can:
 
 Thank you for contributing to ICVision!
 
-*(Please replace `yourusername` and `project-contact@example.com` with actual details.)* 
+*(Please replace `yourusername` and `project-contact@example.com` with actual details.)*

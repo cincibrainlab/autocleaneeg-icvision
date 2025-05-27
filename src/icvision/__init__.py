@@ -9,9 +9,10 @@ __version__ = "0.1.0"
 __author__ = "Gavin Gammoh"
 __email__ = "gavin.gammoh@gmail.com"
 
+from .config import COMPONENT_LABELS, DEFAULT_MODEL
+
 # Public API - Import and expose main functions
 from .core import label_components
-from .config import COMPONENT_LABELS, DEFAULT_MODEL
 
 # CLI is available but not imported by default to avoid import overhead
 # Users can import it explicitly with: from icvision import cli
@@ -19,6 +20,6 @@ from .config import COMPONENT_LABELS, DEFAULT_MODEL
 # Define what gets imported with "from icvision import *"
 __all__ = [
     "label_components",
-    "COMPONENT_LABELS", 
+    "COMPONENT_LABELS",
     "DEFAULT_MODEL",
-] 
+]

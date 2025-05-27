@@ -71,7 +71,7 @@ def load_raw_data(raw_input: Union[str, Path, mne.io.BaseRaw]) -> mne.io.BaseRaw
             f"Supported formats: .set (EEGLAB), .fif (MNE), .edf, .bdf, .vhdr"
         )
 
-    logger.info(
+    logger.debug(
         f"Successfully loaded raw data: {raw.info['nchan']} channels, "
         f"{raw.n_times} samples, {raw.info['sfreq']:.1f} Hz"
     )
@@ -114,7 +114,7 @@ def load_ica_data(
     file_extension = file_path.suffix.lower()
 
     if file_extension == ".fif":
-        logger.info(f"Loading MNE ICA from: {file_path}")
+        logger.debug(f"Loading MNE ICA from: {file_path}")
         ica = mne.preprocessing.read_ica(file_path)
     else:
         raise ValueError(

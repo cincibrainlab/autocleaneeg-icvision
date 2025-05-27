@@ -33,7 +33,7 @@ Workflow:
 [![PyPI version](https://badge.fury.io/py/icvision.svg)](https://badge.fury.io/py/icvision)
 [![Python versions](https://img.shields.io/pypi/pyversions/icvision.svg)](https://pypi.org/project/icvision/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Build Status](https://github.com/yourusername/icvision/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/icvision/actions/workflows/ci.yml) 
+[![Build Status](https://github.com/yourusername/icvision/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/icvision/actions/workflows/ci.yml)
 [![Coverage Status](https://coveralls.io/repos/github/yourusername/icvision/badge.svg?branch=main)](https://coveralls.io/github/yourusername/icvision?branch=main)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
@@ -185,7 +185,7 @@ if not ICA_DATA_PATH.parent.exists(): ICA_DATA_PATH.parent.mkdir(parents=True, e
 raw_input_data = get_or_create_dummy_raw(RAW_DATA_PATH)
 ica_input_data = get_or_create_dummy_ica(ICA_DATA_PATH, raw_input_data)
 
-# --- Run ICVision --- 
+# --- Run ICVision ---
 try:
     raw_cleaned, ica_updated, results_df = label_components(
         raw_data=raw_input_data,         # Can be MNE object or path string/Path object
@@ -204,7 +204,7 @@ try:
     print(f"Cleaned raw data channels: {raw_cleaned.info['nchan']}")
     print(f"Updated ICA components: {ica_updated.n_components_}")
     print(f"Number of components classified: {len(results_df)}")
-    
+
     if not results_df.empty:
         print(f"Number of components marked for exclusion: {results_df['exclude_vision'].sum()}")
         print("\nClassification Summary:")
@@ -286,4 +286,4 @@ If you use ICVision in your research, please consider citing it (details to be a
 *   This project relies heavily on the [MNE-Python](https://mne.tools/) library.
 *   Utilizes the [OpenAI API](https://openai.com/api/).
 
-*(Please replace `yourusername` with your actual GitHub username in URLs and examples.)* 
+*(Please replace `yourusername` with your actual GitHub username in URLs and examples.)*

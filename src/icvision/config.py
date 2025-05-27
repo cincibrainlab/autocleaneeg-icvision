@@ -12,13 +12,13 @@ DEFAULT_MODEL = "gpt-4.1"
 
 # Component label definitions in priority order
 COMPONENT_LABELS = [
-    "brain", 
-    "eye", 
-    "muscle", 
-    "heart", 
-    "line_noise", 
-    "channel_noise", 
-    "other_artifact"
+    "brain",
+    "eye",
+    "muscle",
+    "heart",
+    "line_noise",
+    "channel_noise",
+    "other_artifact",
 ]
 
 # Mapping from ICVision labels to MNE-compatible labels
@@ -34,12 +34,12 @@ ICVISION_TO_MNE_LABEL_MAP = {
 
 # Default labels to exclude (all except brain)
 DEFAULT_EXCLUDE_LABELS = [
-    "eye", 
-    "muscle", 
-    "heart", 
-    "line_noise", 
-    "channel_noise", 
-    "other_artifact"
+    "eye",
+    "muscle",
+    "heart",
+    "line_noise",
+    "channel_noise",
+    "other_artifact",
 ]
 
 # OpenAI prompt for ICA component classification
@@ -47,7 +47,7 @@ OPENAI_ICA_PROMPT = """Analyze this EEG ICA component image and classify into ON
 
 - "brain": Dipolar pattern in CENTRAL, PARIETAL, or TEMPORAL regions (NOT FRONTAL or EDGE-FOCUSED). 1/f-like spectrum with possible peaks at 8-12Hz. Rhythmic, wave-like time series WITHOUT abrupt level shifts. MUST show decreasing power with increasing frequency (1/f pattern) - a flat or random fluctuating spectrum is NOT brain activity.
 
-- "eye": 
+- "eye":
   * Two main types of eye components:
     1. HORIZONTAL eye movements: Characterized by a TIGHTLY FOCUSED dipolar pattern, CONFINED PRIMARILY to the LEFT-RIGHT FRONTAL regions (e.g., distinct red on one far-frontal side, blue on the opposite far-frontal side). The active areas should be relatively compact and clearly located frontally. Time series typically shows step-like or square-wave patterns. This pattern is eye UNLESS the time series shows the prominent, sharp, repetitive QRS-like spikes characteristic of "heart".
     2. VERTICAL eye movements/blinks: FRONTAL midline or bilateral positivity/negativity. Time series shows distinctive spikes or slow waves.
@@ -64,17 +64,17 @@ OPENAI_ICA_PROMPT = """Analyze this EEG ICA component image and classify into ON
     *   Time Series: Often shows spiky, high-frequency, and somewhat erratic activity.
 
 - "heart":
-  * TOPOGRAPHY: Characterized by a VERY BROAD, diffuse electrical field gradient across a large area of the scalp. This often manifests as large positive (red) and negative (blue) regions on somewhat opposite sides of the head, but these regions are WIDESPREAD and NOT TIGHTLY FOCUSED like an eye dipole. 
+  * TOPOGRAPHY: Characterized by a VERY BROAD, diffuse electrical field gradient across a large area of the scalp. This often manifests as large positive (red) and negative (blue) regions on somewhat opposite sides of the head, but these regions are WIDESPREAD and NOT TIGHTLY FOCUSED like an eye dipole.
   * TIME SERIES (CRITICAL & DECISIVE IDENTIFIER): Look for PROMINENT, SHARP, REPETITIVE SPIKES in the 'Scrolling IC Activity' plot that stand out significantly from the background rhythm. These are QRS-like complexes (heartbeats). They are typically large in amplitude, can be positive-going or negative-going sharp deflections, and repeat at roughly 0.8-1.5 Hz (around once per second, though ICA can make the rhythm appear less than perfectly regular). THE PRESENCE OF THESE DISTINCTIVE, RECURRING, SHARP SPIKES IS THE STRONGEST AND MOST DEFINITIVE INDICATOR FOR "heart".
   * IF QRS IS PRESENT: If these clear, sharp, repetitive QRS-like spikes are visible in the time series, the component should be classified as "heart". This QRS signature, when combined with a BROAD topography, takes precedence over superficial resemblances to other patterns.
   * SPECTRUM: Often noisy or may not show a clear 1/f pattern. May show harmonics of the heart rate.
 
-- "line_noise": 
+- "line_noise":
   * MUST show SHARP PEAK at 50/60Hz in spectrum - NOT a notch/dip (notches are filters, not line noise).
   * NOTE: Almost all components show a notch at 60Hz from filtering - this is NOT line noise!
   * Line noise requires a POSITIVE PEAK at 50/60Hz, not a negative dip.
 
-- "channel_noise": 
+- "channel_noise":
   * SINGLE ELECTRODE "hot/cold spot" - tiny, isolated circular area typically without an opposite pole.
   * Compare with eye: Channel noise has only ONE focal point, while eye has TWO opposite poles (dipole). Eye dipoles are also typically larger and more structured.
   * Example: A tiny isolated red or blue spot on one electrode, not a dipolar pattern.
@@ -112,11 +112,11 @@ DEFAULT_CONFIG = {
 
 # Color mapping for visualization
 COLOR_MAP = {
-    "brain": "#d4edda",      # Light green
-    "eye": "#f9e79f",        # Light yellow  
-    "muscle": "#f5b7b1",     # Light red
-    "heart": "#d7bde2",      # Light purple
-    "line_noise": "#add8e6", # Light blue
-    "channel_noise": "#ffd700", # Gold/Orange
-    "other_artifact": "#e9ecef", # Light grey
-} 
+    "brain": "#d4edda",  # Light green
+    "eye": "#f9e79f",  # Light yellow
+    "muscle": "#f5b7b1",  # Light red
+    "heart": "#d7bde2",  # Light purple
+    "line_noise": "#add8e6",  # Light blue
+    "channel_noise": "#ffd700",  # Gold/Orange
+    "other_artifact": "#e9ecef",  # Light grey
+}
