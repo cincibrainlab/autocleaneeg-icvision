@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(make lint)",
+      "Bash(make test:*)"
     ],
     "deny": []
   }
