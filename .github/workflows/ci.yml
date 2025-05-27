@@ -40,15 +40,6 @@ jobs:
       env:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY_DUMMY }} # Use a dummy key for CI tests
 
-    - name: Upload coverage reports to Codecov
-      uses: codecov/codecov-action@v4
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }} # Optional: if you use Codecov
-        fail_ci_if_error: true
-        # files: ./coverage.xml # tox should generate coverage.xml in the root
-        # flags: unittests
-        # name: codecov-umbrella
-        # yml: ./codecov.yml # Optional: if you have a codecov.yml
 
   lint:
     runs-on: ubuntu-latest # Linters usually run fine on a single OS
