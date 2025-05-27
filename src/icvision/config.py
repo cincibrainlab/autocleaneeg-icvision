@@ -5,8 +5,6 @@ This module contains the OpenAI prompt, label mappings, and other constants
 used throughout the ICVision package.
 """
 
-from typing import Dict, List
-
 # Default OpenAI model for vision classification
 DEFAULT_MODEL = "gpt-4.1"
 
