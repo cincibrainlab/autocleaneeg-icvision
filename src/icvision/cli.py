@@ -14,7 +14,7 @@ from pathlib import Path
 import openai
 
 from . import __version__
-from .config import DEFAULT_CONFIG, OPENAI_ICA_PROMPT
+from .config import DEFAULT_CONFIG
 from .core import label_components
 from .utils import format_summary_stats
 

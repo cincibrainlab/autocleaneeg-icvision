@@ -23,7 +23,7 @@ from .config import (
     ICVISION_TO_MNE_LABEL_MAP,
     OPENAI_ICA_PROMPT,
 )
-from .plotting import plot_component_for_classification, plot_components_batch
+from .plotting import plot_components_batch
 
 # Set up logging for the module
 logger = logging.getLogger(__name__)

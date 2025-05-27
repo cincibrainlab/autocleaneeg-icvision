@@ -13,7 +13,7 @@ import mne
 import pandas as pd
 
 from .api import classify_components_batch
-from .config import DEFAULT_CONFIG, DEFAULT_EXCLUDE_LABELS
+from .config import DEFAULT_EXCLUDE_LABELS
 from .plotting import save_ica_data
 from .reports import generate_classification_report
 from .utils import (
@@ -188,10 +188,10 @@ def label_components(
 
     try:
         # Save CSV results
-        results_path = save_results(results_df, output_path)
+        save_results(results_df, output_path)
 
         # Save updated ICA object
-        ica_path = save_ica_data(ica_updated, output_path)
+        save_ica_data(ica_updated, output_path)
 
         # Generate summary statistics
         summary = format_summary_stats(results_df)
@@ -222,7 +222,8 @@ def label_components(
     # Final summary
     excluded_count = results_df.get("exclude_vision", pd.Series(dtype=bool)).sum()
     logger.info(
-        "ICVision workflow completed successfully! Processed %d components, excluded %d artifacts. Results saved to: %s",
+        "ICVision workflow completed successfully! Processed %d components, excluded %d artifacts. "
+        "Results saved to: %s",
         len(results_df),
         excluded_count,
         output_path,
@@ -287,7 +288,7 @@ def _update_ica_with_classifications(
 
     # Update exclude list
     excluded_components = results_df[
-        results_df.get("exclude_vision", False) == True
+        results_df.get("exclude_vision", False) is True
     ].index.tolist()
 
     # Ensure exclude list exists and merge with any existing exclusions
