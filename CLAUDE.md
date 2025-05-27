@@ -123,3 +123,9 @@ Mock objects are used extensively for OpenAI API calls to avoid actual API costs
 - Auto-exclude all non-brain labels by default
 - Line length: 120 characters (Black/flake8)
 - Python support: 3.8-3.12
+
+## Git Commit Guidelines
+
+- **NO Claude Attribution**: Never include Claude Code attribution, co-authorship, or generation comments in commit messages
+- Keep commit messages professional and focused on the technical changes
+- Use conventional commit format when appropriate

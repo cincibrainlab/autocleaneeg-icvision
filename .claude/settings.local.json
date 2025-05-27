@@ -3,7 +3,10 @@
     "allow": [
       "Bash(git add:*)",
       "Bash(make lint)",
-      "Bash(make test:*)"
+      "Bash(make test:*)",
+      "Bash(python3 -m pytest tests/* -v)",
+      "Bash(python3 -m pytest tests/ --tb=short -q)",
+      "Bash(make format)"
     ],
     "deny": []
   }
