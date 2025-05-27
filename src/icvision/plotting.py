@@ -147,9 +147,7 @@ def plot_component_for_classification(
     # 2. Scrolling IC Activity (Time Series)
     try:
         duration_segment_ts = 3.0  # seconds
-        max_samples_ts = min(
-            int(duration_segment_ts * sfreq), len(component_data_array)
-        )
+        max_samples_ts = min(int(duration_segment_ts * sfreq), len(component_data_array))
         times_ts_ms = (np.arange(max_samples_ts) / sfreq) * 1000  # convert to ms
 
         ax_ts_scroll.plot(
@@ -166,16 +164,12 @@ def plot_component_for_classification(
         ax_ts_scroll.grid(True, linestyle=":", alpha=0.6)
         ax_ts_scroll.tick_params(axis="both", which="major", labelsize=8)
     except Exception as e:
-        logger.error(
-            "Error plotting scrolling IC activity for IC%d: %s", component_idx, e
-        )
+        logger.error("Error plotting scrolling IC activity for IC%d: %s", component_idx, e)
         ax_ts_scroll.text(0.5, 0.5, "Time series plot failed", ha="center", va="center")
 
     # 3. Continuous Data (EEGLAB-style ERP image)
     try:
-        comp_data_offset_corrected = component_data_array - np.mean(
-            component_data_array
-        )
+        comp_data_offset_corrected = component_data_array - np.mean(component_data_array)
         target_segment_duration_s = 1.5
         target_max_segments = 200  # Limit segments for manageable plot
         segment_len_samples_cd = int(target_segment_duration_s * sfreq)
@@ -195,24 +189,20 @@ def plot_component_for_classification(
         if n_segments_cd > 0:
             current_segment_len = segment_len_samples_cd
             final_samples_for_reshape = n_segments_cd * current_segment_len
-            erp_image_data = comp_data_offset_corrected[
-                :final_samples_for_reshape
-            ].reshape(n_segments_cd, current_segment_len)
+            erp_image_data = comp_data_offset_corrected[:final_samples_for_reshape].reshape(
+                n_segments_cd, current_segment_len
+            )
         elif samples_to_use > 0:  # Handle less than one segment of data
             n_segments_cd = 1
             current_segment_len = samples_to_use
-            erp_image_data = comp_data_offset_corrected[:current_segment_len].reshape(
-                1, current_segment_len
-            )
+            erp_image_data = comp_data_offset_corrected[:current_segment_len].reshape(1, current_segment_len)
         else:  # No data to plot
             erp_image_data = np.zeros((1, 1))
             current_segment_len = 1  # For placeholder ticks
 
         # Apply smoothing if enough segments
         if n_segments_cd >= 3 and erp_image_data.shape[0] >= 3:
-            erp_image_smoothed = uniform_filter1d(
-                erp_image_data, size=3, axis=0, mode="nearest"
-            )
+            erp_image_smoothed = uniform_filter1d(erp_image_data, size=3, axis=0, mode="nearest")
         else:
             erp_image_smoothed = erp_image_data
 
@@ -234,15 +224,11 @@ def plot_component_for_classification(
             vmax=vmax_cd,
         )
 
-        ax_cont_data.set_title(
-            f"Continuous Data Segments (Max {target_max_segments})", fontsize=10
-        )
+        ax_cont_data.set_title(f"Continuous Data Segments (Max {target_max_segments})", fontsize=10)
         ax_cont_data.set_xlabel("Time (ms)", fontsize=9)
         if current_segment_len > 1:
             num_xticks = min(4, current_segment_len)
-            xtick_positions_samples = np.linspace(
-                0, current_segment_len - 1, num_xticks
-            )
+            xtick_positions_samples = np.linspace(0, current_segment_len - 1, num_xticks)
             xtick_labels_ms = (xtick_positions_samples / sfreq * 1000).astype(int)
             ax_cont_data.set_xticks(xtick_positions_samples)
             ax_cont_data.set_xticklabels(xtick_labels_ms)
@@ -264,18 +250,12 @@ def plot_component_for_classification(
         if n_segments_cd > 0:
             ax_cont_data.invert_yaxis()
 
-        cbar_cont = fig.colorbar(
-            im, ax=ax_cont_data, orientation="vertical", fraction=0.046, pad=0.1
-        )
+        cbar_cont = fig.colorbar(im, ax=ax_cont_data, orientation="vertical", fraction=0.046, pad=0.1)
         cbar_cont.set_label("Activation (a.u.)", fontsize=8)
         cbar_cont.ax.tick_params(labelsize=7)
     except Exception as e_cont:
-        logger.error(
-            "Error plotting continuous data for IC%d: %s", component_idx, e_cont
-        )
-        ax_cont_data.text(
-            0.5, 0.5, "Continuous data plot failed", ha="center", va="center"
-        )
+        logger.error("Error plotting continuous data for IC%d: %s", component_idx, e_cont)
+        ax_cont_data.text(0.5, 0.5, "Continuous data plot failed", ha="center", va="center")
 
     # 4. IC Activity Power Spectrum
     try:
@@ -377,9 +357,7 @@ def plot_component_for_classification(
                 fontsize=8,
                 wrap=True,
                 transform=fig.transFigure,
-                bbox=dict(
-                    boxstyle="round,pad=0.4", fc="aliceblue", alpha=0.75, ec="lightgrey"
-                ),
+                bbox=dict(boxstyle="round,pad=0.4", fc="aliceblue", alpha=0.75, ec="lightgrey"),
             )
 
         # Adjust layout for PDF
@@ -395,24 +373,18 @@ def plot_component_for_classification(
                 wspace=0.35,
             )
         except ValueError:
-            logger.warning(
-                "Could not apply subplots_adjust for IC%d in PDF.", component_idx
-            )
+            logger.warning("Could not apply subplots_adjust for IC%d in PDF.", component_idx)
         return fig
     else:
         # Save as .webp for OpenAI API (no classification text on image itself)
         if output_dir is None:
-            raise ValueError(
-                "output_dir must be provided if not returning figure object."
-            )
+            raise ValueError("output_dir must be provided if not returning figure object.")
 
         filename = f"component_IC{component_idx}_vision_analysis.webp"
         filepath = output_dir / filename
         try:
             # Ensure tight layout for API image
-            fig.subplots_adjust(
-                left=0.05, right=0.95, bottom=0.05, top=0.93, hspace=0.7, wspace=0.35
-            )
+            fig.subplots_adjust(left=0.05, right=0.95, bottom=0.05, top=0.93, hspace=0.7, wspace=0.35)
             plt.savefig(filepath, format="webp", bbox_inches="tight", pad_inches=0.1)
             logger.debug("Saved component plot for API to %s", filepath)
         except Exception as e_save:
@@ -482,9 +454,7 @@ def plot_components_batch(
             completed_count += 1
 
             # Log progress every 10% or at completion
-            if completed_count % max(
-                1, len(component_indices) // 10
-            ) == 0 or completed_count == len(component_indices):
+            if completed_count % max(1, len(component_indices) // 10) == 0 or completed_count == len(component_indices):
                 logger.info(
                     "Plotting progress: %d/%d components completed",
                     completed_count,
@@ -588,9 +558,7 @@ def plot_ica_topographies_overview(
             figsize=(min(ncols * 2.5, 14), min(nrows * 2.5, 18)),
             squeeze=False,
         )
-        fig_batch.suptitle(
-            f"ICA Topographies Overview (Batch {i//max_plots_per_fig + 1})", fontsize=14
-        )
+        fig_batch.suptitle(f"ICA Topographies Overview (Batch {i//max_plots_per_fig + 1})", fontsize=14)
 
         for ax_idx, comp_idx_topo in enumerate(batch_indices):
             r, c = divmod(ax_idx, ncols)

@@ -17,9 +17,9 @@ pre-commit install
 ```bash
 # Format code (run before linting)
 make format
-# OR individually:
-black src/icvision tests/
-isort src/icvision tests/
+# OR individually (all tools use 120 character line length):
+black --line-length=120 src/icvision tests/
+isort --line-length=120 src/icvision tests/
 
 # Run linters
 make lint
@@ -35,6 +35,9 @@ pytest --cov=src/icvision --cov-report=html --cov-report=term tests/
 
 # Run single test
 pytest tests/test_core.py::test_specific_function -v
+
+# IMPORTANT: Always run tests before committing
+pytest tests/ --tb=short -q
 ```
 
 ### Multi-environment Testing
@@ -129,3 +132,13 @@ Mock objects are used extensively for OpenAI API calls to avoid actual API costs
 - **NO Claude Attribution**: Never include Claude Code attribution, co-authorship, or generation comments in commit messages
 - Keep commit messages professional and focused on the technical changes
 - Use conventional commit format when appropriate
+
+## Development Workflow
+
+**CRITICAL**: Before every commit, always run:
+1. `pytest tests/ --tb=short -q` - Ensure all tests pass
+2. `black --line-length=120 src/icvision tests/` - Format code
+3. `isort --line-length=120 src/icvision tests/` - Sort imports
+4. `flake8 src/icvision tests/` - Check linting
+
+All tools are configured for 120 character line length to avoid conflicts between pre-commit, tox, and manual runs.

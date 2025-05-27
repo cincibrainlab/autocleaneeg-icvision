@@ -71,14 +71,10 @@ def dummy_raw_data(temp_test_dir: Path) -> mne.io.Raw:
 
 # Create a fixture for a dummy ICA object
 @pytest.fixture(scope="module")  # type: ignore[misc]
-def dummy_ica_data(
-    dummy_raw_data: mne.io.Raw, temp_test_dir: Path
-) -> mne.preprocessing.ICA:
+def dummy_ica_data(dummy_raw_data: mne.io.Raw, temp_test_dir: Path) -> mne.preprocessing.ICA:
     """Generate a simple MNE ICA object for testing."""
     n_components = 3
-    ica = mne.preprocessing.ICA(
-        n_components=n_components, random_state=42, max_iter="auto"
-    )
+    ica = mne.preprocessing.ICA(n_components=n_components, random_state=42, max_iter="auto")
     ica.fit(dummy_raw_data)
     # Save to a file to also test file loading path
     ica_path = temp_test_dir / "dummy_ica.fif"
@@ -159,12 +155,8 @@ def test_label_components_successful_run(
         generate_report=True,
     )
 
-    assert isinstance(
-        raw_cleaned, mne.io.Raw
-    ), "Cleaned raw should be an MNE Raw object"
-    assert isinstance(
-        ica_updated, mne.preprocessing.ICA
-    ), "Updated ICA should be an MNE ICA object"
+    assert isinstance(raw_cleaned, mne.io.Raw), "Cleaned raw should be an MNE Raw object"
+    assert isinstance(ica_updated, mne.preprocessing.ICA), "Updated ICA should be an MNE ICA object"
     assert isinstance(results_df, pd.DataFrame), "Results should be a Pandas DataFrame"
 
     assert not results_df.empty, "Results DataFrame should not be empty"
@@ -179,12 +171,8 @@ def test_label_components_successful_run(
 
     # Check if files were created in output_dir
     assert (temp_test_dir / "icvision_results.csv").exists(), "Results CSV not created"
-    assert (
-        temp_test_dir / "icvision_classified_ica.fif"
-    ).exists(), "Updated ICA FIF not created"
-    assert (
-        temp_test_dir / "classification_summary.txt"
-    ).exists(), "Summary TXT not created"
+    assert (temp_test_dir / "icvision_classified_ica.fif").exists(), "Updated ICA FIF not created"
+    assert (temp_test_dir / "classification_summary.txt").exists(), "Summary TXT not created"
 
     # Verify ICA object update
     assert ica_updated.labels_ is not None, "ICA labels_ should be set"
@@ -192,9 +180,7 @@ def test_label_components_successful_run(
     if dummy_ica_data.n_components_ > 0:
         # Example: check if at least one component was marked for exclusion (if not all brain)
         if any(r["label"] != "brain" for r in results_df.to_dict(orient="records")):
-            assert (
-                len(ica_updated.exclude) > 0
-            ), "Expected some components to be excluded"
+            assert len(ica_updated.exclude) > 0, "Expected some components to be excluded"
 
     logger.info("Successful run test completed.")
 
@@ -211,9 +197,7 @@ def test_label_components_api_failure(
     logger.info("Testing API failure handling in label_components...")
     mock_classify_batch_api.side_effect = mock_openai_classify_failure
 
-    with pytest.raises(
-        RuntimeError, match="Failed to classify components: Mocked API Error"
-    ):
+    with pytest.raises(RuntimeError, match="Failed to classify components: Mocked API Error"):
         label_components(
             raw_data=dummy_raw_data,  # Test with MNE objects
             ica_data=dummy_ica_data,
@@ -254,35 +238,25 @@ def test_label_components_no_report(
     # (Note: generate_classification_report itself creates the file, so if it's not called, file won't exist)
     # This test primarily ensures the function is not called.
     report_files = list(no_report_output_dir.glob("*.pdf"))
-    assert (
-        len(report_files) == 0
-    ), f"PDF report was created in {no_report_output_dir} when generate_report=False"
+    assert len(report_files) == 0, f"PDF report was created in {no_report_output_dir} when generate_report=False"
     logger.info("No report generation test completed.")
 
 
 @patch("icvision.core.classify_components_batch")  # Mock to prevent actual API calls
-def test_label_components_invalid_inputs(
-    mock_classify_api: MagicMock, temp_test_dir: Path
-) -> None:
+def test_label_components_invalid_inputs(mock_classify_api: MagicMock, temp_test_dir: Path) -> None:
     """Test label_components with various invalid inputs."""
     logger.info("Testing invalid inputs for label_components...")
     mock_classify_api.return_value = pd.DataFrame()  # Prevent issues if called
 
     # 1. Non-existent raw data file
     with pytest.raises(FileNotFoundError):
-        label_components(
-            raw_data="non_existent_raw.fif", ica_data="dummy_ica.fif", api_key="key"
-        )
+        label_components(raw_data="non_existent_raw.fif", ica_data="dummy_ica.fif", api_key="key")
 
     # 2. Non-existent ICA data file
     raw_dummy_file = temp_test_dir / "temp_raw.fif"
-    mne.io.RawArray(np.random.rand(1, 100), mne.create_info(1, 100, "eeg")).save(
-        raw_dummy_file, overwrite=True
-    )
+    mne.io.RawArray(np.random.rand(1, 100), mne.create_info(1, 100, "eeg")).save(raw_dummy_file, overwrite=True)
     with pytest.raises(FileNotFoundError):
-        label_components(
-            raw_data=raw_dummy_file, ica_data="non_existent_ica.fif", api_key="key"
-        )
+        label_components(raw_data=raw_dummy_file, ica_data="non_existent_ica.fif", api_key="key")
 
     # 3. Missing API key (if not in env)
     with patch.dict(os.environ, {"OPENAI_API_KEY": ""}):  # Ensure env var is not set
@@ -327,9 +301,7 @@ def test_update_ica_with_classifications(dummy_ica_data: mne.preprocessing.ICA) 
 
     assert updated_ica is ica_to_update, "ICA object should be updated in-place"
     assert hasattr(updated_ica, "labels_"), "ICA object should have 'labels_' attribute"
-    assert hasattr(
-        updated_ica, "labels_scores_"
-    ), "ICA object should have 'labels_scores_' attribute"
+    assert hasattr(updated_ica, "labels_scores_"), "ICA object should have 'labels_scores_' attribute"
     assert updated_ica.labels_ is not None
     assert updated_ica.labels_scores_ is not None
 
@@ -343,9 +315,7 @@ def test_update_ica_with_classifications(dummy_ica_data: mne.preprocessing.ICA) 
                 break
 
         # Check mapping using ICVISION_TO_MNE_LABEL_MAP
-        expected_mne_label = ICVISION_TO_MNE_LABEL_MAP.get(
-            expected_label_for_comp, "other"
-        )
+        expected_mne_label = ICVISION_TO_MNE_LABEL_MAP.get(expected_label_for_comp, "other")
         assert (
             actual_mne_label_assigned == expected_mne_label
         ), f"IC{i} expected {expected_mne_label}, got {actual_mne_label_assigned}"
@@ -358,24 +328,17 @@ def test_update_ica_with_classifications(dummy_ica_data: mne.preprocessing.ICA) 
     logger.info("_update_ica_with_classifications test completed.")
 
 
-def test_apply_artifact_rejection(
-    dummy_raw_data: mne.io.Raw, dummy_ica_data: mne.preprocessing.ICA
-) -> None:
+def test_apply_artifact_rejection(dummy_raw_data: mne.io.Raw, dummy_ica_data: mne.preprocessing.ICA) -> None:
     """Test applying artifact rejection to Raw data based on ICA exclude list."""
     logger.info("Testing _apply_artifact_rejection...")
     raw_to_clean = dummy_raw_data.copy()
     ica_with_exclusions = dummy_ica_data.copy()
 
     # Mark a component for exclusion (e.g., the first one)
-    if (
-        ica_with_exclusions.n_components_ is not None
-        and ica_with_exclusions.n_components_ > 0
-    ):
+    if ica_with_exclusions.n_components_ is not None and ica_with_exclusions.n_components_ > 0:
         ica_with_exclusions.exclude = [0]
     else:
-        logger.warning(
-            "No components in dummy ICA to mark for exclusion. Test might be trivial."
-        )
+        logger.warning("No components in dummy ICA to mark for exclusion. Test might be trivial.")
         ica_with_exclusions.exclude = []
 
     # Capture data before applying rejection to compare
@@ -390,15 +353,11 @@ def test_apply_artifact_rejection(
     if ica_with_exclusions.exclude and len(ica_with_exclusions.exclude) > 0:
         data_after, _ = cleaned_raw[:, :]
         # Check if data has changed (artifact removal should alter the data)
-        assert not np.array_equal(
-            data_before, data_after
-        ), "Data should change after applying ICA with exclusions"
+        assert not np.array_equal(data_before, data_after), "Data should change after applying ICA with exclusions"
     else:
         logger.info("No components were excluded, data should remain unchanged.")
         data_after, _ = cleaned_raw[:, :]
-        assert np.array_equal(
-            data_before, data_after
-        ), "Data should not change if no components are excluded"
+        assert np.array_equal(data_before, data_after), "Data should not change if no components are excluded"
 
     logger.info("_apply_artifact_rejection test completed.")
 
@@ -458,9 +417,7 @@ def test_label_components_custom_params(
                 assert (
                     row["exclude_vision"] is True
                 ), f"Component {row['component_index']} ({row['label']}) should be excluded"
-            elif (
-                row["label"] == "brain"
-            ):  # Brain is never in custom_exclude from DEFAULT_EXCLUDE_LABELS logic
+            elif row["label"] == "brain":  # Brain is never in custom_exclude from DEFAULT_EXCLUDE_LABELS logic
                 assert (
                     row["exclude_vision"] is False
                 ), f"Component {row['component_index']} (brain) should not be excluded"

@@ -40,9 +40,7 @@ def _create_summary_table_page(
         report_title_prefix: Prefix for the report title.
     """
     matplotlib.use("Agg")  # Ensure non-interactive backend
-    components_per_page = (
-        20  # Fit more components by reducing font and adjusting layout
-    )
+    components_per_page = 20  # Fit more components by reducing font and adjusting layout
     num_total_components = len(component_indices)
 
     if num_total_components == 0:
@@ -125,16 +123,14 @@ def _create_summary_table_page(
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         page_info = f"(Page {page_num + 1} of {num_summary_pages})"
         fig_table.suptitle(
-            f"{report_title_prefix} - Classification Summary\n"
-            f"{page_info} - Generated: {timestamp}",
+            f"{report_title_prefix} - Classification Summary\n" f"{page_info} - Generated: {timestamp}",
             fontsize=10,
             y=0.97,  # Adjusted y for smaller font
         )
 
         # Add legend for label colors
         legend_patches = [
-            plt.Rectangle((0, 0), 1, 1, facecolor=color, label=label.title())
-            for label, color in COLOR_MAP.items()
+            plt.Rectangle((0, 0), 1, 1, facecolor=color, label=label.title()) for label, color in COLOR_MAP.items()
         ]
         if legend_patches:
             ax_table.legend(
@@ -179,14 +175,10 @@ def generate_classification_report(
         try:
             output_dir.mkdir(parents=True, exist_ok=True)
         except Exception as e_mkdir:
-            logger.error(
-                "Could not create output directory %s: %s", output_dir, e_mkdir
-            )
+            logger.error("Could not create output directory %s: %s", output_dir, e_mkdir)
             return None
 
-    report_type_suffix = (
-        "all_comps" if components_to_detail == "all" else "artifacts_only"
-    )
+    report_type_suffix = "all_comps" if components_to_detail == "all" else "artifacts_only"
     pdf_filename = f"{report_filename_prefix}_{report_type_suffix}.pdf"
     pdf_path = output_dir / pdf_filename
 
@@ -204,14 +196,9 @@ def generate_classification_report(
             detail_plot_indices = list(results_df.index)
         elif components_to_detail == "artifacts_only":
             if "exclude_vision" in results_df.columns:
-                detail_plot_indices = list(
-                    results_df[results_df["exclude_vision"]].index
-                )
+                detail_plot_indices = list(results_df[results_df["exclude_vision"]].index)
             else:
-                logger.warning(
-                    "'exclude_vision' column not in results. "
-                    "Cannot filter artifacts for report."
-                )
+                logger.warning("'exclude_vision' column not in results. " "Cannot filter artifacts for report.")
                 detail_plot_indices = list(results_df.index)  # Fallback to all
 
     # Ensure indices are valid and sorted
@@ -219,9 +206,7 @@ def generate_classification_report(
     detail_plot_indices = sorted(list(set(valid_indices)))
 
     if not detail_plot_indices and results_df.empty:
-        logger.info(
-            "No classification results available. Skipping PDF report generation."
-        )
+        logger.info("No classification results available. Skipping PDF report generation.")
         return None
     if not detail_plot_indices and not results_df.empty:
         logger.info(
@@ -237,16 +222,10 @@ def generate_classification_report(
 
             # 1. Summary Table Page(s)
             # Include all classified components in the summary table, regardless of detail_plot_indices
-            all_classified_indices = (
-                list(results_df.index) if not results_df.empty else []
-            )
-            all_classified_indices = sorted(
-                [idx for idx in all_classified_indices if idx < ica_obj.n_components_]
-            )
+            all_classified_indices = list(results_df.index) if not results_df.empty else []
+            all_classified_indices = sorted([idx for idx in all_classified_indices if idx < ica_obj.n_components_])
             if all_classified_indices:
-                _create_summary_table_page(
-                    pdf, results_df, all_classified_indices, report_title
-                )
+                _create_summary_table_page(pdf, results_df, all_classified_indices, report_title)
             else:
                 logger.info("No components classified to include in summary table.")
 
@@ -256,9 +235,7 @@ def generate_classification_report(
                     "Plotting topographies overview for %d components.",
                     len(detail_plot_indices),
                 )
-                topo_overview_figs = plot_ica_topographies_overview(
-                    ica_obj, detail_plot_indices
-                )
+                topo_overview_figs = plot_ica_topographies_overview(ica_obj, detail_plot_indices)
                 for fig_topo_batch in topo_overview_figs:
                     pdf.savefig(fig_topo_batch)
                     plt.close(fig_topo_batch)

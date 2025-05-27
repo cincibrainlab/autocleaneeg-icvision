@@ -43,8 +43,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         prog="icvision",
         description=(
-            f"ICVision v{__version__}: Automated ICA component classification "
-            "using OpenAI Vision API for EEG data."
+            f"ICVision v{__version__}: Automated ICA component classification " "using OpenAI Vision API for EEG data."
         ),
         formatter_class=argparse.RawTextHelpFormatter,
         epilog=(
@@ -114,8 +113,7 @@ Examples:
         "--confidence-threshold",
         type=float,
         default=DEFAULT_CONFIG["confidence_threshold"],
-        help="Minimum confidence for auto-exclusion (0.0-1.0; "
-        f"default: {DEFAULT_CONFIG['confidence_threshold']}).",
+        help="Minimum confidence for auto-exclusion (0.0-1.0; " f"default: {DEFAULT_CONFIG['confidence_threshold']}).",
     )
     class_group.add_argument(
         "--no-auto-exclude",
@@ -167,8 +165,7 @@ Examples:
         "--max-concurrency",
         type=int,
         default=DEFAULT_CONFIG["max_concurrency"],
-        help="Maximum number of parallel API requests "
-        f"(default: {DEFAULT_CONFIG['max_concurrency']}).",
+        help="Maximum number of parallel API requests " f"(default: {DEFAULT_CONFIG['max_concurrency']}).",
     )
 
     # General options
@@ -178,9 +175,7 @@ Examples:
         action="store_true",
         help="Enable verbose logging for detailed output.",
     )
-    parser.add_argument(
-        "--version", action="version", version=f"%(prog)s {__version__}"
-    )
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
 
     args = parser.parse_args()
 

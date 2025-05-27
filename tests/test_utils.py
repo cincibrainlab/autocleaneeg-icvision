@@ -80,9 +80,7 @@ def test_load_raw_data_from_object(dummy_raw_object: mne.io.Raw) -> None:
     assert raw is dummy_raw_object, "Should return the same object if Raw is passed"
 
 
-def test_load_raw_data_from_fif(
-    temp_utils_test_dir: Path, dummy_raw_object: mne.io.Raw
-) -> None:
+def test_load_raw_data_from_fif(temp_utils_test_dir: Path, dummy_raw_object: mne.io.Raw) -> None:
     """Test loading raw data from a .fif file."""
     raw_path = temp_utils_test_dir / "test_raw.fif"
     dummy_raw_object.save(raw_path, overwrite=True)
@@ -122,17 +120,13 @@ def test_load_ica_data_from_object(dummy_ica_object: mne.preprocessing.ICA) -> N
     assert ica is dummy_ica_object, "Should return the same object if ICA is passed"
 
 
-def test_load_ica_data_from_fif(
-    temp_utils_test_dir: Path, dummy_ica_object: mne.preprocessing.ICA
-) -> None:
+def test_load_ica_data_from_fif(temp_utils_test_dir: Path, dummy_ica_object: mne.preprocessing.ICA) -> None:
     """Test loading ICA data from a .fif file."""
     ica_path = temp_utils_test_dir / "test_ica.fif"
     dummy_ica_object.save(ica_path, overwrite=True)
 
     loaded_ica = load_ica_data(ica_path)
-    assert isinstance(
-        loaded_ica, mne.preprocessing.ICA
-    ), "Loaded data should be MNE ICA"
+    assert isinstance(loaded_ica, mne.preprocessing.ICA), "Loaded data should be MNE ICA"
     assert loaded_ica.n_components_ == dummy_ica_object.n_components_
 
     # Test loading from string path
@@ -157,17 +151,13 @@ def test_load_ica_data_unsupported_format(temp_utils_test_dir: Path) -> None:
 # --- Tests for validate_inputs ---
 
 
-def test_validate_inputs_compatible(
-    dummy_raw_object: mne.io.Raw, dummy_ica_object: mne.preprocessing.ICA
-) -> None:
+def test_validate_inputs_compatible(dummy_raw_object: mne.io.Raw, dummy_ica_object: mne.preprocessing.ICA) -> None:
     """Test input validation with compatible Raw and ICA objects."""
     # This should not raise any exception
     try:
         validate_inputs(dummy_raw_object, dummy_ica_object)
     except ValueError:
-        pytest.fail(
-            "validate_inputs raised ValueError unexpectedly for compatible inputs"
-        )
+        pytest.fail("validate_inputs raised ValueError unexpectedly for compatible inputs")
 
 
 def test_validate_inputs_ica_not_fitted(dummy_raw_object: mne.io.Raw) -> None:
@@ -196,8 +186,7 @@ def test_validate_inputs_channel_mismatch(
     # Use caplog to check for logged warnings
     validate_inputs(raw_mismatch, dummy_ica_object)  # Call the function that should log
     assert any(
-        "Channel count mismatch" in record.message and record.levelname == "WARNING"
-        for record in caplog.records
+        "Channel count mismatch" in record.message and record.levelname == "WARNING" for record in caplog.records
     )
     # Optionally, clear the log if other tests in the same function might log warnings
     caplog.clear()
@@ -283,9 +272,7 @@ def test_save_results(temp_utils_test_dir: Path) -> None:
 
     loaded_df = pd.read_csv(file_path)
     assert len(loaded_df) == len(results_df), "Saved CSV has incorrect number of rows"
-    assert list(loaded_df.columns) == list(
-        results_df.columns
-    ), "Saved CSV has incorrect columns"
+    assert list(loaded_df.columns) == list(results_df.columns), "Saved CSV has incorrect columns"
 
 
 def test_save_results_empty(temp_utils_test_dir: Path) -> None:
@@ -398,21 +385,15 @@ def test_validate_classification_results_invalid_confidence(
     """Test validation with invalid confidence scores."""
     invalid_df_low = valid_classification_df.copy()
     invalid_df_low.loc[0, "confidence"] = -0.1
-    with pytest.raises(
-        ValueError, match="Confidence score -0.10 is outside the valid range"
-    ):
+    with pytest.raises(ValueError, match="Confidence score -0.10 is outside the valid range"):
         validate_classification_results(invalid_df_low)
 
     invalid_df_high = valid_classification_df.copy()
     invalid_df_high.loc[0, "confidence"] = 1.1
-    with pytest.raises(
-        ValueError, match="Confidence score 1.10 is outside the valid range"
-    ):
+    with pytest.raises(ValueError, match="Confidence score 1.10 is outside the valid range"):
         validate_classification_results(invalid_df_high)
 
     invalid_df_type = valid_classification_df.copy()
     invalid_df_type.loc[0, "confidence"] = "not_a_float"
-    with pytest.raises(
-        ValueError, match="Confidence score 'not_a_float' is not a float"
-    ):
+    with pytest.raises(ValueError, match="Confidence score 'not_a_float' is not a float"):
         validate_classification_results(invalid_df_type)

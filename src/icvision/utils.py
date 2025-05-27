@@ -81,9 +81,7 @@ def load_raw_data(raw_input: Union[str, Path, mne.io.BaseRaw]) -> mne.io.BaseRaw
     return raw
 
 
-def load_ica_data(
-    ica_input: Union[str, Path, mne.preprocessing.ICA]
-) -> mne.preprocessing.ICA:
+def load_ica_data(ica_input: Union[str, Path, mne.preprocessing.ICA]) -> mne.preprocessing.ICA:
     """
     Load ICA data from file path or return existing ICA object.
 
@@ -120,11 +118,7 @@ def load_ica_data(
         logger.debug("Loading MNE ICA from: %s", file_path)
         ica = mne.preprocessing.read_ica(file_path)
     else:
-        raise ValueError(
-            "Unsupported ICA file format: {}. Supported formats: .fif (MNE)".format(
-                file_extension
-            )
-        )
+        raise ValueError("Unsupported ICA file format: {}. Supported formats: .fif (MNE)".format(file_extension))
 
     logger.info("Successfully loaded ICA: %d components", ica.n_components_)
     return ica
@@ -205,14 +199,11 @@ def validate_api_key(api_key: Optional[str]) -> str:
         return env_key
 
     raise ValueError(
-        "No OpenAI API key provided. Either pass api_key parameter or set "
-        "OPENAI_API_KEY environment variable."
+        "No OpenAI API key provided. Either pass api_key parameter or set " "OPENAI_API_KEY environment variable."
     )
 
 
-def save_results(
-    results_df: pd.DataFrame, output_dir: Path, filename: str = "icvision_results.csv"
-) -> Path:
+def save_results(results_df: pd.DataFrame, output_dir: Path, filename: str = "icvision_results.csv") -> Path:
     """
     Save classification results to CSV file.
 
@@ -312,9 +303,7 @@ def validate_classification_results(results_df: pd.DataFrame) -> bool:
     # Check required columns
     if not required_cols.issubset(results_df.columns):
         missing = required_cols - set(results_df.columns)
-        missing_col = next(
-            iter(missing)
-        )  # Get first missing column for specific error message
+        missing_col = next(iter(missing))  # Get first missing column for specific error message
         raise ValueError(f"Missing required column: {missing_col}")
 
     # Validate 'label' values
@@ -333,9 +322,7 @@ def validate_classification_results(results_df: pd.DataFrame) -> bool:
             if isinstance(invalid_conf, str):
                 raise ValueError(f"Confidence score '{invalid_conf}' is not a float")
             else:
-                raise ValueError(
-                    f"Confidence score {invalid_conf:.2f} is outside the valid range"
-                )
+                raise ValueError(f"Confidence score {invalid_conf:.2f} is outside the valid range")
     except TypeError:
         # Handle non-numeric confidence values
         for idx, conf in results_df["confidence"].items():

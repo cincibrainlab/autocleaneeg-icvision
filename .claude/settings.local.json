@@ -10,7 +10,11 @@
       "Bash(python3 -m pytest tests/* -v)",
       "Bash(python3 -m pytest tests/test_core.py::test_update_ica_with_classifications -v)",
       "Bash(python3 -m pytest tests/test_core.py -v)",
-      "Bash(flake8:*)"
+      "Bash(flake8:*)",
+      "Bash(isort:*)",
+      "Bash(tox:*)",
+      "Bash(black:*)",
+      "Bash(pytest:*)"
     ],
     "deny": []
   }
