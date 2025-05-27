@@ -6,7 +6,11 @@
       "Bash(make test:*)",
       "Bash(python3 -m pytest tests/* -v)",
       "Bash(python3 -m pytest tests/ --tb=short -q)",
-      "Bash(make format)"
+      "Bash(make format)",
+      "Bash(python3 -m pytest tests/* -v)",
+      "Bash(python3 -m pytest tests/test_core.py::test_update_ica_with_classifications -v)",
+      "Bash(python3 -m pytest tests/test_core.py -v)",
+      "Bash(flake8:*)"
     ],
     "deny": []
   }

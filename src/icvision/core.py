@@ -287,9 +287,10 @@ def _update_ica_with_classifications(
         ica_updated.labels_[label].sort()
 
     # Update exclude list
-    excluded_components = results_df[
-        results_df.get("exclude_vision", False) is True
-    ].index.tolist()
+    if "exclude_vision" in results_df.columns:
+        excluded_components = results_df[results_df["exclude_vision"]].index.tolist()
+    else:
+        excluded_components = []
 
     # Ensure exclude list exists and merge with any existing exclusions
     if ica_updated.exclude is None:
