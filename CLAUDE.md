@@ -135,10 +135,25 @@ Mock objects are used extensively for OpenAI API calls to avoid actual API costs
 
 ## Development Workflow
 
-**CRITICAL**: Before every commit, always run:
+**CRITICAL**: Before every commit, always run the comprehensive CI test script:
+
+```bash
+./test_ci.sh
+```
+
+This script runs the exact same checks as tox and GitHub Actions:
 1. `pytest tests/ --tb=short -q` - Ensure all tests pass
-2. `black --line-length=120 src/icvision tests/` - Format code
-3. `isort --line-length=120 src/icvision tests/` - Sort imports
+2. `black --check --diff --line-length=120 src/icvision tests/` - Check formatting
+3. `isort --check-only --diff --line-length=120 src/icvision tests/` - Check imports
 4. `flake8 src/icvision tests/` - Check linting
+5. `mypy --ignore-missing-imports --no-strict-optional --follow-imports=skip src/icvision/` - Check types
+
+If any step fails, the script will exit and show you exactly what needs to be fixed.
+
+**To fix formatting/import issues before committing:**
+```bash
+black --line-length=120 src/icvision tests/
+isort --line-length=120 src/icvision tests/
+```
 
 All tools are configured for 120 character line length to avoid conflicts between pre-commit, tox, and manual runs.

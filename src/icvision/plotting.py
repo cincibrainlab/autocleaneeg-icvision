@@ -208,7 +208,7 @@ def plot_component_for_classification(
 
         # Determine color limits
         if erp_image_smoothed.size > 0:
-            max_abs_val = np.max(np.abs(erp_image_smoothed))
+            max_abs_val: float = np.max(np.abs(erp_image_smoothed))
             clim_val = (2 / 3) * max_abs_val if max_abs_val > 1e-9 else 1.0
         else:
             clim_val = 1.0
