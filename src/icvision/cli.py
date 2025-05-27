@@ -193,16 +193,16 @@ Examples:
         try:
             prompt_path = Path(args.prompt_file)
             if not prompt_path.is_file():
-                logger.error(f"Custom prompt file not found: {prompt_path}")
+                logger.error("Custom prompt file not found: %s", prompt_path)
                 sys.exit(1)
             custom_prompt_text = prompt_path.read_text(encoding="utf-8")
-            logger.info(f"Using custom prompt from: {prompt_path}")
+            logger.info("Using custom prompt from: %s", prompt_path)
         except Exception as e:
-            logger.error(f"Failed to read custom prompt file: {e}")
+            logger.error("Failed to read custom prompt file: %s", e)
             sys.exit(1)
 
-    logger.info(f"Starting ICVision CLI v{__version__}")
-    logger.info(f"Processing Raw: {args.raw_data_path}, ICA: {args.ica_data_path}")
+    logger.info("Starting ICVision CLI v%s", __version__)
+    logger.info("Processing Raw: %s, ICA: %s", args.raw_data_path, args.ica_data_path)
 
     try:
         raw_cleaned, ica_updated, results_df = label_components(
@@ -231,23 +231,24 @@ Examples:
         else:
             output_path = Path.cwd() / "icvision_results"
         logger.info(
-            f"All results, logs, and reports (if enabled) are in: {output_path.resolve()}"
+            "All results, logs, and reports (if enabled) are in: %s",
+            output_path.resolve(),
         )
 
     except FileNotFoundError as e:
-        logger.error(f"Input file not found: {e}")
+        logger.error("Input file not found: %s", e)
         sys.exit(1)
     except ValueError as e:
-        logger.error(f"Invalid input or configuration: {e}")
+        logger.error("Invalid input or configuration: %s", e)
         sys.exit(1)
     except RuntimeError as e:
-        logger.error(f"Processing error: {e}")
+        logger.error("Processing error: %s", e)
         sys.exit(1)
     except openai.AuthenticationError as e:  # Catch specific OpenAI auth error
-        logger.error(f"OpenAI Authentication Error: {e}. Please check your API key.")
+        logger.error("OpenAI Authentication Error: %s. Please check your API key.", e)
         sys.exit(1)
     except Exception as e:
-        logger.error(f"An unexpected error occurred: {e}")
+        logger.error("An unexpected error occurred: %s", e)
         # For debugging, you might want to re-raise or print traceback
         # import traceback
         # logger.error(traceback.format_exc())

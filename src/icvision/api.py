@@ -50,7 +50,7 @@ def classify_component_image_openai(
                The label is one of the COMPONENT_LABELS.
     """
     if not image_path or not image_path.exists():
-        logger.error(f"Invalid or non-existent image path: {image_path}")
+        logger.error("Invalid or non-existent image path: %s", image_path)
         return "other_artifact", 1.0, "Invalid image path"
 
     prompt_to_use = custom_prompt or OPENAI_ICA_PROMPT
@@ -60,7 +60,7 @@ def classify_component_image_openai(
             base64_image = base64.b64encode(image_file.read()).decode("utf-8")
 
         client = openai.OpenAI(api_key=api_key)
-        logger.debug(f"Sending {image_path.name} to OpenAI (model: {model_name})...")
+        logger.debug("Sending %s to OpenAI (model: %s)...", image_path.name, model_name)
 
         with client.responses.create(
             model=model_name,
@@ -93,12 +93,14 @@ def classify_component_image_openai(
 
             # Log response metadata if needed
             logger.debug(
-                f"Response ID: {completion.id}, Usage: {getattr(completion, 'usage', 'N/A')}"
+                "Response ID: %s, Usage: %s",
+                completion.id,
+                getattr(completion, "usage", "N/A"),
             )
 
         if resp_text:
             logger.debug(
-                f"Raw OpenAI response for {image_path.name}: '{resp_text[:100]}...'"
+                "Raw OpenAI response for %s: '%s...'", image_path.name, resp_text[:100]
             )
 
             # Regex to parse ("label", confidence, "reason") format
@@ -119,66 +121,87 @@ def classify_component_image_openai(
                 label = match.group(1).lower()
                 if label not in COMPONENT_LABELS:
                     logger.warning(
-                        f"OpenAI returned an unexpected label '{label}' not in "
-                        f"COMPONENT_LABELS for {image_path.name}. Raw: '{resp_text}'"
+                        "OpenAI returned an unexpected label '%s' not in COMPONENT_LABELS for %s. Raw: '%s'",
+                        label,
+                        image_path.name,
+                        resp_text,
                     )
                     return (
                         "other_artifact",
                         1.0,
-                        f"Unexpected label: {label}. Parsed from: {resp_text}",
+                        "Unexpected label: {}. Parsed from: {}".format(
+                            label, resp_text
+                        ),
                     )
 
                 confidence = float(match.group(2))
                 reason = match.group(3).strip().replace('\\"', '"').replace("\\'", "'")
                 logger.debug(
-                    f"Parsed classification for {image_path.name}: Label={label}, Conf={confidence:.2f}"
+                    "Parsed classification for %s: Label=%s, Conf=%.2f",
+                    image_path.name,
+                    label,
+                    confidence,
                 )
                 return label, confidence, reason
             else:
                 logger.warning(
-                    f"Could not parse OpenAI response for {image_path.name}: '{resp_text}'. Defaulting."
+                    "Could not parse OpenAI response for %s: '%s'. Defaulting.",
+                    image_path.name,
+                    resp_text,
                 )
-                return "other_artifact", 1.0, f"Failed to parse response: {resp_text}"
+                return (
+                    "other_artifact",
+                    1.0,
+                    "Failed to parse response: {}".format(resp_text),
+                )
         else:
-            logger.error(f"No text content in OpenAI response for {image_path.name}")
+            logger.error("No text content in OpenAI response for %s", image_path.name)
             return "other_artifact", 1.0, "Invalid response (no text content)"
 
     except openai.APIConnectionError as e:
-        logger.error(f"OpenAI API connection error for {image_path.name}: {e}")
-        return "other_artifact", 1.0, f"API Connection Error: {str(e)[:100]}"
+        logger.error("OpenAI API connection error for %s: %s", image_path.name, e)
+        return "other_artifact", 1.0, "API Connection Error: {}".format(str(e)[:100])
     except openai.AuthenticationError as e:
-        logger.error(f"OpenAI API authentication error: {e}. Check API key.")
-        return "other_artifact", 1.0, f"API Authentication Error: {str(e)[:100]}"
+        logger.error("OpenAI API authentication error: %s. Check API key.", e)
+        return (
+            "other_artifact",
+            1.0,
+            "API Authentication Error: {}".format(str(e)[:100]),
+        )
     except openai.RateLimitError as e:
-        logger.error(f"OpenAI API rate limit exceeded for {image_path.name}: {e}")
-        return "other_artifact", 1.0, f"API Rate Limit Error: {str(e)[:100]}"
+        logger.error("OpenAI API rate limit exceeded for %s: %s", image_path.name, e)
+        return "other_artifact", 1.0, "API Rate Limit Error: {}".format(str(e)[:100])
     except openai.APIStatusError as e:
         logger.error(
-            f"OpenAI API status error for {image_path.name}: Status={e.status_code}, "
-            f"Response={e.response}"
+            "OpenAI API status error for %s: Status=%s, Response=%s",
+            image_path.name,
+            e.status_code,
+            e.response,
         )
         return (
             "other_artifact",
             1.0,
-            f"API Status Error {e.status_code}: {str(e.response)[:100]}",
+            "API Status Error {}: {}".format(e.status_code, str(e.response)[:100]),
         )
     except ValueError as e:
-        logger.error(f"Configuration error: {e}")
-        return "other_artifact", 1.0, f"Configuration error: {str(e)[:100]}"
+        logger.error("Configuration error: %s", e)
+        return "other_artifact", 1.0, "Configuration error: {}".format(str(e)[:100])
     except Exception as e:
         logger.error(
-            f"Unexpected error during vision classification for {image_path.name}: "
-            f"{type(e).__name__} - {e}"
+            "Unexpected error during vision classification for %s: %s - %s",
+            image_path.name,
+            type(e).__name__,
+            e,
         )
         return (
             "other_artifact",
             1.0,
-            f"Unexpected Exception: {type(e).__name__} - {str(e)[:100]}",
+            "Unexpected Exception: {} - {}".format(type(e).__name__, str(e)[:100]),
         )
 
 
 def _classify_single_component_wrapper(
-    args_tuple: Tuple[int, Optional[Path], str, str, Optional[str]]
+    args_tuple: Tuple[int, Optional[Path], str, str, Optional[str]],
 ) -> Tuple[int, str, float, str]:
     """Helper for parallel execution of classify_component_image_openai."""
     comp_idx, image_path, api_key, model_name, custom_prompt = args_tuple
@@ -225,7 +248,7 @@ def classify_components_batch(
         pd.DataFrame with classification results for each component.
     """
     logger.debug(
-        f"Starting batch classification of {ica_obj.n_components_} components."
+        "Starting batch classification of %d components.", ica_obj.n_components_
     )
 
     if labels_to_exclude is None:
@@ -242,7 +265,7 @@ def classify_components_batch(
     image_output_path = output_dir if output_dir else Path(temp_dir_context.name)
 
     try:
-        logger.info(f"Generating component images in: {image_output_path}")
+        logger.debug("Generating component images in: %s", image_output_path)
 
         # Use improved batch plotting with better error handling
         component_indices = list(range(num_components))
@@ -286,7 +309,7 @@ def classify_components_batch(
                     # We need comp_idx, so we try to find it if possible, but it might not be in e.
                     # This is a safety net; errors should ideally be caught within the wrapper.
                     logger.error(
-                        f"Error processing a component future: {e}. Defaulting result."
+                        "Error processing a component future: %s. Defaulting result.", e
                     )
                     # We don't know which comp_idx this was if the future itself failed badly.
                     # This case should be rare if _classify_single_component_wrapper is robust.
@@ -319,14 +342,20 @@ def classify_components_batch(
                     else "warning" if exclude_this_component else "info"
                 )
                 logger.log(
-                    logging.getLevelName(log_level.upper()),
-                    f"IC{comp_idx:03d} | Label: {label.upper():<13} "
-                    f"(MNE: {mne_label:<10}) | Conf: {confidence:.2f} | Excl: {exclude_this_component}",
+                    getattr(logging, log_level.upper()),
+                    "IC%03d | Label: %-13s (MNE: %-10s) | Conf: %.2f | Excl: %s",
+                    comp_idx,
+                    label.upper(),
+                    mne_label,
+                    confidence,
+                    exclude_this_component,
                 )
                 processed_count += 1
 
         logger.info(
-            f"OpenAI classification complete. Processed {processed_count}/{num_components} components."
+            "OpenAI classification complete. Processed %d/%d components.",
+            processed_count,
+            num_components,
         )
 
     finally:

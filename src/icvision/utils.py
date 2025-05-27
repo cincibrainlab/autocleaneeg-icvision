@@ -54,26 +54,29 @@ def load_raw_data(raw_input: Union[str, Path, mne.io.BaseRaw]) -> mne.io.BaseRaw
     file_extension = file_path.suffix.lower()
 
     if file_extension == ".set":
-        logger.info(f"Loading EEGLAB data from: {file_path}")
+        logger.debug("Loading EEGLAB data from: %s", file_path)
         raw = mne.io.read_raw_eeglab(file_path, preload=True)
     elif file_extension == ".fif":
-        logger.info(f"Loading MNE FIF data from: {file_path}")
+        logger.debug("Loading MNE FIF data from: %s", file_path)
         raw = mne.io.read_raw_fif(file_path, preload=True)
     elif file_extension in [".bdf", ".edf"]:
-        logger.info(f"Loading EDF/BDF data from: {file_path}")
+        logger.debug("Loading EDF/BDF data from: %s", file_path)
         raw = mne.io.read_raw_edf(file_path, preload=True)
     elif file_extension == ".vhdr":
-        logger.info(f"Loading BrainVision data from: {file_path}")
+        logger.debug("Loading BrainVision data from: %s", file_path)
         raw = mne.io.read_raw_brainvision(file_path, preload=True)
     else:
         raise ValueError(
-            f"Unsupported file format: {file_extension}. "
-            f"Supported formats: .set (EEGLAB), .fif (MNE), .edf, .bdf, .vhdr"
+            "Unsupported file format: {}. Supported formats: .set (EEGLAB), .fif (MNE), .edf, .bdf, .vhdr".format(
+                file_extension
+            )
         )
 
     logger.debug(
-        f"Successfully loaded raw data: {raw.info['nchan']} channels, "
-        f"{raw.n_times} samples, {raw.info['sfreq']:.1f} Hz"
+        "Successfully loaded raw data: %d channels, %d samples, %.1f Hz",
+        raw.info["nchan"],
+        raw.n_times,
+        raw.info["sfreq"],
     )
     return raw
 
@@ -114,15 +117,16 @@ def load_ica_data(
     file_extension = file_path.suffix.lower()
 
     if file_extension == ".fif":
-        logger.debug(f"Loading MNE ICA from: {file_path}")
+        logger.debug("Loading MNE ICA from: %s", file_path)
         ica = mne.preprocessing.read_ica(file_path)
     else:
         raise ValueError(
-            f"Unsupported ICA file format: {file_extension}. "
-            f"Supported formats: .fif (MNE)"
+            "Unsupported ICA file format: {}. Supported formats: .fif (MNE)".format(
+                file_extension
+            )
         )
 
-    logger.info(f"Successfully loaded ICA: {ica.n_components_} components")
+    logger.info("Successfully loaded ICA: %d components", ica.n_components_)
     return ica
 
 
@@ -144,15 +148,16 @@ def validate_inputs(raw: mne.io.Raw, ica: mne.preprocessing.ICA) -> None:
     # Check basic compatibility (number of channels)
     if len(ica.ch_names) != len(raw.ch_names):
         logger.warning(
-            f"Channel count mismatch: ICA has {len(ica.ch_names)} channels, "
-            f"Raw has {len(raw.ch_names)} channels. This may cause issues."
+            "Channel count mismatch: ICA has %d channels, Raw has %d channels. This may cause issues.",
+            len(ica.ch_names),
+            len(raw.ch_names),
         )
 
     # Check for sufficient data length
     if raw.n_times < 1000:  # Arbitrary minimum
         logger.warning(
-            f"Raw data is very short ({raw.n_times} samples). "
-            f"Results may be unreliable."
+            "Raw data is very short (%d samples). Results may be unreliable.",
+            raw.n_times,
         )
 
     logger.debug("Input validation passed")
@@ -174,7 +179,7 @@ def create_output_directory(output_dir: Optional[Union[str, Path]]) -> Path:
         output_dir = Path(output_dir)
 
     output_dir.mkdir(parents=True, exist_ok=True)
-    logger.info(f"Output directory: {output_dir}")
+    logger.debug("Output directory: %s", output_dir)
     return output_dir
 
 
@@ -221,7 +226,7 @@ def save_results(
     """
     output_path = output_dir / filename
     results_df.to_csv(output_path, index=False)
-    logger.info(f"Results saved to: {output_path}")
+    logger.debug("Results saved to: %s", output_path)
     return output_path
 
 
@@ -277,12 +282,12 @@ def validate_classification_results(results_df: pd.DataFrame) -> bool:
     # Check required columns
     if not required_cols.issubset(results_df.columns):
         missing = required_cols - set(results_df.columns)
-        raise ValueError(f"Missing required column(s) in results: {missing}")
+        raise ValueError("Missing required column(s) in results: {}".format(missing))
 
     # Validate 'label' values
     invalid_labels = set(results_df["label"]) - set(COMPONENT_LABELS)
     if invalid_labels:
-        logger.error(f"Invalid labels found in results: {invalid_labels}")
+        logger.error("Invalid labels found in results: %s", invalid_labels)
         return False
 
     # Check confidence range

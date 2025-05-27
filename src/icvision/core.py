@@ -109,7 +109,7 @@ def label_components(
     logger.info("Starting ICVision component classification workflow")
 
     # Step 1: Validate and prepare inputs
-    logger.info("Loading and validating input data...")
+    logger.debug("Loading and validating input data...")
 
     # Validate API key early
     validated_api_key = validate_api_key(api_key)
@@ -119,7 +119,7 @@ def label_components(
         raw = load_raw_data(raw_data)
         ica = load_ica_data(ica_data)
     except Exception as e:
-        logger.error(f"Failed to load input data: {e}")
+        logger.error("Failed to load input data: %s", e)
         raise
 
     # Validate compatibility
@@ -133,9 +133,11 @@ def label_components(
     output_path = create_output_directory(output_dir)
 
     logger.debug(
-        f"Configuration: {ica.n_components_} components, "
-        f"confidence_threshold={confidence_threshold}, "
-        f"model={model_name}, batch_size={batch_size}"
+        "Configuration: %d components, confidence_threshold=%s, model=%s, batch_size=%d",
+        ica.n_components_,
+        confidence_threshold,
+        model_name,
+        batch_size,
     )
 
     # Step 2: Classify components using OpenAI Vision API
@@ -156,33 +158,33 @@ def label_components(
             output_dir=output_path,
         )
     except Exception as e:
-        logger.error(f"Component classification failed: {e}")
-        raise RuntimeError(f"Failed to classify components: {e}")
+        logger.error("Component classification failed: %s", e)
+        raise RuntimeError("Failed to classify components: {}".format(e))
 
     # Validate results
     if not validate_classification_results(results_df):
         raise RuntimeError("Invalid classification results received")
 
     # Step 3: Update ICA object with classifications
-    logger.info("Updating ICA object with classification results...")
+    logger.debug("Updating ICA object with classification results...")
 
     try:
         ica_updated = _update_ica_with_classifications(ica, results_df)
     except Exception as e:
-        logger.error(f"Failed to update ICA object: {e}")
-        raise RuntimeError(f"Failed to update ICA object: {e}")
+        logger.error("Failed to update ICA object: %s", e)
+        raise RuntimeError("Failed to update ICA object: {}".format(e))
 
     # Step 4: Apply artifact rejection
-    logger.info("Applying artifact rejection to raw data...")
+    logger.debug("Applying artifact rejection to raw data...")
 
     try:
         raw_cleaned = _apply_artifact_rejection(raw, ica_updated)
     except Exception as e:
-        logger.error(f"Failed to apply artifact rejection: {e}")
-        raise RuntimeError(f"Failed to apply artifact rejection: {e}")
+        logger.error("Failed to apply artifact rejection: %s", e)
+        raise RuntimeError("Failed to apply artifact rejection: {}".format(e))
 
     # Step 5: Save results
-    logger.info("Saving classification results...")
+    logger.debug("Saving classification results...")
 
     try:
         # Save CSV results
@@ -193,7 +195,7 @@ def label_components(
 
         # Generate summary statistics
         summary = format_summary_stats(results_df)
-        logger.info(f"\n{summary}")
+        logger.info("\n%s", summary)
 
         # Save summary to file
         summary_path = output_path / "classification_summary.txt"
@@ -201,11 +203,11 @@ def label_components(
             f.write(summary)
 
     except Exception as e:
-        logger.warning(f"Failed to save some results: {e}")
+        logger.warning("Failed to save some results: %s", e)
 
     # Step 6: Generate comprehensive report
     if generate_report:
-        logger.info("Generating comprehensive PDF report...")
+        logger.debug("Generating comprehensive PDF report...")
         try:
             report_path = generate_classification_report(
                 ica_obj=ica_updated,
@@ -213,17 +215,17 @@ def label_components(
                 results_df=results_df,
                 output_dir=output_path,
             )
-            logger.info(f"Report saved to: {report_path}")
+            logger.info("Report saved to: %s", report_path)
         except Exception as e:
-            logger.warning(f"Failed to generate PDF report: {e}")
+            logger.warning("Failed to generate PDF report: %s", e)
 
     # Final summary
     excluded_count = results_df.get("exclude_vision", pd.Series(dtype=bool)).sum()
     logger.info(
-        f"ICVision workflow completed successfully! "
-        f"Processed {len(results_df)} components, "
-        f"excluded {excluded_count} artifacts. "
-        f"Results saved to: {output_path}"
+        "ICVision workflow completed successfully! Processed %d components, excluded %d artifacts. Results saved to: %s",
+        len(results_df),
+        excluded_count,
+        output_path,
     )
 
     return raw_cleaned, ica_updated, results_df
@@ -255,8 +257,8 @@ def _update_ica_with_classifications(
     labels_scores_array = np.zeros((n_components, n_label_categories))
 
     # Fill scores array
-    for _, row in results_df.iterrows():
-        comp_idx = int(row["component_index"])
+    for comp_idx, row in results_df.iterrows():
+        comp_idx = int(comp_idx)  # Index is component_index
         label = row["label"]
         confidence = float(row["confidence"])
 
@@ -271,8 +273,8 @@ def _update_ica_with_classifications(
         mne_label: [] for mne_label in ICVISION_TO_MNE_LABEL_MAP.values()
     }
 
-    for _, row in results_df.iterrows():
-        comp_idx = int(row["component_index"])
+    for comp_idx, row in results_df.iterrows():
+        comp_idx = int(comp_idx)  # Index is component_index
         icvision_label = row["label"]
         mne_label = ICVISION_TO_MNE_LABEL_MAP.get(icvision_label, "other")
 
@@ -284,9 +286,9 @@ def _update_ica_with_classifications(
         ica_updated.labels_[label].sort()
 
     # Update exclude list
-    excluded_components = results_df[results_df.get("exclude_vision", False) == True][
-        "component_index"
-    ].tolist()
+    excluded_components = results_df[
+        results_df.get("exclude_vision", False) == True
+    ].index.tolist()
 
     # Ensure exclude list exists and merge with any existing exclusions
     if ica_updated.exclude is None:
@@ -300,8 +302,9 @@ def _update_ica_with_classifications(
     ica_updated.exclude = sorted(list(current_exclusions))
 
     logger.info(
-        f"Updated ICA object: {len(excluded_components)} new exclusions, "
-        f"{len(ica_updated.exclude)} total exclusions"
+        "Updated ICA object: %d new exclusions, %d total exclusions",
+        len(excluded_components),
+        len(ica_updated.exclude),
     )
 
     return ica_updated
@@ -325,7 +328,7 @@ def _apply_artifact_rejection(
 
     # Apply ICA if there are components to exclude
     if ica.exclude:
-        logger.info(f"Applying ICA to remove {len(ica.exclude)} components")
+        logger.info("Applying ICA to remove %d components", len(ica.exclude))
         ica.apply(raw_cleaned)
     else:
         logger.info("No components marked for exclusion, returning original data")

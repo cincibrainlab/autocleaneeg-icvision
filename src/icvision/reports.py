@@ -69,7 +69,8 @@ def _create_summary_table_page(
         for comp_idx in page_component_indices:
             if comp_idx not in results_df.index:
                 logger.warning(
-                    f"Component IC{comp_idx} not in results. Skipping in summary table."
+                    "Component IC%d not in results. Skipping in summary table.",
+                    comp_idx,
                 )
                 continue
 
@@ -178,7 +179,9 @@ def generate_classification_report(
         try:
             output_dir.mkdir(parents=True, exist_ok=True)
         except Exception as e_mkdir:
-            logger.error(f"Could not create output directory {output_dir}: {e_mkdir}")
+            logger.error(
+                "Could not create output directory %s: %s", output_dir, e_mkdir
+            )
             return None
 
     report_type_suffix = (
@@ -190,9 +193,9 @@ def generate_classification_report(
     if pdf_path.exists():
         try:
             pdf_path.unlink()
-            logger.debug(f"Removed existing PDF: {pdf_path}")
+            logger.debug("Removed existing PDF: %s", pdf_path)
         except OSError as e_unlink:
-            logger.warning(f"Could not delete existing PDF {pdf_path}: {e_unlink}")
+            logger.warning("Could not delete existing PDF %s: %s", pdf_path, e_unlink)
 
     # Determine which component indices to plot in detail
     detail_plot_indices = []
@@ -226,7 +229,7 @@ def generate_classification_report(
             f"Report will contain summary only."
         )
 
-    logger.info(f"Generating PDF report ('{report_type_suffix}') to {pdf_path}...")
+    logger.info("Generating PDF report ('%s') to %s...", report_type_suffix, pdf_path)
 
     try:
         with PdfPages(pdf_path) as pdf:
@@ -250,7 +253,8 @@ def generate_classification_report(
             # 2. Component Topographies Overview Page (for components in detail_plot_indices)
             if detail_plot_indices:
                 logger.debug(
-                    f"Plotting topographies overview for {len(detail_plot_indices)} components."
+                    "Plotting topographies overview for %d components.",
+                    len(detail_plot_indices),
                 )
                 topo_overview_figs = plot_ica_topographies_overview(
                     ica_obj, detail_plot_indices
@@ -264,13 +268,14 @@ def generate_classification_report(
             # 3. Individual Component Detail Pages (for components in detail_plot_indices)
             if detail_plot_indices:
                 logger.debug(
-                    f"Generating detail pages for {len(detail_plot_indices)} components."
+                    "Generating detail pages for %d components.",
+                    len(detail_plot_indices),
                 )
                 for comp_idx_detail in detail_plot_indices:
                     if comp_idx_detail not in results_df.index:
                         logger.warning(
-                            f"Skipping IC{comp_idx_detail} detail: "
-                            f"not in classification results."
+                            "Skipping IC%d detail: not in classification results.",
+                            comp_idx_detail,
                         )
                         continue
 
@@ -295,8 +300,9 @@ def generate_classification_report(
                             pdf.savefig(fig_detail)
                         except Exception as e_save_detail:
                             logger.error(
-                                f"Error saving detail page for IC{comp_idx_detail} to PDF: "
-                                f"{e_save_detail}"
+                                "Error saving detail page for IC%d to PDF: %s",
+                                comp_idx_detail,
+                                e_save_detail,
                             )
                             # Create a fallback error page in PDF for this component
                             fig_err_s = plt.figure()
@@ -304,7 +310,7 @@ def generate_classification_report(
                             ax_err_s.text(
                                 0.5,
                                 0.5,
-                                f"Plot save for IC{comp_idx_detail}\nfailed.",
+                                "Plot save for IC{}\nfailed.".format(comp_idx_detail),
                                 ha="center",
                                 va="center",
                             )
@@ -314,15 +320,15 @@ def generate_classification_report(
                             plt.close(fig_detail)  # Ensure figure is always closed
                     else:
                         logger.warning(
-                            f"Failed to generate plot object for IC{comp_idx_detail} "
-                            f"for PDF detail page."
+                            "Failed to generate plot object for IC%d for PDF detail page.",
+                            comp_idx_detail,
                         )
                         fig_err_g = plt.figure()
                         ax_err_g = fig_err_g.add_subplot(111)
                         ax_err_g.text(
                             0.5,
                             0.5,
-                            f"Plot gen for IC{comp_idx_detail}\nfailed.",
+                            "Plot gen for IC{}\nfailed.".format(comp_idx_detail),
                             ha="center",
                             va="center",
                         )
@@ -340,14 +346,14 @@ def generate_classification_report(
             d["CreationDate"] = datetime.now()
             d["ModDate"] = datetime.now()
 
-        logger.info(f"Successfully generated ICVision PDF report: {pdf_path}")
+        logger.info("Successfully generated ICVision PDF report: %s", pdf_path)
         return pdf_path
 
     except ImportError:
         logger.error("Matplotlib PdfPages not available. PDF report generation failed.")
         return None
     except Exception as e_pdf_main:
-        logger.error(f"Major error during PDF report generation: {e_pdf_main}")
+        logger.error("Major error during PDF report generation: %s", e_pdf_main)
         # import traceback
         # logger.error(traceback.format_exc()) # For detailed debugging if needed
         return None

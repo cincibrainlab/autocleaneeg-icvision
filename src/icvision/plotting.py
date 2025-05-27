@@ -113,12 +113,12 @@ def plot_component_for_classification(
 
         # Validate that we got valid data
         if len(component_data_array) == 0:
-            logger.error(f"No data available for IC{component_idx}")
+            logger.error("No data available for IC%d", component_idx)
             plt.close(fig)
             return None
 
     except Exception as e:
-        logger.error(f"Failed to get ICA sources for IC{component_idx}: {e}")
+        logger.error("Failed to get ICA sources for IC%d: %s", component_idx, e)
         plt.close(fig)
         return None
 
@@ -141,7 +141,7 @@ def plot_component_for_classification(
         ax_topo.set_xticks([])
         ax_topo.set_yticks([])
     except Exception as e:
-        logger.error(f"Error plotting topography for IC{component_idx}: {e}")
+        logger.error("Error plotting topography for IC%d: %s", component_idx, e)
         ax_topo.text(0.5, 0.5, "Topography plot failed", ha="center", va="center")
 
     # 2. Scrolling IC Activity (Time Series)
@@ -166,7 +166,9 @@ def plot_component_for_classification(
         ax_ts_scroll.grid(True, linestyle=":", alpha=0.6)
         ax_ts_scroll.tick_params(axis="both", which="major", labelsize=8)
     except Exception as e:
-        logger.error(f"Error plotting scrolling IC activity for IC{component_idx}: {e}")
+        logger.error(
+            "Error plotting scrolling IC activity for IC%d: %s", component_idx, e
+        )
         ax_ts_scroll.text(0.5, 0.5, "Time series plot failed", ha="center", va="center")
 
     # 3. Continuous Data (EEGLAB-style ERP image)
@@ -268,7 +270,9 @@ def plot_component_for_classification(
         cbar_cont.set_label("Activation (a.u.)", fontsize=8)
         cbar_cont.ax.tick_params(labelsize=7)
     except Exception as e_cont:
-        logger.error(f"Error plotting continuous data for IC{component_idx}: {e_cont}")
+        logger.error(
+            "Error plotting continuous data for IC%d: %s", component_idx, e_cont
+        )
         ax_cont_data.text(
             0.5, 0.5, "Continuous data plot failed", ha="center", va="center"
         )
@@ -292,8 +296,8 @@ def plot_component_for_classification(
 
         if n_fft_psd == 0 or fmax_psd <= fmin_psd:
             raise ValueError(
-                f"Cannot compute PSD for IC{component_idx}: Invalid params "
-                f"(n_fft={n_fft_psd}, fmin={fmin_psd}, fmax={fmax_psd})"
+                "Cannot compute PSD for IC%d: Invalid params (n_fft=%d, fmin=%s, fmax=%s)"
+                % (component_idx, n_fft_psd, fmin_psd, fmax_psd)
             )
 
         psds, freqs = psd_array_welch(
@@ -320,7 +324,7 @@ def plot_component_for_classification(
         ax_psd.grid(True, linestyle="--", alpha=0.5)
         ax_psd.tick_params(axis="both", which="major", labelsize=8)
     except Exception as e_psd:
-        logger.error(f"Error plotting PSD for IC{component_idx}: {e_psd}")
+        logger.error("Error plotting PSD for IC%d: %s", component_idx, e_psd)
         ax_psd.text(0.5, 0.5, "PSD plot failed", ha="center", va="center")
 
     fig.suptitle(main_plot_title_text, fontsize=14, y=suptitle_y_pos)
@@ -392,7 +396,7 @@ def plot_component_for_classification(
             )
         except ValueError:
             logger.warning(
-                f"Could not apply subplots_adjust for IC{component_idx} in PDF."
+                "Could not apply subplots_adjust for IC%d in PDF.", component_idx
             )
         return fig
     else:
@@ -410,9 +414,9 @@ def plot_component_for_classification(
                 left=0.05, right=0.95, bottom=0.05, top=0.93, hspace=0.7, wspace=0.35
             )
             plt.savefig(filepath, format="webp", bbox_inches="tight", pad_inches=0.1)
-            logger.debug(f"Saved component plot for API to {filepath}")
+            logger.debug("Saved component plot for API to %s", filepath)
         except Exception as e_save:
-            logger.error(f"Error saving API figure for IC{component_idx}: {e_save}")
+            logger.error("Error saving API figure for IC%d: %s", component_idx, e_save)
             plt.close(fig)
             return None
         finally:
@@ -457,7 +461,8 @@ def plot_components_batch(
     matplotlib.use("Agg", force=True)
 
     logger.info(
-        f"Plotting {len(component_indices)} components sequentially with enhanced error handling"
+        "Plotting %d components sequentially with enhanced error handling",
+        len(component_indices),
     )
 
     results_dict = {}
@@ -481,7 +486,9 @@ def plot_components_batch(
                 1, len(component_indices) // 10
             ) == 0 or completed_count == len(component_indices):
                 logger.info(
-                    f"Plotting progress: {completed_count}/{len(component_indices)} components completed"
+                    "Plotting progress: %d/%d components completed",
+                    completed_count,
+                    len(component_indices),
                 )
 
             # Periodic cleanup to prevent memory accumulation
@@ -493,7 +500,7 @@ def plot_components_batch(
                 gc.collect()
 
         except Exception as e:
-            logger.warning(f"Failed to plot component IC{component_idx}: {e}")
+            logger.warning("Failed to plot component IC%d: %s", component_idx, e)
             results_dict[component_idx] = None
             # Ensure cleanup even on failure
             plt.close("all")
@@ -503,7 +510,9 @@ def plot_components_batch(
 
     successful_plots = sum(1 for path in results_dict.values() if path is not None)
     logger.info(
-        f"Plotting completed: {successful_plots}/{len(component_indices)} components plotted successfully"
+        "Plotting completed: %d/%d components plotted successfully",
+        successful_plots,
+        len(component_indices),
     )
 
     return results_dict
@@ -530,11 +539,11 @@ def save_ica_data(
 
     try:
         ica_obj.save(output_path, overwrite=True)
-        logger.info(f"Updated ICA object saved to: {output_path}")
+        logger.info("Updated ICA object saved to: %s", output_path)
         return output_path
     except Exception as e:
-        logger.error(f"Failed to save ICA object to {output_path}: {e}")
-        raise RuntimeError(f"Failed to save ICA object: {e}")
+        logger.error("Failed to save ICA object to %s: %s", output_path, e)
+        raise RuntimeError("Failed to save ICA object: {}".format(e))
 
 
 def plot_ica_topographies_overview(
@@ -600,7 +609,9 @@ def plot_ica_topographies_overview(
                 ax_curr.set_title(f"IC{comp_idx_topo}", fontsize=9)
             except Exception as e_single_topo:
                 logger.warning(
-                    f"Could not plot topography for IC{comp_idx_topo} in overview: {e_single_topo}"
+                    "Could not plot topography for IC%d in overview: %s",
+                    comp_idx_topo,
+                    e_single_topo,
                 )
                 ax_curr.text(0.5, 0.5, "Error", ha="center", va="center")
                 ax_curr.set_title(f"IC{comp_idx_topo} (Err)", fontsize=9)
