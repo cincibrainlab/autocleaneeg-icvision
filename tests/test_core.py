@@ -21,6 +21,7 @@ from _pytest.tmpdir import TempPathFactory
 
 from icvision.config import (  # Removed DEFAULT_CONFIG, DEFAULT_EXCLUDE_LABELS
     COMPONENT_LABELS,
+    ICVISION_TO_MNE_LABEL_MAP,
 )
 from icvision.core import (
     _apply_artifact_rejection,
@@ -341,11 +342,13 @@ def test_update_ica_with_classifications(dummy_ica_data: mne.preprocessing.ICA) 
                 actual_mne_label_assigned = mne_label_cat
                 break
 
-        # This check assumes a direct mapping for test simplicity.
-        # Real mapping is in ICVISION_TO_MNE_LABEL_MAP
+        # Check mapping using ICVISION_TO_MNE_LABEL_MAP
+        expected_mne_label = ICVISION_TO_MNE_LABEL_MAP.get(
+            expected_label_for_comp, "other"
+        )
         assert (
-            actual_mne_label_assigned == expected_label_for_comp
-        ), f"IC{i} expected {expected_label_for_comp}, got {actual_mne_label_assigned}"
+            actual_mne_label_assigned == expected_mne_label
+        ), f"IC{i} expected {expected_mne_label}, got {actual_mne_label_assigned}"
 
         # Check scores (simplified check: score is 0.9 for its assigned OpenAI label)
         label_idx_in_openai_order = COMPONENT_LABELS.index(expected_label_for_comp)

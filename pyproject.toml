@@ -39,6 +39,7 @@ dependencies = [
     "numpy>=1.21.0",
     "matplotlib>=3.5.0",
     "scipy>=1.9.0",
+    "scikit-learn>=1.0.0",
     "Pillow>=9.0.0",
     "pathlib-mate>=1.0.0",
 ]

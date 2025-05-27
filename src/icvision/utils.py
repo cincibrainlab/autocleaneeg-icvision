@@ -225,7 +225,20 @@ def save_results(
         Path to the saved file.
     """
     output_path = output_dir / filename
-    results_df.to_csv(output_path, index=False)
+    if results_df.empty and len(results_df.columns) == 0:
+        # Create empty CSV with expected headers for completely empty dataframe
+        expected_columns = [
+            "component_index",
+            "component_name",
+            "label",
+            "confidence",
+            "reason",
+            "exclude_vision",
+        ]
+        empty_df_with_columns = pd.DataFrame(columns=expected_columns)
+        empty_df_with_columns.to_csv(output_path, index=False)
+    else:
+        results_df.to_csv(output_path, index=False)
     logger.debug("Results saved to: %s", output_path)
     return output_path
 
@@ -241,7 +254,17 @@ def format_summary_stats(results_df: pd.DataFrame) -> str:
         Formatted string summary.
     """
     if results_df.empty:
-        return "No classification results available."
+        summary_lines = [
+            "ICVision Classification Summary:",
+            "=" * 35,
+            "Total components classified: 0",
+            "Components marked for exclusion: 0",
+            "",
+            "Classification breakdown:",
+        ]
+        for label in COMPONENT_LABELS:
+            summary_lines.append(f"- {label.title()}: 0")
+        return "\n".join(summary_lines)
 
     total_components = len(results_df)
 
@@ -254,15 +277,16 @@ def format_summary_stats(results_df: pd.DataFrame) -> str:
     summary_lines = [
         "ICVision Classification Summary:",
         "=" * 35,
-        f"Total components analyzed: {total_components}",
+        f"Total components classified: {total_components}",
         f"Components marked for exclusion: {excluded_count}",
         "",
         "Classification breakdown:",
     ]
 
-    for label, count in label_counts.items():
-        percentage = (count / total_components) * 100
-        summary_lines.append(f"  {label:<15}: {count:3d} ({percentage:5.1f}%)")
+    # Show all labels, even if count is 0
+    for label in COMPONENT_LABELS:
+        count = label_counts.get(label, 0)
+        summary_lines.append(f"- {label.title()}: {count}")
 
     return "\n".join(summary_lines)
 
@@ -277,23 +301,46 @@ def validate_classification_results(results_df: pd.DataFrame) -> bool:
     Returns:
         True if results are valid, False otherwise.
     """
-    required_cols = {"component_index", "label", "confidence", "reason"}
+    required_cols = {
+        "component_index",
+        "label",
+        "confidence",
+        "reason",
+        "exclude_vision",
+    }
 
     # Check required columns
     if not required_cols.issubset(results_df.columns):
         missing = required_cols - set(results_df.columns)
-        raise ValueError("Missing required column(s) in results: {}".format(missing))
+        missing_col = next(
+            iter(missing)
+        )  # Get first missing column for specific error message
+        raise ValueError(f"Missing required column: {missing_col}")
 
     # Validate 'label' values
     invalid_labels = set(results_df["label"]) - set(COMPONENT_LABELS)
     if invalid_labels:
         logger.error("Invalid labels found in results: %s", invalid_labels)
-        return False
+        invalid_label = next(iter(invalid_labels))  # Get first invalid label
+        raise ValueError(f"Invalid label '{invalid_label}' found")
 
-    # Check confidence range
-    if not results_df["confidence"].between(0, 1).all():
-        logger.error("Confidence values must be between 0 and 1")
-        return False
+    # Check confidence range and type
+    try:
+        invalid_confidences = results_df[~results_df["confidence"].between(0, 1)]
+        if not invalid_confidences.empty:
+            logger.error("Confidence values must be between 0 and 1")
+            invalid_conf = invalid_confidences["confidence"].iloc[0]
+            if isinstance(invalid_conf, str):
+                raise ValueError(f"Confidence score '{invalid_conf}' is not a float")
+            else:
+                raise ValueError(
+                    f"Confidence score {invalid_conf:.2f} is outside the valid range"
+                )
+    except TypeError:
+        # Handle non-numeric confidence values
+        for idx, conf in results_df["confidence"].items():
+            if not isinstance(conf, (int, float)):
+                raise ValueError(f"Confidence score '{conf}' is not a float")
 
     logger.debug("Classification results validation passed")
     return True

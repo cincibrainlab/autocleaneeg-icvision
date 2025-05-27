@@ -248,8 +248,8 @@ def _update_ica_with_classifications(
 
     from .config import COMPONENT_LABELS, ICVISION_TO_MNE_LABEL_MAP
 
-    # Create a copy to avoid modifying the original
-    ica_updated = ica.copy()
+    # Modify ICA object in-place
+    ica_updated = ica
 
     # Initialize labels_scores_ array
     n_components = ica_updated.n_components_
@@ -323,14 +323,11 @@ def _apply_artifact_rejection(
     Returns:
         Cleaned raw data with artifacts removed.
     """
-    # Create a copy to avoid modifying the original
-    raw_cleaned = raw.copy()
-
-    # Apply ICA if there are components to exclude
+    # Apply ICA in-place if there are components to exclude
     if ica.exclude:
         logger.info("Applying ICA to remove %d components", len(ica.exclude))
-        ica.apply(raw_cleaned)
+        ica.apply(raw)
     else:
         logger.info("No components marked for exclusion, returning original data")
 
-    return raw_cleaned
+    return raw
