@@ -84,11 +84,7 @@ def classify_component_image_openai(
             completion = response.parsed
 
             resp_text = None
-            if (
-                completion.choices
-                and completion.choices[0].message
-                and completion.choices[0].message.content
-            ):
+            if completion.choices and completion.choices[0].message and completion.choices[0].message.content:
                 resp_text = completion.choices[0].message.content.strip()
 
             # Log response metadata if needed
@@ -99,9 +95,7 @@ def classify_component_image_openai(
             )
 
         if resp_text:
-            logger.debug(
-                "Raw OpenAI response for %s: '%s...'", image_path.name, resp_text[:100]
-            )
+            logger.debug("Raw OpenAI response for %s: '%s...'", image_path.name, resp_text[:100])
 
             # Regex to parse ("label", confidence, "reason") format
             labels_pattern = "|".join(re.escape(label) for label in COMPONENT_LABELS)
@@ -129,9 +123,7 @@ def classify_component_image_openai(
                     return (
                         "other_artifact",
                         1.0,
-                        "Unexpected label: {}. Parsed from: {}".format(
-                            label, resp_text
-                        ),
+                        "Unexpected label: {}. Parsed from: {}".format(label, resp_text),
                     )
 
                 confidence = float(match.group(2))
@@ -209,9 +201,7 @@ def _classify_single_component_wrapper(
         return comp_idx, "other_artifact", 1.0, "Plotting failed for this component"
 
     # Call the classification function and prepend component index to its result tuple
-    classification_result = classify_component_image_openai(
-        image_path, api_key, model_name, custom_prompt
-    )
+    classification_result = classify_component_image_openai(image_path, api_key, model_name, custom_prompt)
     return (comp_idx,) + classification_result
 
 
@@ -247,9 +237,7 @@ def classify_components_batch(
     Returns:
         pd.DataFrame with classification results for each component.
     """
-    logger.debug(
-        "Starting batch classification of %d components.", ica_obj.n_components_
-    )
+    logger.debug("Starting batch classification of %d components.", ica_obj.n_components_)
 
     if labels_to_exclude is None:
         labels_to_exclude = [lbl for lbl in COMPONENT_LABELS if lbl != "brain"]
@@ -281,24 +269,16 @@ def classify_components_batch(
         component_plot_args = []
         for i in range(num_components):
             image_path = plotting_results.get(i, None)
-            component_plot_args.append(
-                (i, image_path, api_key, model_name, custom_prompt)
-            )
+            component_plot_args.append((i, image_path, api_key, model_name, custom_prompt))
 
         processed_count = 0
         # Process in batches for concurrency management
-        with concurrent.futures.ThreadPoolExecutor(
-            max_workers=max_concurrency
-        ) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_concurrency) as executor:
             futures = []
             for i in range(0, len(component_plot_args), batch_size):
                 current_batch_args = component_plot_args[i : i + batch_size]
                 for single_arg_set in current_batch_args:
-                    futures.append(
-                        executor.submit(
-                            _classify_single_component_wrapper, single_arg_set
-                        )
-                    )
+                    futures.append(executor.submit(_classify_single_component_wrapper, single_arg_set))
 
             for future in concurrent.futures.as_completed(futures):
                 try:
@@ -308,9 +288,7 @@ def classify_components_batch(
                     # Fallback if future.result() fails unexpectedly for a component
                     # We need comp_idx, so we try to find it if possible, but it might not be in e.
                     # This is a safety net; errors should ideally be caught within the wrapper.
-                    logger.error(
-                        "Error processing a component future: %s. Defaulting result.", e
-                    )
+                    logger.error("Error processing a component future: %s. Defaulting result.", e)
                     # We don't know which comp_idx this was if the future itself failed badly.
                     # This case should be rare if _classify_single_component_wrapper is robust.
                     # To handle, we might need to track futures to args more directly or accept some loss.
@@ -319,9 +297,7 @@ def classify_components_batch(
 
                 mne_label = ICVISION_TO_MNE_LABEL_MAP.get(label, "other")
                 exclude_this_component = (
-                    auto_exclude
-                    and label in labels_to_exclude
-                    and confidence >= confidence_threshold
+                    auto_exclude and label in labels_to_exclude and confidence >= confidence_threshold
                 )
 
                 classification_results_list.append(

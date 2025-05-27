@@ -232,9 +232,7 @@ def label_components(
     return raw_cleaned, ica_updated, results_df
 
 
-def _update_ica_with_classifications(
-    ica: mne.preprocessing.ICA, results_df: pd.DataFrame
-) -> mne.preprocessing.ICA:
+def _update_ica_with_classifications(ica: mne.preprocessing.ICA, results_df: pd.DataFrame) -> mne.preprocessing.ICA:
     """
     Update ICA object with classification results.
 
@@ -270,9 +268,7 @@ def _update_ica_with_classifications(
     ica_updated.labels_scores_ = labels_scores_array
 
     # Update labels_ dictionary
-    ica_updated.labels_ = {
-        mne_label: [] for mne_label in ICVISION_TO_MNE_LABEL_MAP.values()
-    }
+    ica_updated.labels_ = {mne_label: [] for mne_label in ICVISION_TO_MNE_LABEL_MAP.values()}
 
     for comp_idx, row in results_df.iterrows():
         comp_idx = int(comp_idx)  # Index is component_index
@@ -312,9 +308,7 @@ def _update_ica_with_classifications(
     return ica_updated
 
 
-def _apply_artifact_rejection(
-    raw: mne.io.Raw, ica: mne.preprocessing.ICA
-) -> mne.io.Raw:
+def _apply_artifact_rejection(raw: mne.io.Raw, ica: mne.preprocessing.ICA) -> mne.io.Raw:
     """
     Apply ICA artifact rejection to raw data.
 
