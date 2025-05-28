@@ -8,7 +8,6 @@ batching image classification requests and parsing responses.
 import base64
 import concurrent.futures
 import logging
-import re
 import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, cast

@@ -17,6 +17,7 @@ from .config import DEFAULT_EXCLUDE_LABELS
 from .plotting import save_ica_data
 from .reports import generate_classification_report
 from .utils import (
+    check_eeglab_ica_availability,
     create_output_directory,
     format_summary_stats,
     load_ica_data,
@@ -33,7 +34,7 @@ logger = logging.getLogger(__name__)
 
 def label_components(
     raw_data: Union[str, Path, mne.io.Raw],
-    ica_data: Union[str, Path, mne.preprocessing.ICA],
+    ica_data: Optional[Union[str, Path, mne.preprocessing.ICA]] = None,
     api_key: Optional[str] = None,
     confidence_threshold: float = 0.8,
     auto_exclude: bool = True,
@@ -61,9 +62,11 @@ def label_components(
                  - Path to EEGLAB .set file
                  - Path to MNE .fif file
                  - Existing mne.io.Raw object
-        ica_data: ICA decomposition. Can be:
+        ica_data: ICA decomposition (optional if raw_data is .set file with ICA). Can be:
                  - Path to MNE .fif file containing ICA
+                 - Path to EEGLAB .set file containing ICA
                  - Existing mne.preprocessing.ICA object
+                 - None (auto-detects ICA from .set file if raw_data is .set format)
         api_key: OpenAI API key. If None, uses OPENAI_API_KEY environment variable.
         confidence_threshold: Minimum confidence for auto-exclusion (0.0-1.0).
         auto_exclude: Whether to automatically exclude classified artifact components.
@@ -87,7 +90,14 @@ def label_components(
         RuntimeError: If API calls fail or processing errors occur.
 
     Example:
-        >>> # Using file paths
+        >>> # Using EEGLAB .set file with auto-detected ICA
+        >>> raw, ica, results = label_components(
+        ...     raw_data="data/sub-01_eeg.set",  # ICA auto-detected from .set file
+        ...     api_key="sk-...",
+        ...     output_dir="results/"
+        ... )
+
+        >>> # Using separate files
         >>> raw, ica, results = label_components(
         ...     raw_data="data/sub-01_eeg.set",
         ...     ica_data="data/sub-01_ica.fif",
@@ -117,6 +127,29 @@ def label_components(
     # Load data
     try:
         raw = load_raw_data(raw_data)
+
+        # Auto-detect ICA from .set file if ica_data is None
+        if ica_data is None:
+            if isinstance(raw_data, (str, Path)):
+                raw_path = Path(raw_data)
+                if raw_path.suffix.lower() == ".set":
+                    logger.info("Attempting to auto-detect ICA data from EEGLAB .set file: %s", raw_path)
+                    if check_eeglab_ica_availability(raw_path):
+                        ica_data = raw_path
+                        logger.info("Successfully detected ICA data in .set file")
+                    else:
+                        raise ValueError(
+                            f"No ICA data found in .set file: {raw_path}. "
+                            "Please provide explicit ica_data parameter or ensure your .set file contains "
+                            "ICA decomposition."
+                        )
+                else:
+                    raise ValueError(
+                        "ica_data parameter is required when raw_data is not an EEGLAB .set file with ICA data"
+                    )
+            else:
+                raise ValueError("ica_data parameter is required when raw_data is an MNE object")
+
         ica = load_ica_data(ica_data)
     except Exception as e:
         logger.error("Failed to load input data: %s", e)

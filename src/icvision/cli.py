@@ -49,20 +49,26 @@ def main() -> None:
         epilog=(
             """
 Examples:
-  Basic usage:
+  Basic usage with EEGLAB .set file (auto-detects ICA):
+    icvision path/to/your_raw.set
+
+  Basic usage with separate files:
     icvision path/to/your_raw.set path/to/your_ica.fif
 
   With API key and custom output directory:
+    icvision raw_data.set --api-key YOUR_API_KEY --output-dir results/
+
+  Using separate ICA file:
     icvision raw_data.set ica_data.fif --api-key YOUR_API_KEY --output-dir results/
 
   Adjusting classification parameters:
-    icvision raw.set ica.fif -ct 0.7 --model gpt-4-vision-preview --batch-size 5
+    icvision raw.set -ct 0.7 --model gpt-4-vision-preview --batch-size 5
 
   Using a custom prompt file:
-    icvision raw.set ica.fif --prompt-file my_custom_prompt.txt
+    icvision raw.set --prompt-file my_custom_prompt.txt
 
   Disabling report generation:
-    icvision raw.set ica.fif --no-report
+    icvision raw.set --no-report
 
   For more help on a specific command or option, use: icvision <command> --help
 """
@@ -78,7 +84,10 @@ Examples:
     parser.add_argument(
         "ica_data_path",
         type=str,
-        help="Path to the ICA decomposition file (e.g., .fif).",
+        nargs="?",
+        default=None,
+        help="Path to the ICA decomposition file (e.g., .fif, .set). "
+        "Optional if raw_data_path is an EEGLAB .set file containing ICA data.",
     )
 
     # API and Model configuration

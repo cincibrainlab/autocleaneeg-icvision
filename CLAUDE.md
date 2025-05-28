@@ -92,7 +92,7 @@ ICVision is a Python package that automates ICA component classification for EEG
 
 ### Data Flow
 
-1. **Input**: Raw EEG data (.set/.fif) + ICA decomposition (.fif)
+1. **Input**: Raw EEG data (.set/.fif) + ICA decomposition (.fif/.set auto-detected)
 2. **Visualization**: Generate component plots for OpenAI API
 3. **Classification**: Parallel API calls with batching and error handling
 4. **Integration**: Update MNE ICA object with labels and exclusions
@@ -107,6 +107,7 @@ ICVision is a Python package that automates ICA component classification for EEG
 - **Error Resilience**: Comprehensive error handling with fallback classifications
 - **MNE Integration**: Seamless compatibility with MNE-Python data structures
 - **Flexible I/O**: Accepts both file paths and MNE objects as input
+- **EEGLAB Support**: Auto-detection of ICA data from .set files using `mne.preprocessing.read_ica_eeglab()`
 
 ## Testing Strategy
 

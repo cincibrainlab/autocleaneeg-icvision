@@ -81,11 +81,30 @@ def load_raw_data(raw_input: Union[str, Path, mne.io.BaseRaw]) -> mne.io.BaseRaw
     return raw
 
 
+def check_eeglab_ica_availability(set_file_path: Union[str, Path]) -> bool:
+    """
+    Check if an EEGLAB .set file contains ICA data.
+
+    Args:
+        set_file_path: Path to the EEGLAB .set file.
+
+    Returns:
+        True if ICA data is available, False otherwise.
+    """
+    try:
+        # Attempt to read ICA data from the .set file
+        mne.preprocessing.read_ica_eeglab(set_file_path)
+        return True
+    except Exception:
+        # If any exception occurs, assume ICA data is not available
+        return False
+
+
 def load_ica_data(ica_input: Union[str, Path, mne.preprocessing.ICA]) -> mne.preprocessing.ICA:
     """
     Load ICA data from file path or return existing ICA object.
 
-    Supports MNE .fif format for ICA objects.
+    Supports MNE .fif format and EEGLAB .set format for ICA objects.
 
     Args:
         ica_input: Either a file path (str/Path) or an existing mne.preprocessing.ICA object.
@@ -100,6 +119,7 @@ def load_ica_data(ica_input: Union[str, Path, mne.preprocessing.ICA]) -> mne.pre
 
     Example:
         >>> ica = load_ica_data("data/sub-01_task-rest_ica.fif")
+        >>> ica = load_ica_data("data/sub-01_task-rest_eeg.set")  # EEGLAB with ICA
         >>> ica = load_ica_data(existing_ica_object)
     """
     if isinstance(ica_input, mne.preprocessing.ICA):
@@ -117,8 +137,13 @@ def load_ica_data(ica_input: Union[str, Path, mne.preprocessing.ICA]) -> mne.pre
     if file_extension == ".fif":
         logger.debug("Loading MNE ICA from: %s", file_path)
         ica = mne.preprocessing.read_ica(file_path)
+    elif file_extension == ".set":
+        logger.debug("Loading EEGLAB ICA from: %s", file_path)
+        ica = mne.preprocessing.read_ica_eeglab(file_path)
     else:
-        raise ValueError("Unsupported ICA file format: {}. Supported formats: .fif (MNE)".format(file_extension))
+        raise ValueError(
+            "Unsupported ICA file format: {}. Supported formats: .fif (MNE), .set (EEGLAB)".format(file_extension)
+        )
 
     logger.info("Successfully loaded ICA: %d components", ica.n_components_)
     return ica
