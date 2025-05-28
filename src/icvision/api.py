@@ -251,9 +251,9 @@ def classify_components_batch(
         logger.warning("No ICA components found to classify.")
         return pd.DataFrame()
 
-    # Use a temporary directory if output_dir is not specified for images
+    # Always use a temporary directory for component images (keeps output dir clean)
     temp_dir_context = tempfile.TemporaryDirectory(prefix="icvision_temp_plots_")
-    image_output_path = output_dir if output_dir else Path(temp_dir_context.name)
+    image_output_path = Path(temp_dir_context.name)
 
     try:
         logger.debug("Generating component images in: %s", image_output_path)
@@ -338,9 +338,9 @@ def classify_components_batch(
         )
 
     finally:
-        if isinstance(temp_dir_context, tempfile.TemporaryDirectory):
-            temp_dir_context.cleanup()
-            logger.debug("Cleaned up temporary image directory.")
+        # Always cleanup temporary image directory
+        temp_dir_context.cleanup()
+        logger.debug("Cleaned up temporary image directory: %s", temp_dir_context.name)
 
     # Ensure results are sorted by component index for consistency
     classification_results_list.sort(key=lambda x: x["component_index"])
