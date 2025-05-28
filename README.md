@@ -235,5 +235,3 @@ If you use ICVision in your research, please consider citing it (details to be a
 
 *   This project relies heavily on the [MNE-Python](https://mne.tools/) library.
 *   Utilizes the [OpenAI API](https://openai.com/api/).
-
-*(Please replace `yourusername` with your actual GitHub username in URLs and examples.)*
