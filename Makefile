@@ -1,4 +1,4 @@
-.PHONY: help install install-dev lint format test coverage clean build publish docs
+.PHONY: help install install-dev lint format test coverage clean build publish docs docs-clean docs-live
 
 # Variables
 PYTHON = python3
@@ -21,7 +21,9 @@ help:
 	@echo "  clean           Remove build artifacts, bytecode, and cache files."
 	@echo "  build           Build the package (sdist and wheel)."
 	@echo "  publish         Publish the package to PyPI (requires twine and credentials)."
-	@echo "  docs            Build documentation (if Sphinx is set up in ./docs)."
+	@echo "  docs            Build documentation with Sphinx."
+	@echo "  docs-clean      Clean documentation build files."
+	@echo "  docs-live       Start live documentation server with auto-reload."
 
 # Installation
 install:
@@ -72,11 +74,28 @@ publish: build
 	@echo "Publishing package to PyPI... (Ensure you have Twine and credentials)"
 	$(PYTHON) -m twine upload dist/*
 
-# Documentation (Example - assumes Sphinx in ./docs)
+# Documentation
 docs:
-	@echo "Building documentation... (Assumes Sphinx is set up in ./docs)"
+	@echo "Building documentation with Sphinx..."
 	@if [ -d "docs" ] && [ -f "docs/Makefile" ]; then \
 		$(MAKE) -C docs html; \
+		@echo "Documentation built in docs/_build/html/"; \
 	else \
-		@echo "Docs directory or docs/Makefile not found. Skipping."; \
+		@echo "Error: docs directory or docs/Makefile not found."; \
+		exit 1; \
+	fi
+
+docs-clean:
+	@echo "Cleaning documentation build files..."
+	@if [ -d "docs" ] && [ -f "docs/Makefile" ]; then \
+		$(MAKE) -C docs clean; \
+	fi
+
+docs-live:
+	@echo "Starting live documentation server..."
+	@if [ -d "docs" ] && [ -f "docs/Makefile" ]; then \
+		$(MAKE) -C docs livehtml; \
+	else \
+		@echo "Error: docs directory or docs/Makefile not found."; \
+		exit 1; \
 	fi 

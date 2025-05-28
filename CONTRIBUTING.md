@@ -21,13 +21,13 @@ This document provides guidelines for contributing to ICVision. Please read it c
 
 ## Code of Conduct
 
-This project and everyone participating in it is governed by the [ICVision Code of Conduct](CODE_OF_CONDUCT.md) (to be created). By participating, you are expected to uphold this code. Please report unacceptable behavior to [project-contact@example.com](mailto:project-contact@example.com) (replace with actual contact).
+By participating in this project, you are expected to uphold professional and respectful behavior. Please report unacceptable behavior to [gavin.gammoh@cchmc.org](mailto:gavin.gammoh@cchmc.org) or [nathan.suer@cchmc.org](mailto:nathan.suer@cchmc.org).
 
 ## How Can I Contribute?
 
 ### Reporting Bugs
 
-Bugs are tracked as [GitHub issues](https://github.com/yourusername/icvision/issues). If you find a bug, please ensure the bug has not already been reported by searching the issues. If you're unable to find an open issue addressing the problem, open a new one. Be sure to include a title and clear description, as much relevant information as possible, and a code sample or an executable test case demonstrating the expected behavior that is not occurring.
+Bugs are tracked as [GitHub issues](https://github.com/cincibrainlab/ICVision/issues). If you find a bug, please ensure the bug has not already been reported by searching the issues. If you're unable to find an open issue addressing the problem, open a new one. Be sure to include a title and clear description, as much relevant information as possible, and a code sample or an executable test case demonstrating the expected behavior that is not occurring.
 
 When reporting a bug, please include:
 
@@ -42,7 +42,7 @@ When reporting a bug, please include:
 
 ### Suggesting Enhancements
 
-Enhancement suggestions are tracked as [GitHub issues](https://github.com/yourusername/icvision/issues).
+Enhancement suggestions are tracked as [GitHub issues](https://github.com/cincibrainlab/ICVision/issues).
 
 When suggesting an enhancement, please include:
 
@@ -55,22 +55,22 @@ When suggesting an enhancement, please include:
 
 Unsure where to begin contributing to ICVision? You can start by looking through these `good first issue` and `help wanted` issues:
 
--   [Good first issues](https://github.com/yourusername/icvision/labels/good%20first%20issue) - issues which should only require a few lines of code, and a test or two.
--   [Help wanted issues](https://github.com/yourusername/icvision/labels/help%20wanted) - issues which should be a bit more involved than `good first issues`.
+-   [Good first issues](https://github.com/cincibrainlab/ICVision/labels/good%20first%20issue) - issues which should only require a few lines of code, and a test or two.
+-   [Help wanted issues](https://github.com/cincibrainlab/ICVision/labels/help%20wanted) - issues which should be a bit more involved than `good first issues`.
 
 ### Pull Requests
 
 When you're ready to contribute code, follow these steps:
 
 1.  **Fork the repository** on GitHub.
-2.  **Clone your fork** locally: `git clone https://github.com/your-username/icvision.git`
+2.  **Clone your fork** locally: `git clone https://github.com/your-username/ICVision.git`
 3.  **Create a new branch** for your changes: `git checkout -b feature/your-feature-name` or `bugfix/issue-number`.
 4.  **Set up your development environment** (see [Development Setup](#development-setup)).
 5.  **Make your changes**. Ensure your code follows the [Style Guides](#style-guides).
 6.  **Add tests** for your changes. Ensure all tests pass (see [Testing](#testing)).
 7.  **Commit your changes** with a descriptive commit message (see [Commit Messages](#commit-messages)).
 8.  **Push your branch** to your fork on GitHub: `git push origin feature/your-feature-name`.
-9.  **Open a pull request** to the `main` branch of the `yourusername/icvision` repository.
+9.  **Open a pull request** to the `main` branch of the `cincibrainlab/ICVision` repository.
     -   Provide a clear title and description for your pull request.
     -   Reference any relevant issues (e.g., "Closes #123").
     -   Ensure all CI checks pass.
@@ -80,7 +80,7 @@ When you're ready to contribute code, follow these steps:
 ### Python Code Style
 
 -   Follow [PEP 8](https://www.python.org/dev/peps/pep-0008/) for Python code.
--   Use **Black** for code formatting. This is enforced by pre-commit hooks.
+-   Use **Black** for code formatting with 120 character line length. This is enforced by pre-commit hooks.
 -   Use **Flake8** for linting. This is also enforced by pre-commit hooks.
 -   Use **MyPy** for static type checking.
 -   Write clear, concise, and well-commented code. Docstrings should follow [PEP 257](https://www.python.org/dev/peps/pep-0257/), using the Google style for docstrings (as generally used in MNE-Python).
@@ -93,8 +93,6 @@ When you're ready to contribute code, follow these steps:
 -   Reference issue numbers if applicable (e.g., `fix: correct data loading for .edf files (closes #42)`).
 
 ## Development Setup
-
-As outlined in the `README.md`:
 
 1.  Clone your fork of the repository.
 2.  Create and activate a virtual environment:
@@ -112,24 +110,58 @@ As outlined in the `README.md`:
     ```
     Now, `black`, `flake8`, and other checks will run automatically before each commit.
 
+### Using Makefile (Recommended)
+
+The project includes a Makefile for common development tasks:
+
+```bash
+# Install in development mode with all dependencies
+make install-dev
+
+# Format code (black + isort)
+make format
+
+# Run linters (flake8 + mypy)
+make lint
+
+# Run tests
+make test
+
+# Run tests with coverage
+make coverage
+```
+
 ## Testing
 
 ICVision uses `pytest` for testing.
 
+### Quick Testing
 -   Run all tests:
     ```bash
     pytest
+    # OR using Makefile:
+    make test
     ```
 -   Run tests with coverage report:
     ```bash
-    pytest --cov=src/icvision --cov-report=html
+    pytest --cov=icvision --cov-report=html
+    # OR using Makefile:
+    make coverage
     ```
     (Open `htmlcov/index.html` in your browser to view the report.)
 -   Run tests for a specific file or directory:
     ```bash
     pytest tests/test_utils.py
     ```
--   Run tests with `tox` to check against multiple Python versions (if configured in `tox.ini`):
+
+### Comprehensive Testing
+-   **IMPORTANT**: Before submitting a PR, run the comprehensive CI test script:
+    ```bash
+    ./test_ci.sh
+    ```
+    This runs the same checks as GitHub Actions (formatting, linting, type checking, tests).
+
+-   Run tests with `tox` to check against multiple Python versions:
     ```bash
     tox
     ```
@@ -143,5 +175,3 @@ If you have questions or need to discuss something, you can:
 -   (If applicable, add other contact methods like a mailing list or chat channel.)
 
 Thank you for contributing to ICVision!
-
-*(Please replace `yourusername` and `project-contact@example.com` with actual details.)*

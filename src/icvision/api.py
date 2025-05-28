@@ -62,15 +62,34 @@ def classify_component_image_openai(
         client = openai.OpenAI(api_key=api_key)
         logger.debug("Sending %s to OpenAI (model: %s)...", image_path.name, model_name)
 
-        with client.responses.create(
+        # Define JSON schema for structured output
+        response_format = {
+            "type": "json_schema",
+            "json_schema": {
+                "name": "component_classification",
+                "strict": True,
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "label": {"type": "string", "enum": COMPONENT_LABELS},
+                        "confidence": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+                        "reason": {"type": "string", "description": "Detailed reasoning for the classification"},
+                    },
+                    "required": ["label", "confidence", "reason"],
+                    "additionalProperties": False,
+                },
+            },
+        }
+
+        response = client.chat.completions.create(
             model=model_name,
-            input=[
+            messages=[
                 {
                     "role": "user",
                     "content": [
-                        {"type": "input_text", "text": prompt_to_use},
+                        {"type": "text", "text": prompt_to_use},
                         {
-                            "type": "input_image",
+                            "type": "image_url",
                             "image_url": {
                                 "url": f"data:image/webp;base64,{base64_image}",
                             },
@@ -78,77 +97,62 @@ def classify_component_image_openai(
                     ],
                 }
             ],
+            response_format=response_format,
             temperature=0.2,  # Low temperature for more deterministic output
-        ) as response:
-            # Access the parsed response data
-            completion = response.parsed
+        )
 
-            resp_text = None
-            if completion.choices and completion.choices[0].message and completion.choices[0].message.content:
-                resp_text = completion.choices[0].message.content.strip()
+        # Parse structured response
+        if response and response.choices and response.choices[0].message:
+            message_content = response.choices[0].message.content
+            if message_content:
+                try:
+                    import json
 
-            # Log response metadata if needed
-            logger.debug(
-                "Response ID: %s, Usage: %s",
-                completion.id,
-                getattr(completion, "usage", "N/A"),
-            )
+                    structured_response = json.loads(message_content)
 
-        if resp_text:
-            logger.debug("Raw OpenAI response for %s: '%s...'", image_path.name, resp_text[:100])
+                    label = structured_response.get("label", "").lower()
+                    confidence = float(structured_response.get("confidence", 0.0))
+                    reason = structured_response.get("reason", "")
 
-            # Regex to parse ("label", confidence, "reason") format
-            labels_pattern = "|".join(re.escape(label) for label in COMPONENT_LABELS)
-            # Concatenate all parts of the regex pattern into a single string
-            regex_pattern = (
-                r"^\\s*\\(\\s*"
-                r"['\"]?(" + labels_pattern + r")['\"]?"  # Group 1: Label
-                r"\\s*,\\s*"
-                r"([01](?:\\.\\d+)?)"  # Group 2: Confidence (0.0-1.0)
-                r"\\s*,\\s*"
-                r"['\"](.*?)['\"]"  # Group 3: Reasoning (non-greedy)
-                r"\\s*\\)\\s*$"
-            )
-            match = re.search(regex_pattern, resp_text, re.IGNORECASE | re.DOTALL)
+                    # Validate label
+                    if label not in COMPONENT_LABELS:
+                        logger.warning(
+                            "OpenAI returned unexpected label '%s' for %s. Falling back to other_artifact.",
+                            label,
+                            image_path.name,
+                        )
+                        return "other_artifact", 1.0, f"Invalid label '{label}' returned. Reason: {reason}"
 
-            if match:
-                label = match.group(1).lower()
-                if label not in COMPONENT_LABELS:
-                    logger.warning(
-                        "OpenAI returned an unexpected label '%s' not in COMPONENT_LABELS for %s. Raw: '%s'",
-                        label,
+                    # Validate confidence range
+                    confidence = max(0.0, min(1.0, confidence))
+
+                    logger.debug(
+                        "Structured classification for %s: Label=%s, Conf=%.2f",
                         image_path.name,
-                        resp_text,
-                    )
-                    return (
-                        "other_artifact",
-                        1.0,
-                        "Unexpected label: {}. Parsed from: {}".format(label, resp_text),
+                        label,
+                        confidence,
                     )
 
-                confidence = float(match.group(2))
-                reason = match.group(3).strip().replace('\\"', '"').replace("\\'", "'")
-                logger.debug(
-                    "Parsed classification for %s: Label=%s, Conf=%.2f",
-                    image_path.name,
-                    label,
-                    confidence,
-                )
-                return label, confidence, reason
-            else:
-                logger.warning(
-                    "Could not parse OpenAI response for %s: '%s'. Defaulting.",
-                    image_path.name,
-                    resp_text,
-                )
-                return (
-                    "other_artifact",
-                    1.0,
-                    "Failed to parse response: {}".format(resp_text),
-                )
-        else:
-            logger.error("No text content in OpenAI response for %s", image_path.name)
-            return "other_artifact", 1.0, "Invalid response (no text content)"
+                    # Log response metadata
+                    logger.debug(
+                        "Response ID: %s, Usage: %s",
+                        getattr(response, "id", "N/A"),
+                        getattr(response, "usage", "N/A"),
+                    )
+
+                    return label, confidence, reason
+
+                except (json.JSONDecodeError, KeyError, ValueError) as e:
+                    logger.error(
+                        "Failed to parse structured response for %s: %s. Content: %s",
+                        image_path.name,
+                        e,
+                        message_content[:200],
+                    )
+                    return "other_artifact", 1.0, f"JSON parsing error: {str(e)}"
+
+        logger.error("No valid structured content in OpenAI response for %s", image_path.name)
+        return "other_artifact", 1.0, "No valid structured response content"
 
     except openai.APIConnectionError as e:
         logger.error("OpenAI API connection error for %s: %s", image_path.name, e)

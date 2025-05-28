@@ -89,60 +89,22 @@ You can also use ICVision programmatically within your Python scripts.
 
 ```python
 from pathlib import Path
-import mne
 from icvision.core import label_components
-from icvision.utils import load_raw_data, load_ica_data
 
 # --- Configuration ---
 API_KEY = "your_openai_api_key"  # Or set as environment variable OPENAI_API_KEY
-RAW_DATA_PATH = Path("path/to/your_raw_data.set")
-ICA_DATA_PATH = Path("path/to/your_ica_data.fif")
+RAW_DATA_PATH = "path/to/your_raw_data.set"
+ICA_DATA_PATH = "path/to/your_ica_data.fif"
 OUTPUT_DIR = Path("icvision_output")
-
-# --- Load Data (Example) ---
-# In a real scenario, load your actual MNE Raw and ICA objects or paths to them.
-# For demonstration, we create dummy data if files don't exist.
-
-# Create dummy raw data if it doesn't exist (replace with your actual loading)
-def get_or_create_dummy_raw(raw_path, sfreq=250, n_ch=10, n_sec=20):
-    if raw_path.exists():
-        return load_raw_data(raw_path)
-    print(f"Dummy raw data not found at {raw_path}, creating one.")
-    ch_names = [f"EEG {i:03}" for i in range(n_ch)]
-    data = np.random.randn(n_ch, n_sec * sfreq)
-    info = mne.create_info(ch_names=ch_names, sfreq=sfreq, ch_types=['eeg'] * n_ch)
-    raw = mne.io.RawArray(data, info)
-    raw.set_montage("standard_1020")
-    raw_path.parent.mkdir(parents=True, exist_ok=True)
-    raw.save(raw_path, overwrite=True)
-    return raw
-
-# Create dummy ICA data if it doesn't exist (replace with your actual loading)
-def get_or_create_dummy_ica(ica_path, raw_obj, n_comps=5):
-    if ica_path.exists():
-        return load_ica_data(ica_path)
-    print(f"Dummy ICA data not found at {ica_path}, creating one.")
-    ica = mne.preprocessing.ICA(n_components=n_comps, random_state=42, max_iter='auto')
-    ica.fit(raw_obj.copy().pick_types(eeg=True))
-    ica_path.parent.mkdir(parents=True, exist_ok=True)
-    ica.save(ica_path, overwrite=True)
-    return ica
-
-# Ensure parent directory for dummy data exists for the example
-if not RAW_DATA_PATH.parent.exists(): RAW_DATA_PATH.parent.mkdir(parents=True, exist_ok=True)
-if not ICA_DATA_PATH.parent.exists(): ICA_DATA_PATH.parent.mkdir(parents=True, exist_ok=True)
-
-raw_input_data = get_or_create_dummy_raw(RAW_DATA_PATH)
-ica_input_data = get_or_create_dummy_ica(ICA_DATA_PATH, raw_input_data)
 
 # --- Run ICVision ---
 try:
     raw_cleaned, ica_updated, results_df = label_components(
-        raw_data=raw_input_data,         # Can be MNE object or path string/Path object
-        ica_data=ica_input_data,         # Can be MNE object or path string/Path object
+        raw_data=RAW_DATA_PATH,          # Can be MNE object or path string/Path object
+        ica_data=ICA_DATA_PATH,          # Can be MNE object or path string/Path object
         api_key=API_KEY,                 # Optional if OPENAI_API_KEY env var is set
         output_dir=OUTPUT_DIR,
-        model_name="gpt-4.1",          # Specify the model
+        model_name="gpt-4.1",            # Specify the model
         confidence_threshold=0.80,       # Components with confidence >= 0.8 for specified labels will be excluded
         labels_to_exclude=["eye", "muscle", "heart", "line_noise", "channel_noise"],
         generate_report=True,            # Generate a PDF report
@@ -164,8 +126,6 @@ try:
 
 except Exception as e:
     print(f"An error occurred: {e}")
-    # import traceback
-    # print(traceback.format_exc()) # For detailed debugging
 
 ```
 

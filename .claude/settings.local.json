@@ -14,7 +14,11 @@
       "Bash(isort:*)",
       "Bash(tox:*)",
       "Bash(black:*)",
-      "Bash(pytest:*)"
+      "Bash(pytest:*)",
+      "Bash(./test_ci.sh:*)",
+      "WebFetch(domain:platform.openai.com)",
+      "WebFetch(domain:cookbook.openai.com)",
+      "Bash(ls:*)"
     ],
     "deny": []
   }
