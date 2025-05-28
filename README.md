@@ -1,4 +1,4 @@
-# ICVision
+# Autoclean EEG ICVision (Standalone)
 
 [![PyPI version](https://badge.fury.io/py/icvision.svg)](https://badge.fury.io/py/icvision)
 [![Python versions](https://img.shields.io/pypi/pyversions/icvision.svg)](https://pypi.org/project/icvision/)
