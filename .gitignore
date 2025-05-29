@@ -178,3 +178,7 @@ docs/your_package.rst
 *.prof
 .benchmarks/ 
 /icvision_results
+
+# Claude Code files
+.claude/
+CLAUDE.md
