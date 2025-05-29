@@ -1,7 +1,7 @@
 # Autoclean EEG ICVision (Standalone)
 
-[![PyPI version](https://badge.fury.io/py/icvision.svg)](https://badge.fury.io/py/icvision)
-[![Python versions](https://img.shields.io/pypi/pyversions/icvision.svg)](https://pypi.org/project/icvision/)
+[![PyPI version](https://badge.fury.io/py/autoclean-icvision.svg)](https://badge.fury.io/py/autoclean-icvision)
+[![Python versions](https://img.shields.io/pypi/pyversions/autoclean-icvision.svg)](https://pypi.org/project/autoclean-icvision/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
@@ -25,7 +25,7 @@ ICVision automates the tedious process of classifying ICA components from EEG da
 ## Installation
 
 ```bash
-pip install icvision
+pip install autoclean-icvision
 ```
 
 **Requirements**: Python 3.8+ and OpenAI API key with vision model access (e.g., `gpt-4.1`)

@@ -122,7 +122,7 @@ minversion = "7.0"
 addopts = [
     "--strict-markers",
     "--strict-config",
-    "--cov=icvision",
+    "--cov=src/icvision",
     "--cov-report=term-missing",
     "--cov-report=html",
     "--cov-report=xml",
@@ -134,7 +134,7 @@ markers = [
 ]
 
 [tool.coverage.run]
-source = ["icvision"]
+source = ["src/icvision"]
 branch = true
 
 [tool.coverage.report]

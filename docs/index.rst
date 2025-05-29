@@ -1,12 +1,12 @@
 ICVision Documentation
 ======================
 
-.. image:: https://badge.fury.io/py/icvision.svg
-   :target: https://badge.fury.io/py/icvision
+.. image:: https://badge.fury.io/py/autoclean-icvision.svg
+   :target: https://badge.fury.io/py/autoclean-icvision
    :alt: PyPI version
 
-.. image:: https://img.shields.io/pypi/pyversions/icvision.svg
-   :target: https://pypi.org/project/icvision/
+.. image:: https://img.shields.io/pypi/pyversions/autoclean-icvision.svg
+   :target: https://pypi.org/project/autoclean-icvision/
    :alt: Python versions
 
 .. image:: https://img.shields.io/badge/License-MIT-yellow.svg
@@ -44,7 +44,7 @@ Installation
 
 .. code-block:: bash
 
-   pip install icvision
+   pip install autoclean-icvision
 
 Set your OpenAI API key:
 
