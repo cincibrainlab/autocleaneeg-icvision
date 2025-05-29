@@ -21,6 +21,7 @@ ICVision automates the tedious process of classifying ICA components from EEG da
 - **Smart file organization**: Basename-prefixed output files prevent overwrites when processing multiple datasets
 - **Continuous data only**: Graceful error handling for epoched data with helpful conversion instructions
 - **Enhanced PDF reports**: Professional dual-header layout with color-coded classification results
+- **OpenAI cost tracking**: Automatic cost estimation and logging for budget monitoring
 - Parallel processing with configurable batch sizes
 - Command-line and Python API interfaces
 - Comprehensive PDF reports and CSV results
@@ -280,6 +281,22 @@ The default prompt is optimized for EEG component classification on EGI128 nets.
 - **CLI**: `--prompt-file /path/to/custom_prompt.txt`
 - **Python API**: `custom_prompt="Your custom prompt here"`
 - **View default**: Check `src/icvision/config.py`
+
+### OpenAI API Costs
+
+ICVision automatically tracks and estimates OpenAI API costs during processing:
+
+**Typical Costs (2025-05-29 pricing)**:
+- **gpt-4.1**: ~$0.0012 per component
+- **gpt-4.1-mini**: ~$0.0002 per component (recommended)
+- **gpt-4.1-nano**: ~$0.0001 per component (budget option)
+
+**Example costs for full ICA analysis**:
+- 10 components: $0.0006-0.012 depending on model
+- 30 components: $0.002-0.036 depending on model
+- 64 components: $0.004-0.077 depending on model
+
+Cost estimates are automatically logged during processing. Use `--verbose` flag to see detailed per-component cost tracking.
 
 ## Development
 
