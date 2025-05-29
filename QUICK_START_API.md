@@ -96,7 +96,7 @@ icvision /path/to/raw_data.set /path/to/ica_data.fif \
 
 **Cost-Saving Tips**:
 - Start with small datasets to test
-- Use `--model gpt-4-vision-preview` for testing (cheaper)
+- Use `--model gpt-4.1-mini` for testing (cheaper)
 - Monitor usage in OpenAI dashboard
 
 ## 🔗 Full Documentation

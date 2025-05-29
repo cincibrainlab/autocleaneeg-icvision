@@ -76,7 +76,7 @@ def label_components(
         generate_report: Whether to generate PDF report with visualizations.
         batch_size: Number of components to classify per API request (1-20).
         max_concurrency: Maximum concurrent API requests (1-10).
-        model_name: OpenAI model to use (e.g., 'gpt-4.1', 'gpt-4-vision-preview').
+        model_name: OpenAI model to use (e.g., 'gpt-4.1', 'gpt-4.1-mini').
         custom_prompt: Custom classification prompt. If None, uses default.
 
     Returns:

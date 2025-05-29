@@ -324,7 +324,7 @@ If you see the help text without API key errors, you're all set!
 ### Q: What models should I use?
 **A**: For research:
 - **gpt-4.1**: Best accuracy, higher cost (recommended for final analyses)
-- **gpt-4-vision-preview**: Good accuracy, lower cost (good for testing)
+- **gpt-4.1-mini**: Good accuracy, lower cost (good for testing)
 
 ## 📞 Getting Help
 

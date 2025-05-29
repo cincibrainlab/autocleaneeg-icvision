@@ -71,7 +71,7 @@ Examples:
     autoclean-icvision raw_data.set ica_data.fif --api-key YOUR_API_KEY --output-dir results/
 
   Adjusting classification parameters:
-    autoclean-icvision raw.set -ct 0.7 --model gpt-4-vision-preview --batch-size 5
+    autoclean-icvision raw.set -ct 0.7 --model gpt-4.1 --batch-size 5
 
   Using a custom prompt file:
     autoclean-icvision raw.set --prompt-file my_custom_prompt.txt

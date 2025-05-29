@@ -521,7 +521,7 @@ To help with budgeting:
 - **Large dataset** (100+ components): $0.50 - $2.00+
 
 Costs depend on:
-- Model used (gpt-4.1 vs gpt-4-vision-preview)
+- Model used (gpt-4.1 vs gpt-4.1-mini)
 - Image complexity
 - OpenAI pricing (changes over time)
 

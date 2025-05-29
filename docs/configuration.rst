@@ -23,7 +23,7 @@ Model Settings
    OpenAI model to use for classification. Recommended models:
    
    - ``gpt-4.1``: Latest vision model with best performance
-   - ``gpt-4-vision-preview``: Alternative vision model
+   - ``gpt-4.1-mini``: More cost-effective vision model
 
 ``confidence_threshold`` (float, default: 0.8)
    Minimum confidence required for automatic component exclusion.

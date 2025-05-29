@@ -394,7 +394,7 @@ Understanding Costs
 
 **Cost-Saving Tips**:
 - Start with smaller datasets to test
-- Use ``gpt-4-vision-preview`` for testing (cheaper than ``gpt-4.1``)
+- Use ``gpt-4.1-mini`` for testing (cheaper than ``gpt-4.1``)
 - Set usage limits in your OpenAI account
 
 **Monitoring Usage**:
