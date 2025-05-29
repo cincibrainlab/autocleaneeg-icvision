@@ -8,7 +8,7 @@ that support the main functionality of the ICVision package.
 import logging
 import os
 from pathlib import Path
-from typing import Optional, Union
+from typing import Dict, Optional, Union
 
 import mne
 import pandas as pd
@@ -58,8 +58,14 @@ def load_raw_data(raw_input: Union[str, Path, mne.io.BaseRaw]) -> mne.io.BaseRaw
     if file_extension == ".set":
         logger.debug("Loading EEGLAB data from: %s", file_path)
         try:
-            # First try to read as raw data
-            raw = mne.io.read_raw_eeglab(file_path, preload=True)
+            # Suppress MNE montage warnings for cleaner output
+            import warnings
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", 
+                                      message="Not setting positions.*eog channels.*montage",
+                                      category=RuntimeWarning)
+                # First try to read as raw data
+                raw = mne.io.read_raw_eeglab(file_path, preload=True)
         except TypeError as e:
             # Check if the error is due to epoched data
             if "trials" in str(e).lower() and "epochs" in str(e).lower():
@@ -109,8 +115,14 @@ def check_eeglab_ica_availability(set_file_path: Union[str, Path]) -> bool:
         True if ICA data is available, False otherwise.
     """
     try:
-        # Attempt to read ICA data from the .set file
-        ica = mne.preprocessing.read_ica_eeglab(set_file_path)
+        # Suppress MNE montage warnings for cleaner output
+        import warnings
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", 
+                                  message="Not setting positions.*eog channels.*montage",
+                                  category=RuntimeWarning)
+            # Attempt to read ICA data from the .set file
+            ica = mne.preprocessing.read_ica_eeglab(set_file_path)
         # Additional check to ensure ICA was actually fitted
         if hasattr(ica, "n_components_") and ica.n_components_ > 0:
             return True
@@ -168,7 +180,13 @@ def load_ica_data(ica_input: Union[str, Path, mne.preprocessing.ICA]) -> mne.pre
     elif file_extension == ".set":
         logger.debug("Loading EEGLAB ICA from: %s", file_path)
         try:
-            ica = mne.preprocessing.read_ica_eeglab(file_path)
+            # Suppress MNE montage warnings for cleaner output
+            import warnings
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", 
+                                      message="Not setting positions.*eog channels.*montage",
+                                      category=RuntimeWarning)
+                ica = mne.preprocessing.read_ica_eeglab(file_path)
         except Exception as e:
             error_msg = str(e).lower()
             if "ica" in error_msg or "component" in error_msg or "no ica" in error_msg:
@@ -461,6 +479,59 @@ def validate_classification_results(results_df: pd.DataFrame) -> bool:
 
     logger.debug("Classification results validation passed")
     return True
+
+
+def calculate_openai_cost(
+    input_tokens: int,
+    output_tokens: int, 
+    model_name: str,
+    cached_tokens: int = 0
+) -> Dict[str, float]:
+    """
+    Calculate OpenAI API costs based on token usage.
+
+    Args:
+        input_tokens: Number of input tokens used.
+        output_tokens: Number of output tokens generated.
+        model_name: OpenAI model name (e.g., "gpt-4.1", "gpt-4.1-mini").
+        cached_tokens: Number of cached input tokens (if any).
+
+    Returns:
+        Dictionary with cost breakdown: {"input_cost", "output_cost", "total_cost"}
+        All costs in USD.
+    """
+    from .config import OPENAI_PRICING
+    
+    # Normalize model name for pricing lookup
+    pricing_key = model_name.lower()
+    if pricing_key not in OPENAI_PRICING:
+        # Try without version suffix for compatibility
+        base_model = pricing_key.split('-')[0] + '-' + pricing_key.split('-')[1]
+        if base_model in OPENAI_PRICING:
+            pricing_key = base_model
+        else:
+            logger.warning("Unknown model '%s' for cost calculation, using gpt-4.1 pricing", model_name)
+            pricing_key = "gpt-4.1"
+    
+    pricing = OPENAI_PRICING[pricing_key]
+    
+    # Calculate costs (pricing is per 1M tokens)
+    regular_input_tokens = max(0, input_tokens - cached_tokens)
+    
+    input_cost = (regular_input_tokens * pricing["input"] / 1_000_000) + \
+                 (cached_tokens * pricing["cached_input"] / 1_000_000)
+    output_cost = output_tokens * pricing["output"] / 1_000_000
+    total_cost = input_cost + output_cost
+    
+    return {
+        "input_cost": round(input_cost, 6),
+        "output_cost": round(output_cost, 6), 
+        "total_cost": round(total_cost, 6),
+        "model": pricing_key,
+        "input_tokens": input_tokens,
+        "output_tokens": output_tokens,
+        "cached_tokens": cached_tokens
+    }
 
 
 def save_cleaned_raw_data(

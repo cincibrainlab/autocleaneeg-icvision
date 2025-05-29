@@ -239,6 +239,13 @@ Examples:
 
     logger.info("Starting ICVision CLI v%s", __version__)
     logger.info("Processing Raw: %s, ICA: %s", args.raw_data_path, args.ica_data_path)
+    
+    # Suppress MNE montage warnings globally for cleaner CLI output
+    # These warnings about EOG channel positions don't affect ICA classification
+    import warnings
+    warnings.filterwarnings("ignore", 
+                          message="Not setting positions.*eog channels.*montage",
+                          category=RuntimeWarning)
 
     try:
         raw_cleaned, ica_updated, results_df = label_components(

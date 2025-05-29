@@ -119,6 +119,13 @@ def label_components(
         >>> print(f"Excluded {results['exclude_vision'].sum()} artifacts")
     """
     logger.debug("Starting ICVision component classification workflow")
+    
+    # Suppress MNE montage warnings for cleaner output
+    # These warnings about EOG channel positions don't affect ICA classification
+    import warnings
+    warnings.filterwarnings("ignore", 
+                          message="Not setting positions.*eog channels.*montage",
+                          category=RuntimeWarning)
 
     # Step 1: Validate and prepare inputs
     logger.debug("Loading and validating input data...")

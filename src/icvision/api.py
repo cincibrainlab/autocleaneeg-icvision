@@ -140,12 +140,35 @@ def classify_component_image_openai(
                         confidence,
                     )
 
-                    # Log response metadata (updated for new API structure)
-                    logger.debug(
-                        "Response ID: %s, Usage: %s",
-                        getattr(response, "id", "N/A"),
-                        getattr(response, "usage", "N/A"),
-                    )
+                    # Log response metadata and calculate costs (updated for new API structure)
+                    usage = getattr(response, "usage", None)
+                    if usage:
+                        from .utils import calculate_openai_cost
+                        
+                        input_tokens = getattr(usage, "input_tokens", 0)
+                        output_tokens = getattr(usage, "output_tokens", 0)
+                        cached_tokens = getattr(getattr(usage, "input_tokens_details", None), "cached_tokens", 0) or 0
+                        
+                        cost_info = calculate_openai_cost(
+                            input_tokens=input_tokens,
+                            output_tokens=output_tokens,
+                            model_name=model_name,
+                            cached_tokens=cached_tokens
+                        )
+                        
+                        logger.debug(
+                            "Response ID: %s, Tokens: %d in/%d out/%d cached, Cost: $%.6f",
+                            getattr(response, "id", "N/A"),
+                            input_tokens,
+                            output_tokens, 
+                            cached_tokens,
+                            cost_info["total_cost"]
+                        )
+                    else:
+                        logger.debug(
+                            "Response ID: %s, Usage: N/A",
+                            getattr(response, "id", "N/A")
+                        )
 
                     return label, confidence, reason
 
@@ -259,6 +282,15 @@ def classify_components_batch(
         logger.warning("No ICA components found to classify.")
         return pd.DataFrame()
 
+    # Initialize cost tracking
+    total_cost_tracking = {
+        "total_input_tokens": 0,
+        "total_output_tokens": 0,
+        "total_cached_tokens": 0,
+        "total_cost": 0.0,
+        "requests_count": 0
+    }
+
     # Always use a temporary directory for component images (keeps output dir clean)
     temp_dir_context = tempfile.TemporaryDirectory(prefix="icvision_temp_plots_")
     image_output_path = Path(temp_dir_context.name)
@@ -340,6 +372,33 @@ def classify_components_batch(
             processed_count,
             num_components,
         )
+        
+        # Calculate estimated costs for the batch
+        if processed_count > 0:
+            from .utils import calculate_openai_cost
+            
+            # Estimate typical token usage per component (based on prompt + image + response)
+            # These are rough estimates - actual usage will vary
+            estimated_input_per_component = 400  # ~300 for prompt + ~100 for image tokens
+            estimated_output_per_component = 50   # ~30-70 tokens for JSON response
+            
+            estimated_total_input = processed_count * estimated_input_per_component
+            estimated_total_output = processed_count * estimated_output_per_component
+            
+            cost_estimate = calculate_openai_cost(
+                input_tokens=estimated_total_input,
+                output_tokens=estimated_total_output,
+                model_name=model_name
+            )
+            
+            logger.info(
+                "Cost estimate for %d components: ~$%.4f (Model: %s, ~%d input + %d output tokens)",
+                processed_count,
+                cost_estimate["total_cost"],
+                cost_estimate["model"],
+                estimated_total_input,
+                estimated_total_output
+            )
 
     finally:
         # Always cleanup temporary image directory

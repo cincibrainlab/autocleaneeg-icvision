@@ -128,3 +128,22 @@ COLOR_MAP = {
     "channel_noise": "#ffd700",  # Gold/Orange
     "other_artifact": "#e9ecef",  # Light grey
 }
+
+# OpenAI Pricing (as of 2025-05-29)
+OPENAI_PRICING = {
+    "gpt-4.1": {
+        "input": 2.00,      # $2.00 per 1M tokens
+        "cached_input": 0.50,  # $0.50 per 1M tokens (cached)
+        "output": 8.00,     # $8.00 per 1M tokens
+    },
+    "gpt-4.1-mini": {
+        "input": 0.40,      # $0.40 per 1M tokens
+        "cached_input": 0.10,  # $0.10 per 1M tokens (cached)
+        "output": 1.60,     # $1.60 per 1M tokens
+    },
+    "gpt-4.1-nano": {
+        "input": 0.10,      # $0.10 per 1M tokens
+        "cached_input": 0.025, # $0.025 per 1M tokens (cached)
+        "output": 0.40,     # $0.40 per 1M tokens
+    },
+}
