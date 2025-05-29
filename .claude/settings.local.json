@@ -22,5 +22,6 @@
       "WebFetch(domain:mne.tools)"
     ],
     "deny": []
-  }
+  },
+  "enableAllProjectMcpServers": false
 }
