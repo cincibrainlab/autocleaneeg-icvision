@@ -22,6 +22,7 @@ from .utils import (
     format_summary_stats,
     load_ica_data,
     load_raw_data,
+    save_cleaned_raw_data,
     save_results,
     validate_api_key,
     validate_classification_results,
@@ -124,6 +125,9 @@ def label_components(
     # Validate API key early
     validated_api_key = validate_api_key(api_key)
 
+    # Track original raw data path for format preservation
+    original_raw_path = raw_data if isinstance(raw_data, (str, Path)) else None
+
     # Load data
     try:
         raw = load_raw_data(raw_data)
@@ -224,6 +228,11 @@ def label_components(
 
         # Save updated ICA object
         save_ica_data(ica_updated, output_path)
+
+        # Save cleaned raw data in original format
+        cleaned_data_path = save_cleaned_raw_data(raw_cleaned, original_raw_path, output_path)
+        if cleaned_data_path:
+            logger.info("Cleaned raw data saved to: %s", cleaned_data_path)
 
         # Generate summary statistics
         summary = format_summary_stats(results_df)

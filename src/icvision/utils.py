@@ -24,7 +24,7 @@ def load_raw_data(raw_input: Union[str, Path, mne.io.BaseRaw]) -> mne.io.BaseRaw
     Load raw EEG data from file path or return existing Raw object.
 
     Supports EEGLAB .set/.fdt format (both raw and epoched data) and MNE-compatible formats.
-    If an EEGLAB .set file contains epoched data, it will be automatically converted to 
+    If an EEGLAB .set file contains epoched data, it will be automatically converted to
     continuous raw data by concatenating epochs.
 
     Args:
@@ -67,16 +67,16 @@ def load_raw_data(raw_input: Union[str, Path, mne.io.BaseRaw]) -> mne.io.BaseRaw
                 logger.info("EEGLAB file contains epochs, converting to raw data: %s", file_path)
                 # Read as epochs and convert to raw
                 epochs = mne.io.read_epochs_eeglab(file_path)
-                
+
                 # Get data array from epochs (n_epochs, n_channels, n_times)
                 data_array = epochs.get_data()  # shape: (n_epochs, n_channels, n_times)
                 # Reshape to continuous format (n_channels, n_epochs * n_times)
                 n_epochs, n_channels, _ = data_array.shape
                 continuous_data = data_array.transpose(1, 0, 2).reshape(n_channels, -1)
-                
+
                 # Create raw info from epochs info
                 raw_info = epochs.info.copy()
-                
+
                 # Create Raw object
                 raw = mne.io.RawArray(continuous_data, raw_info)
                 logger.info("Successfully converted %d epochs to continuous raw data", n_epochs)
@@ -122,7 +122,7 @@ def check_eeglab_ica_availability(set_file_path: Union[str, Path]) -> bool:
         # Attempt to read ICA data from the .set file
         ica = mne.preprocessing.read_ica_eeglab(set_file_path)
         # Additional check to ensure ICA was actually fitted
-        if hasattr(ica, 'n_components_') and ica.n_components_ > 0:
+        if hasattr(ica, "n_components_") and ica.n_components_ > 0:
             return True
         else:
             logger.debug("EEGLAB file exists but contains no fitted ICA components: %s", set_file_path)
@@ -408,3 +408,87 @@ def validate_classification_results(results_df: pd.DataFrame) -> bool:
 
     logger.debug("Classification results validation passed")
     return True
+
+
+def save_cleaned_raw_data(
+    raw_cleaned: mne.io.BaseRaw,
+    original_raw_path: Optional[Union[str, Path]],
+    output_dir: Path,
+    filename_prefix: str = "icvision_cleaned",
+) -> Optional[Path]:
+    """
+    Save cleaned raw EEG data in the same format as the original input.
+
+    Args:
+        raw_cleaned: The cleaned MNE Raw object with artifacts removed.
+        original_raw_path: Path to original raw data file (to determine format).
+                          None if original was an MNE object.
+        output_dir: Directory to save the cleaned data.
+        filename_prefix: Prefix for the output filename.
+
+    Returns:
+        Path to saved cleaned data file, or None if saving failed or format not supported.
+    """
+    if original_raw_path is None:
+        logger.info("Original raw data was an MNE object - saving cleaned data as .fif file")
+        output_filename = f"{filename_prefix}_raw.fif"
+        output_path = output_dir / output_filename
+        try:
+            raw_cleaned.save(output_path, overwrite=True)
+            logger.info("Cleaned raw data saved to: %s", output_path)
+            return output_path
+        except Exception as e:
+            logger.error("Failed to save cleaned raw data to %s: %s", output_path, e)
+            return None
+
+    # Determine format from original file
+    original_path = Path(original_raw_path)
+    file_extension = original_path.suffix.lower()
+
+    if file_extension == ".set":
+        # Save as EEGLAB .set/.fdt format
+        output_filename = f"{filename_prefix}_raw.set"
+        output_path = output_dir / output_filename
+        try:
+            # Use MNE's EEGLAB export functionality
+            raw_cleaned.export(output_path, fmt="eeglab", overwrite=True)
+            logger.info("Cleaned raw data saved to EEGLAB format: %s", output_path)
+            return output_path
+        except Exception as e:
+            logger.error("Failed to save cleaned raw data to EEGLAB format %s: %s", output_path, e)
+            # Fallback to .fif format
+            logger.info("Falling back to .fif format for cleaned raw data")
+            output_filename_fif = f"{filename_prefix}_raw.fif"
+            output_path_fif = output_dir / output_filename_fif
+            try:
+                raw_cleaned.save(output_path_fif, overwrite=True)
+                logger.info("Cleaned raw data saved to .fif format: %s", output_path_fif)
+                return output_path_fif
+            except Exception as e_fif:
+                logger.error("Failed to save cleaned raw data to .fif format %s: %s", output_path_fif, e_fif)
+                return None
+
+    elif file_extension == ".fif":
+        # Save as MNE .fif format
+        output_filename = f"{filename_prefix}_raw.fif"
+        output_path = output_dir / output_filename
+        try:
+            raw_cleaned.save(output_path, overwrite=True)
+            logger.info("Cleaned raw data saved to: %s", output_path)
+            return output_path
+        except Exception as e:
+            logger.error("Failed to save cleaned raw data to %s: %s", output_path, e)
+            return None
+
+    else:
+        # For other formats, save as .fif (most compatible)
+        logger.info("Original format %s not supported for export - saving as .fif", file_extension)
+        output_filename = f"{filename_prefix}_raw.fif"
+        output_path = output_dir / output_filename
+        try:
+            raw_cleaned.save(output_path, overwrite=True)
+            logger.info("Cleaned raw data saved to .fif format: %s", output_path)
+            return output_path
+        except Exception as e:
+            logger.error("Failed to save cleaned raw data to %s: %s", output_path, e)
+            return None

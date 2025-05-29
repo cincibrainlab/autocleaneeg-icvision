@@ -42,6 +42,7 @@ dependencies = [
     "scikit-learn>=1.0.0",
     "Pillow>=9.0.0",
     "pathlib-mate>=1.0.0",
+    "eeglabio",
 ]
 
 [project.optional-dependencies]

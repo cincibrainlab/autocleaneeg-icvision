@@ -315,11 +315,7 @@ def classify_components_batch(
                     }
                 )
 
-                log_level = (
-                    "debug"
-                    if label == "brain" and not exclude_this_component
-                    else "warning" if exclude_this_component else "info"
-                )
+                log_level = "debug" if label == "brain" and not exclude_this_component else "info"
                 logger.log(
                     getattr(logging, log_level.upper()),
                     "IC%03d | Label: %-13s (MNE: %-10s) | Conf: %.2f | Excl: %s",

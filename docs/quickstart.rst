@@ -39,9 +39,10 @@ Basic Command
 This will:
 
 - Create an ``icvision_results/`` directory
-- Save cleaned raw data and updated ICA object
-- Generate a CSV file with classification results
-- Create a PDF report with component visualizations
+- Save **cleaned raw data** (artifacts removed) in original format
+- Save **updated ICA object** with component labels and exclusions
+- Generate a **CSV file** with detailed classification results
+- Create a **comprehensive PDF report** with component visualizations
 
 Advanced Options
 ~~~~~~~~~~~~~~~~
