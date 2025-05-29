@@ -14,6 +14,7 @@ from pathlib import Path
 import openai
 
 from . import __version__
+from .cli_formatter import CLIFormatter, print_error, print_success, print_info
 from .config import DEFAULT_CONFIG
 from .core import label_components
 from .utils import format_summary_stats
@@ -197,14 +198,37 @@ Examples:
         try:
             prompt_path = Path(args.prompt_file)
             if not prompt_path.is_file():
-                logger.error("Custom prompt file not found: %s", prompt_path)
+                if args.verbose:
+                    logger.error("Custom prompt file not found: %s", prompt_path)
+                else:
+                    print_error(
+                        "Custom prompt file not found",
+                        details=f"Could not find file: {prompt_path}",
+                        suggestion="Check the file path is correct:\n"
+                                  f"  ls -la {prompt_path}"
+                    )
                 sys.exit(1)
             custom_prompt_text = prompt_path.read_text(encoding="utf-8")
-            logger.info("Using custom prompt from: %s", prompt_path)
+            if args.verbose:
+                logger.info("Using custom prompt from: %s", prompt_path)
         except Exception as e:
-            logger.error("Failed to read custom prompt file: %s", e)
+            if args.verbose:
+                logger.error("Failed to read custom prompt file: %s", e)
+            else:
+                print_error(
+                    "Failed to read custom prompt file",
+                    details=str(e),
+                    suggestion="Check file permissions and encoding:\n"
+                              f"  cat {args.prompt_file}"
+                )
             sys.exit(1)
 
+    # Show welcome message
+    if not args.verbose:
+        CLIFormatter.print_welcome(__version__)
+        print_info(f"Processing: {args.raw_data_path}" + 
+                   (f" + {args.ica_data_path}" if args.ica_data_path else " (auto-detecting ICA)"))
+    
     logger.info("Starting ICVision CLI v%s", __version__)
     logger.info("Processing Raw: %s, ICA: %s", args.raw_data_path, args.ica_data_path)
 
@@ -224,38 +248,104 @@ Examples:
             custom_prompt=custom_prompt_text,
         )
 
-        logger.info("ICVision processing completed successfully.")
-
-        # Print summary statistics to console
-        summary = format_summary_stats(results_df)
-        print("\n" + summary)  # Add newline for better console output
-
+        # Determine output path
         if args.output_dir:
             output_path = Path(args.output_dir)
         else:
             output_path = Path.cwd() / "icvision_results"
-        logger.info(
-            "All results, logs, and reports (if enabled) are in: %s",
-            output_path.resolve(),
-        )
+        
+        # Print formatted success message and summary
+        if not args.verbose:
+            excluded_count = results_df.get("exclude_vision", 0).sum() if not results_df.empty else 0
+            total_count = len(results_df) if not results_df.empty else 0
+            
+            print_success(
+                f"Processing completed! Classified {total_count} components, excluded {excluded_count} artifacts.",
+                details=f"Results saved to: {output_path.resolve()}"
+            )
+            
+            # Print formatted summary stats
+            if not results_df.empty:
+                label_counts = results_df["label"].value_counts().to_dict()
+                CLIFormatter.print_summary_stats({
+                    "total_components": total_count,
+                    "excluded_artifacts": excluded_count,
+                    **{f"{label}_components": count for label, count in label_counts.items()}
+                })
+        else:
+            # Verbose mode - use traditional logging
+            logger.info("ICVision processing completed successfully.")
+            summary = format_summary_stats(results_df)
+            print("\n" + summary)
+            logger.info("All results, logs, and reports (if enabled) are in: %s", output_path.resolve())
 
     except FileNotFoundError as e:
-        logger.error("Input file not found: %s", e)
+        if args.verbose:
+            logger.error("Input file not found: %s", e)
+        else:
+            print_error(
+                "Input file not found",
+                details=str(e),
+                suggestion="Check that the file path is correct and the file exists:\n"
+                          f"  ls -la {args.raw_data_path}"
+            )
         sys.exit(1)
     except ValueError as e:
-        logger.error("Invalid input or configuration: %s", e)
+        if args.verbose:
+            logger.error("Invalid input or configuration: %s", e)
+        else:
+            error_str = str(e)
+            if "No ICA components found" in error_str:
+                print_error(
+                    "No ICA decomposition found in your data file",
+                    details=error_str,
+                    suggestion="Either run ICA decomposition in EEGLAB first, or provide a separate ICA file:\n"
+                              f"  autoclean-icvision {args.raw_data_path} your_ica_file.fif"
+                )
+            elif "API key" in error_str:
+                print_error(
+                    "OpenAI API key not found",
+                    details=error_str,
+                    suggestion="Set your API key as an environment variable:\n"
+                              "  export OPENAI_API_KEY='sk-your-api-key-here'\n"
+                              "Or provide it directly:\n"
+                              f"  autoclean-icvision {args.raw_data_path} --api-key sk-your-key"
+                )
+            else:
+                print_error("Invalid input or configuration", details=error_str)
         sys.exit(1)
     except RuntimeError as e:
-        logger.error("Processing error: %s", e)
+        if args.verbose:
+            logger.error("Processing error: %s", e)
+        else:
+            print_error("Processing failed", details=str(e))
         sys.exit(1)
-    except openai.AuthenticationError as e:  # Catch specific OpenAI auth error
-        logger.error("OpenAI Authentication Error: %s. Please check your API key.", e)
+    except openai.AuthenticationError as e:
+        if args.verbose:
+            logger.error("OpenAI Authentication Error: %s. Please check your API key.", e)
+        else:
+            print_error(
+                "OpenAI authentication failed",
+                details="Your API key was rejected by OpenAI",
+                suggestion="Check your API key is correct and has sufficient credits:\n"
+                          "1. Visit https://platform.openai.com/api-keys\n"
+                          "2. Verify your key is active\n"
+                          "3. Check your billing settings"
+            )
         sys.exit(1)
     except Exception as e:
-        logger.error("An unexpected error occurred: %s", e)
-        # For debugging, you might want to re-raise or print traceback
-        # import traceback
-        # logger.error(traceback.format_exc())
+        if args.verbose:
+            logger.error("An unexpected error occurred: %s", e)
+            # For debugging, you might want to re-raise or print traceback
+            # import traceback
+            # logger.error(traceback.format_exc())
+        else:
+            print_error(
+                "An unexpected error occurred",
+                details=str(e),
+                suggestion="Try running with --verbose for more details:\n"
+                          f"  autoclean-icvision {args.raw_data_path} --verbose"
+            )
         sys.exit(1)
 
 
