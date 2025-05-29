@@ -307,51 +307,55 @@ def plot_component_for_classification(
         logger.error("Error plotting PSD for IC%d: %s", component_idx, e_psd)
         ax_psd.text(0.5, 0.5, "PSD plot failed", ha="center", va="center")
 
-    fig.suptitle(main_plot_title_text, fontsize=14, y=suptitle_y_pos)
+    if return_fig_object and classification_label is not None and classification_confidence is not None:
+        # Create dual-title layout: IC Component title on left, Classification on right
+        from .config import (  # Local import to avoid circular dependency if any
+            COLOR_MAP,
+        )
+        
+        # Left-justified main title
+        fig.text(
+            0.05,
+            suptitle_y_pos,
+            main_plot_title_text,
+            ha="left",
+            va="top",
+            fontsize=14,
+            fontweight="bold",
+            transform=fig.transFigure,
+        )
+        
+        # Right-justified classification subtitle
+        subtitle_color = COLOR_MAP.get(classification_label.lower(), "black")
+        classification_subtitle = (
+            f"Vision Classification: {str(classification_label).title()} "
+            f"(Confidence: {classification_confidence:.2f})"
+        )
+        fig.text(
+            0.95,
+            suptitle_y_pos,
+            classification_subtitle,
+            ha="right",
+            va="top",
+            fontsize=13,
+            fontweight="bold",
+            color=subtitle_color,
+            transform=fig.transFigure,
+        )
+    else:
+        # Standard centered title when no classification
+        fig.suptitle(main_plot_title_text, fontsize=14, y=suptitle_y_pos)
 
     if return_fig_object:
-        # Add classification details if provided (for PDF report)
-        if classification_label is not None and classification_confidence is not None:
-            from .config import (  # Local import to avoid circular dependency if any
-                COLOR_MAP,
-            )
-
-            subtitle_color = COLOR_MAP.get(classification_label.lower(), "black")
-            classification_subtitle = (
-                f"Vision Classification: {str(classification_label).title()} "
-                f"(Confidence: {classification_confidence:.2f})"
-            )
-            fig.text(
-                0.5,
-                suptitle_y_pos - 0.035,
-                classification_subtitle,
-                ha="center",
-                va="top",
-                fontsize=13,
-                fontweight="bold",
-                color=subtitle_color,
-                transform=fig.transFigure,
-            )
-
+        # Add reasoning if provided (for PDF report)
         if classification_reason:
-            reason_title = "Reasoning (Vision API):"
-            reason_title_y = gridspec_bottom - 0.03
-            reason_text_y = reason_title_y - 0.025
+            reasoning_text = f"**Autoclean ICVision Reasoning:** {classification_reason}"
+            reason_text_y = gridspec_bottom - 0.03
 
-            fig.text(
-                0.05,
-                reason_title_y,
-                reason_title,
-                ha="left",
-                va="top",
-                fontsize=9,
-                fontweight="bold",
-                transform=fig.transFigure,
-            )
             fig.text(
                 0.05,
                 reason_text_y,
-                classification_reason,
+                reasoning_text,
                 ha="left",
                 va="top",
                 fontsize=8,
