@@ -139,9 +139,8 @@ def label_components(
                         logger.debug("Successfully detected ICA data in .set file")
                     else:
                         raise ValueError(
-                            f"No ICA data found in .set file: {raw_path}. "
-                            "Please provide explicit ica_data parameter or ensure your .set file contains "
-                            "ICA decomposition."
+                            f"No ICA components found in EEGLAB .set file: {raw_path}. "
+                            f"Run ICA decomposition in EEGLAB first, or provide separate MNE .fif ICA file."
                         )
                 else:
                     raise ValueError(

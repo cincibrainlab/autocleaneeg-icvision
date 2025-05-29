@@ -71,7 +71,7 @@ def load_raw_data(raw_input: Union[str, Path, mne.io.BaseRaw]) -> mne.io.BaseRaw
                 # Get data array from epochs (n_epochs, n_channels, n_times)
                 data_array = epochs.get_data()  # shape: (n_epochs, n_channels, n_times)
                 # Reshape to continuous format (n_channels, n_epochs * n_times)
-                n_epochs, n_channels, n_times = data_array.shape
+                n_epochs, n_channels, _ = data_array.shape
                 continuous_data = data_array.transpose(1, 0, 2).reshape(n_channels, -1)
                 
                 # Create raw info from epochs info
@@ -120,10 +120,15 @@ def check_eeglab_ica_availability(set_file_path: Union[str, Path]) -> bool:
     """
     try:
         # Attempt to read ICA data from the .set file
-        mne.preprocessing.read_ica_eeglab(set_file_path)
-        return True
-    except Exception:
-        # If any exception occurs, assume ICA data is not available
+        ica = mne.preprocessing.read_ica_eeglab(set_file_path)
+        # Additional check to ensure ICA was actually fitted
+        if hasattr(ica, 'n_components_') and ica.n_components_ > 0:
+            return True
+        else:
+            logger.debug("EEGLAB file exists but contains no fitted ICA components: %s", set_file_path)
+            return False
+    except Exception as e:
+        logger.debug("No ICA data found in EEGLAB file %s: %s", set_file_path, str(e))
         return False
 
 
@@ -163,16 +168,36 @@ def load_ica_data(ica_input: Union[str, Path, mne.preprocessing.ICA]) -> mne.pre
 
     if file_extension == ".fif":
         logger.debug("Loading MNE ICA from: %s", file_path)
-        ica = mne.preprocessing.read_ica(file_path)
+        try:
+            ica = mne.preprocessing.read_ica(file_path)
+        except Exception as e:
+            raise RuntimeError(
+                f"Failed to load MNE ICA from .fif file '{file_path}'. "
+                f"File may be corrupted or contain invalid ICA data. Error: {str(e)}"
+            )
     elif file_extension == ".set":
         logger.debug("Loading EEGLAB ICA from: %s", file_path)
-        ica = mne.preprocessing.read_ica_eeglab(file_path)
+        try:
+            ica = mne.preprocessing.read_ica_eeglab(file_path)
+        except Exception as e:
+            error_msg = str(e).lower()
+            if "ica" in error_msg or "component" in error_msg or "no ica" in error_msg:
+                raise RuntimeError(
+                    f"No ICA components found in EEGLAB .set file '{file_path}'. "
+                    f"Run ICA decomposition in EEGLAB first, or provide separate MNE .fif ICA file."
+                )
+            else:
+                raise RuntimeError(
+                    f"Failed to load EEGLAB ICA from .set file '{file_path}'. "
+                    f"File may be corrupted or incompatible. Error: {str(e)}"
+                )
     else:
         raise ValueError(
             "Unsupported ICA file format: {}. Supported formats: .fif (MNE), .set (EEGLAB)".format(file_extension)
         )
 
-    logger.debug("Successfully loaded ICA: %d components", ica.n_components_)
+    format_name = "MNE" if file_extension == ".fif" else "EEGLAB"
+    logger.debug("Successfully loaded %s ICA: %d components", format_name, ica.n_components_)
     return ica
 
 
@@ -377,7 +402,7 @@ def validate_classification_results(results_df: pd.DataFrame) -> bool:
                 raise ValueError(f"Confidence score {invalid_conf:.2f} is outside the valid range")
     except TypeError:
         # Handle non-numeric confidence values
-        for idx, conf in results_df["confidence"].items():
+        for _, conf in results_df["confidence"].items():
             if not isinstance(conf, (int, float)):
                 raise ValueError(f"Confidence score '{conf}' is not a float")
 
