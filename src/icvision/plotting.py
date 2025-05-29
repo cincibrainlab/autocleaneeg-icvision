@@ -33,6 +33,7 @@ def plot_component_for_classification(
     classification_confidence: Optional[float] = None,
     classification_reason: Optional[str] = None,
     return_fig_object: bool = False,
+    source_filename: Optional[str] = None,
 ) -> Union[Path, plt.Figure, None]:
     """
     Creates a standardized plot for an ICA component.
@@ -349,7 +350,7 @@ def plot_component_for_classification(
     if return_fig_object:
         # Add reasoning if provided (for PDF report)
         if classification_reason:
-            reasoning_text = f"**Autoclean ICVision Reasoning:** {classification_reason}"
+            reasoning_text = f"Rationale: {classification_reason}"
             reason_text_y = gridspec_bottom - 0.03
 
             fig.text(
@@ -362,6 +363,20 @@ def plot_component_for_classification(
                 wrap=True,
                 transform=fig.transFigure,
                 bbox=dict(boxstyle="round,pad=0.4", fc="aliceblue", alpha=0.75, ec="lightgrey"),
+            )
+
+        # Add footer with source filename if provided (for PDF report)
+        if source_filename:
+            fig.text(
+                0.5,
+                0.01,
+                f"Autoclean ICVision | https://github.com/cincibrainlab | Source: {source_filename}",
+                ha="center",
+                va="bottom",
+                fontsize=8,
+                style="italic",
+                color="gray",
+                transform=fig.transFigure,
             )
 
         # No additional layout adjustment needed - GridSpec already handles proper spacing

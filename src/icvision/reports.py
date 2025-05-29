@@ -28,7 +28,8 @@ def _create_summary_table_page(
     pdf_pages: PdfPages,
     results_df: pd.DataFrame,
     component_indices: List[int],
-    report_title_prefix: str = "ICVision Report",
+    report_title_prefix: str = "AutocleanEEG ICVision Report",
+    source_filename: Optional[str] = None,
 ) -> None:
     """
     Creates summary table pages for the PDF report.
@@ -141,7 +142,21 @@ def _create_summary_table_page(
                 fontsize=6,
             )
 
-        plt.subplots_adjust(left=0.03, right=0.97, top=0.90, bottom=0.05)
+        # Add footer with source filename if provided
+        if source_filename:
+            fig_table.text(
+                0.5,
+                0.02,
+                f"Autoclean ICVision | https://github.com/cincibrainlab | Source: {source_filename}",
+                ha="center",
+                va="bottom",
+                fontsize=8,
+                style="italic",
+                color="gray",
+                transform=fig_table.transFigure,
+            )
+
+        plt.subplots_adjust(left=0.03, right=0.97, top=0.90, bottom=0.08)
         pdf_pages.savefig(fig_table, bbox_inches="tight")
         plt.close(fig_table)
 
@@ -153,6 +168,7 @@ def generate_classification_report(
     output_dir: Path,
     report_filename_prefix: str = "icvision_report",
     components_to_detail: str = "all",  # "all" or "artifacts_only"
+    source_filename: Optional[str] = None,
 ) -> Optional[Path]:
     """
     Generates a comprehensive PDF report for ICA component classifications.
@@ -225,7 +241,7 @@ def generate_classification_report(
             all_classified_indices = list(results_df.index) if not results_df.empty else []
             all_classified_indices = sorted([idx for idx in all_classified_indices if idx < ica_obj.n_components_])
             if all_classified_indices:
-                _create_summary_table_page(pdf, results_df, all_classified_indices, report_title)
+                _create_summary_table_page(pdf, results_df, all_classified_indices, report_title, source_filename)
             else:
                 logger.info("No components classified to include in summary table.")
 
@@ -237,6 +253,19 @@ def generate_classification_report(
                 )
                 topo_overview_figs = plot_ica_topographies_overview(ica_obj, detail_plot_indices)
                 for fig_topo_batch in topo_overview_figs:
+                    # Add footer with source filename if provided
+                    if source_filename:
+                        fig_topo_batch.text(
+                            0.5,
+                            0.02,
+                            f"Source: {source_filename}",
+                            ha="center",
+                            va="bottom",
+                            fontsize=8,
+                            style="italic",
+                            color="gray",
+                            transform=fig_topo_batch.transFigure,
+                        )
                     pdf.savefig(fig_topo_batch)
                     plt.close(fig_topo_batch)
             else:
@@ -270,6 +299,7 @@ def generate_classification_report(
                         classification_confidence=conf,
                         classification_reason=reason,
                         return_fig_object=True,
+                        source_filename=source_filename,
                     )
 
                     if fig_detail:

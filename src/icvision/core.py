@@ -250,11 +250,17 @@ def label_components(
     if generate_report:
         logger.debug("Generating comprehensive PDF report...")
         try:
+            # Extract filename for PDF footer
+            source_filename = None
+            if original_raw_path:
+                source_filename = Path(original_raw_path).name
+            
             report_path = generate_classification_report(
                 ica_obj=ica_updated,
                 raw_obj=raw_cleaned,
                 results_df=results_df,
                 output_dir=output_path,
+                source_filename=source_filename,
             )
             logger.info("Report saved to: %s", report_path)
         except Exception as e:
