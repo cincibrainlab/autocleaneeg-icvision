@@ -80,6 +80,8 @@ test = [
 
 [project.scripts]
 # CLI command entry point
+autoclean-icvision = "icvision.cli:main"
+# Legacy alias for backward compatibility
 icvision = "icvision.cli:main"
 
 # Tool configurations

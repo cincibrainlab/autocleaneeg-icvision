@@ -41,7 +41,7 @@ def setup_cli_logging(verbose: bool = False) -> None:
 def main() -> None:
     """Main CLI entry point for ICVision."""
     parser = argparse.ArgumentParser(
-        prog="icvision",
+        prog="autoclean-icvision",
         description=(
             f"ICVision v{__version__}: Automated ICA component classification " "using OpenAI Vision API for EEG data."
         ),
@@ -50,27 +50,27 @@ def main() -> None:
             """
 Examples:
   Basic usage with EEGLAB .set file (auto-detects ICA):
-    icvision path/to/your_raw.set
+    autoclean-icvision path/to/your_raw.set
 
   Basic usage with separate files:
-    icvision path/to/your_raw.set path/to/your_ica.fif
+    autoclean-icvision path/to/your_raw.set path/to/your_ica.fif
 
   With API key and custom output directory:
-    icvision raw_data.set --api-key YOUR_API_KEY --output-dir results/
+    autoclean-icvision raw_data.set --api-key YOUR_API_KEY --output-dir results/
 
   Using separate ICA file:
-    icvision raw_data.set ica_data.fif --api-key YOUR_API_KEY --output-dir results/
+    autoclean-icvision raw_data.set ica_data.fif --api-key YOUR_API_KEY --output-dir results/
 
   Adjusting classification parameters:
-    icvision raw.set -ct 0.7 --model gpt-4-vision-preview --batch-size 5
+    autoclean-icvision raw.set -ct 0.7 --model gpt-4-vision-preview --batch-size 5
 
   Using a custom prompt file:
-    icvision raw.set --prompt-file my_custom_prompt.txt
+    autoclean-icvision raw.set --prompt-file my_custom_prompt.txt
 
   Disabling report generation:
-    icvision raw.set --no-report
+    autoclean-icvision raw.set --no-report
 
-  For more help on a specific command or option, use: icvision <command> --help
+  For more help on a specific command or option, use: autoclean-icvision <command> --help
 """
         ),
     )

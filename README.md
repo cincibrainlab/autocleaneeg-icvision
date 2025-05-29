@@ -44,12 +44,14 @@ The primary way to use ICVision is through its command-line interface.
 
 **Single EEGLAB .set file (Recommended):**
 ```bash
-icvision /path/to/your_data.set
+autoclean-icvision /path/to/your_data.set
+# or legacy command: icvision /path/to/your_data.set
 ```
 
 **Separate files:**
 ```bash
-icvision /path/to/your_raw_data.set /path/to/your_ica_decomposition.fif
+autoclean-icvision /path/to/your_raw_data.set /path/to/your_ica_decomposition.fif
+# or legacy command: icvision /path/to/your_raw_data.set /path/to/your_ica_decomposition.fif
 ```
 
 ICVision can automatically detect and read ICA data from EEGLAB `.set` files, making single-file usage possible when your `.set` file contains both raw data and ICA decomposition.
@@ -85,7 +87,7 @@ This command will:
 
 Single .set file usage:
 ```bash
-icvision data/subject01_eeg.set \
+autoclean-icvision data/subject01_eeg.set \
     --api-key sk-xxxxxxxxxxxxxxxxxxxx \
     --output-dir analysis_results/subject01_icvision \
     --confidence-threshold 0.9 \
@@ -94,7 +96,7 @@ icvision data/subject01_eeg.set \
 
 Traditional separate files:
 ```bash
-icvision data/subject01_raw.fif data/subject01_ica.fif \
+autoclean-icvision data/subject01_raw.fif data/subject01_ica.fif \
     --api-key sk-xxxxxxxxxxxxxxxxxxxx \
     --output-dir analysis_results/subject01_icvision \
     --model gpt-4.1 \
