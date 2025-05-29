@@ -20,7 +20,7 @@ from mne.time_frequency import psd_array_welch
 from scipy.ndimage import uniform_filter1d
 
 # Set up logging for the module
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("icvision.plotting")
 
 
 def plot_component_for_classification(

@@ -22,18 +22,39 @@ from .utils import format_summary_stats
 # Set up basic logging for CLI; can be overridden by verbose flag
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    format="%(asctime)s - %(levelname)s - %(message)s",  # Cleaner format without module names
     datefmt="%Y-%m-%d %H:%M:%S",
 )
-logger = logging.getLogger("icvision_cli")
+logger = logging.getLogger("icvision")
 
 
 def setup_cli_logging(verbose: bool = False) -> None:
     """Set up more detailed logging if verbose flag is used."""
     level = logging.DEBUG if verbose else logging.INFO
+    
+    # Configure formatter based on verbosity
+    if verbose:
+        # Detailed format with module names for debugging
+        formatter = logging.Formatter(
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S"
+        )
+        # Apply to all handlers
+        for handler in logging.getLogger().handlers:
+            handler.setFormatter(formatter)
+        logger.info("Verbose logging enabled - showing module details")
+    else:
+        # Clean format for normal use
+        formatter = logging.Formatter(
+            "%(asctime)s - %(levelname)s - %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S"
+        )
+        # Apply to all handlers
+        for handler in logging.getLogger().handlers:
+            handler.setFormatter(formatter)
+    
     # Get root logger to change level for all package loggers
     logging.getLogger("icvision").setLevel(level)
-    # Also set CLI logger level if needed, though package level should cover it
     logger.setLevel(level)
 
     # Suppress noisy external libraries unless in verbose mode
@@ -42,9 +63,6 @@ def setup_cli_logging(verbose: bool = False) -> None:
         logging.getLogger("httpcore").setLevel(logging.WARNING)
         logging.getLogger("openai").setLevel(logging.WARNING)
         logging.getLogger("urllib3").setLevel(logging.WARNING)
-
-    if verbose:
-        logger.info("Verbose logging enabled.")
 
 
 def main() -> None:

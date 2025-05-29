@@ -26,7 +26,7 @@ from .config import (
 from .plotting import plot_components_batch
 
 # Set up logging for the module
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("icvision.api")
 
 
 def classify_component_image_openai(

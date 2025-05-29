@@ -21,7 +21,7 @@ from .config import COLOR_MAP
 from .plotting import plot_component_for_classification, plot_ica_topographies_overview
 
 # Set up logging for the module
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("icvision.reports")
 
 
 def _create_summary_table_page(

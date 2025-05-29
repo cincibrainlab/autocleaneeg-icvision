@@ -31,7 +31,7 @@ from .utils import (
 )
 
 # Set up logging for the module
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("icvision.core")
 
 
 def label_components(

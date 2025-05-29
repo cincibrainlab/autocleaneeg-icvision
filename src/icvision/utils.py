@@ -16,7 +16,7 @@ import pandas as pd
 from .config import COMPONENT_LABELS
 
 # Set up logging for the module
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("icvision.utils")
 
 
 def load_raw_data(raw_input: Union[str, Path, mne.io.BaseRaw]) -> mne.io.BaseRaw:
