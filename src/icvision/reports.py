@@ -166,7 +166,8 @@ def generate_classification_report(
     raw_obj: mne.io.Raw,
     results_df: pd.DataFrame,
     output_dir: Path,
-    report_filename_prefix: str = "icvision_report",
+    input_basename: Optional[str] = None,
+    report_filename_prefix: Optional[str] = None,
     components_to_detail: str = "all",  # "all" or "artifacts_only"
     source_filename: Optional[str] = None,
 ) -> Optional[Path]:
@@ -178,9 +179,11 @@ def generate_classification_report(
         raw_obj: The MNE Raw object (cleaned or original, for context).
         results_df: DataFrame with classification results from ICVision.
         output_dir: Directory to save the PDF report.
-        report_filename_prefix: Prefix for the PDF report filename.
+        input_basename: Basename from input file for default naming.
+        report_filename_prefix: Custom prefix for the PDF report filename. If None, uses basename_icvis_report.
         components_to_detail: Which components to include detail pages for:
                              "all" or "artifacts_only" (where 'exclude_vision' is True).
+        source_filename: Original filename for PDF footer.
 
     Returns:
         Path to the generated PDF report, or None if generation failed.
@@ -193,6 +196,13 @@ def generate_classification_report(
         except Exception as e_mkdir:
             logger.error("Could not create output directory %s: %s", output_dir, e_mkdir)
             return None
+
+    # Set default filename prefix based on basename
+    if report_filename_prefix is None:
+        if input_basename is None:
+            report_filename_prefix = "icvision_report"
+        else:
+            report_filename_prefix = f"{input_basename}_icvis_report"
 
     report_type_suffix = "all_comps" if components_to_detail == "all" else "artifacts_only"
     pdf_filename = f"{report_filename_prefix}_{report_type_suffix}.pdf"

@@ -224,18 +224,69 @@ def validate_inputs(raw: mne.io.Raw, ica: mne.preprocessing.ICA) -> None:
     logger.debug("Input validation passed")
 
 
-def create_output_directory(output_dir: Optional[Union[str, Path]]) -> Path:
+def sanitize_filename(filename: str) -> str:
+    """
+    Sanitize a filename for safe filesystem usage.
+
+    Args:
+        filename: Raw filename to sanitize.
+
+    Returns:
+        Sanitized filename safe for filesystem use.
+    """
+    import re
+    
+    # Remove or replace problematic characters
+    sanitized = re.sub(r'[<>:"/\\|?*]', '_', filename)
+    # Remove leading/trailing whitespace and dots
+    sanitized = sanitized.strip('. ')
+    # Limit length to reasonable filesystem limits
+    if len(sanitized) > 100:
+        sanitized = sanitized[:100]
+    # Ensure it's not empty
+    if not sanitized:
+        sanitized = "unknown"
+    return sanitized
+
+
+def extract_input_basename(input_path: Union[str, Path]) -> str:
+    """
+    Extract basename from input file path for use in output naming.
+
+    Args:
+        input_path: Path to input file.
+
+    Returns:
+        Sanitized basename (without extension) for output naming.
+    """
+    if input_path is None:
+        return "icvision"
+    
+    path = Path(input_path)
+    # Get filename without extension
+    basename = path.stem
+    # Sanitize for filesystem safety
+    return sanitize_filename(basename)
+
+
+def create_output_directory(
+    output_dir: Optional[Union[str, Path]], 
+    input_basename: Optional[str] = None
+) -> Path:
     """
     Create output directory for results.
 
     Args:
-        output_dir: Directory path. If None, uses current directory.
+        output_dir: Directory path. If None, uses 'autoclean_icvision_results' in current directory.
+        input_basename: Basename from input file (unused but kept for API compatibility).
 
     Returns:
         Path to the created directory.
     """
     if output_dir is None:
-        output_dir = Path.cwd() / "icvision_results"
+        # Always use the same directory name for consistency across multiple files
+        dir_name = "autoclean_icvision_results"
+        output_dir = Path.cwd() / dir_name
     else:
         output_dir = Path(output_dir)
 
@@ -270,18 +321,30 @@ def validate_api_key(api_key: Optional[str]) -> str:
     )
 
 
-def save_results(results_df: pd.DataFrame, output_dir: Path, filename: str = "icvision_results.csv") -> Path:
+def save_results(
+    results_df: pd.DataFrame, 
+    output_dir: Path, 
+    input_basename: Optional[str] = None,
+    filename: Optional[str] = None
+) -> Path:
     """
     Save classification results to CSV file.
 
     Args:
         results_df: DataFrame with classification results.
         output_dir: Output directory.
-        filename: Filename for the CSV file.
+        input_basename: Basename from input file for default naming.
+        filename: Custom filename for the CSV file. If None, uses basename_icvis_results.csv.
 
     Returns:
         Path to the saved file.
     """
+    if filename is None:
+        if input_basename is None:
+            filename = "icvision_results.csv"
+        else:
+            filename = f"{input_basename}_icvis_results.csv"
+    
     output_path = output_dir / filename
     if results_df.empty and len(results_df.columns) == 0:
         # Create empty CSV with expected headers for completely empty dataframe
@@ -404,7 +467,8 @@ def save_cleaned_raw_data(
     raw_cleaned: mne.io.BaseRaw,
     original_raw_path: Optional[Union[str, Path]],
     output_dir: Path,
-    filename_prefix: str = "icvision_cleaned",
+    input_basename: Optional[str] = None,
+    filename_prefix: Optional[str] = None,
 ) -> Optional[Path]:
     """
     Save cleaned raw EEG data in the same format as the original input.
@@ -414,11 +478,19 @@ def save_cleaned_raw_data(
         original_raw_path: Path to original raw data file (to determine format).
                           None if original was an MNE object.
         output_dir: Directory to save the cleaned data.
-        filename_prefix: Prefix for the output filename.
+        input_basename: Basename from input file for default naming.
+        filename_prefix: Custom prefix for the output filename. If None, uses basename_icvis_cleaned.
 
     Returns:
         Path to saved cleaned data file, or None if saving failed or format not supported.
     """
+    # Set default filename prefix based on basename
+    if filename_prefix is None:
+        if input_basename is None:
+            filename_prefix = "icvision_cleaned"
+        else:
+            filename_prefix = f"{input_basename}_icvis_cleaned"
+    
     if original_raw_path is None:
         logger.info("Original raw data was an MNE object - saving cleaned data as .fif file")
         output_filename = f"{filename_prefix}_raw.fif"

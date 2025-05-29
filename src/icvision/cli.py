@@ -158,7 +158,7 @@ Examples:
         type=str,
         default=None,
         help="Directory to save results (images, CSV, report). "
-        "If None, creates 'icvision_results' in current directory.",
+        "If None, creates 'autoclean_icvision_results' in current directory.",
     )
     output_group.add_argument(
         "--no-report",

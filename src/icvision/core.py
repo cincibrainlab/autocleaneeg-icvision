@@ -19,6 +19,7 @@ from .reports import generate_classification_report
 from .utils import (
     check_eeglab_ica_availability,
     create_output_directory,
+    extract_input_basename,
     format_summary_stats,
     load_ica_data,
     load_raw_data,
@@ -125,8 +126,9 @@ def label_components(
     # Validate API key early
     validated_api_key = validate_api_key(api_key)
 
-    # Track original raw data path for format preservation
+    # Track original raw data path for format preservation and extract basename
     original_raw_path = raw_data if isinstance(raw_data, (str, Path)) else None
+    input_basename = extract_input_basename(original_raw_path)
 
     # Load data
     try:
@@ -166,7 +168,7 @@ def label_components(
         labels_to_exclude = DEFAULT_EXCLUDE_LABELS.copy()
 
     # Create output directory
-    output_path = create_output_directory(output_dir)
+    output_path = create_output_directory(output_dir, input_basename)
 
     logger.debug(
         "Configuration: %d components, confidence_threshold=%s, model=%s, batch_size=%d",
@@ -224,13 +226,13 @@ def label_components(
 
     try:
         # Save CSV results
-        save_results(results_df, output_path)
+        save_results(results_df, output_path, input_basename)
 
         # Save updated ICA object
-        save_ica_data(ica_updated, output_path)
+        save_ica_data(ica_updated, output_path, input_basename)
 
         # Save cleaned raw data in original format
-        cleaned_data_path = save_cleaned_raw_data(raw_cleaned, original_raw_path, output_path)
+        cleaned_data_path = save_cleaned_raw_data(raw_cleaned, original_raw_path, output_path, input_basename)
         if cleaned_data_path:
             logger.info("Cleaned raw data saved to: %s", cleaned_data_path)
 
@@ -239,7 +241,8 @@ def label_components(
         logger.info("\n%s", summary)
 
         # Save summary to file
-        summary_path = output_path / "classification_summary.txt"
+        summary_filename = f"{input_basename}_icvis_summary.txt" if input_basename != "icvision" else "classification_summary.txt"
+        summary_path = output_path / summary_filename
         with open(summary_path, "w") as f:
             f.write(summary)
 
@@ -260,6 +263,7 @@ def label_components(
                 raw_obj=raw_cleaned,
                 results_df=results_df,
                 output_dir=output_path,
+                input_basename=input_basename,
                 source_filename=source_filename,
             )
             logger.info("Report saved to: %s", report_path)

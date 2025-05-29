@@ -497,7 +497,8 @@ def plot_components_batch(
 def save_ica_data(
     ica_obj: mne.preprocessing.ICA,
     output_dir: Path,
-    filename_prefix: str = "icvision_classified",
+    input_basename: Optional[str] = None,
+    filename_prefix: Optional[str] = None,
 ) -> Path:
     """
     Save the updated MNE ICA object to a .fif file.
@@ -505,11 +506,19 @@ def save_ica_data(
     Args:
         ica_obj: The MNE ICA object to save.
         output_dir: Directory to save the file.
-        filename_prefix: Prefix for the output filename.
+        input_basename: Basename from input file for default naming.
+        filename_prefix: Custom prefix for the output filename. If None, uses basename_icvis_classified.
 
     Returns:
         Path to the saved ICA file.
     """
+    # Set default filename prefix based on basename
+    if filename_prefix is None:
+        if input_basename is None:
+            filename_prefix = "icvision_classified"
+        else:
+            filename_prefix = f"{input_basename}_icvis_classified"
+    
     output_filename = f"{filename_prefix}_ica.fif"
     output_path = output_dir / output_filename
 
