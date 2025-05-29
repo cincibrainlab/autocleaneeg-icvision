@@ -52,7 +52,7 @@ icvision /path/to/your_data.set
 icvision /path/to/your_raw_data.set /path/to/your_ica_decomposition.fif
 ```
 
-🆕 **NEW**: ICVision can now automatically detect and read ICA data from EEGLAB `.set` files, making single-file usage possible when your `.set` file contains both raw data and ICA decomposition.
+ICVision can automatically detect and read ICA data from EEGLAB `.set` files, making single-file usage possible when your `.set` file contains both raw data and ICA decomposition.
 
 This command will:
 1.  Load the raw EEG data and ICA solution (auto-detected from `.set` file or from separate files).
@@ -179,11 +179,12 @@ except Exception as e:
 
 **EEGLAB .set files:**
 - **Raw data**: Supports EEGLAB `.set` files for raw EEG data
-- **ICA data**: 🆕 Now supports automatic ICA detection from `.set` files using `mne.preprocessing.read_ica_eeglab()`
+- **ICA data**: Now supports automatic ICA detection from `.set` files using `mne.preprocessing.read_ica_eeglab()`
 - **Single file mode**: Use just a `.set` file when it contains both raw data and ICA decomposition
 
 **MNE formats:**
-- **Raw data**: `.fif`, `.edf`, `.bdf`, `.vhdr` (BrainVision)
+Other supported formats include:
+- **Raw data**: `.fif`, `.edf`, `.raw`
 - **ICA data**: `.fif` files containing MNE ICA objects
 
 ### Default Parameter Values
@@ -223,7 +224,7 @@ These are defined in `src/icvision/config.py`.
 
 ### Custom Classification Prompt
 
-The default prompt is optimized for EEG component classification. You can customize it by:
+The default prompt is optimized for EEG component classification on EGI128 nets. You can customize it by:
 - **CLI**: `--prompt-file /path/to/custom_prompt.txt`
 - **Python API**: `custom_prompt="Your custom prompt here"`
 - **View default**: Check `src/icvision/config.py`
