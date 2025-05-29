@@ -23,25 +23,24 @@ def load_raw_data(raw_input: Union[str, Path, mne.io.BaseRaw]) -> mne.io.BaseRaw
     """
     Load raw EEG data from file path or return existing Raw object.
 
-    Supports EEGLAB .set/.fdt format (both raw and epoched data) and MNE-compatible formats.
-    If an EEGLAB .set file contains epoched data, it will be automatically converted to
-    continuous raw data by concatenating epochs.
+    Supports EEGLAB .set/.fdt format (continuous data only) and MNE-compatible formats.
+    If an EEGLAB .set file contains epoched data, an informative error will be raised
+    with instructions on how to convert to continuous data.
 
     Args:
         raw_input: Either a file path (str/Path) or an existing mne.io.Raw object.
-                   For EEGLAB format, provide path to .set file (handles both raw and epoched data).
+                   For EEGLAB format, provide path to .set file (continuous data only).
 
     Returns:
         Loaded mne.io.Raw object.
 
     Raises:
         FileNotFoundError: If file path does not exist.
-        ValueError: If file format is not supported.
+        ValueError: If file format is not supported or contains epoched data.
         RuntimeError: If data loading fails.
 
     Example:
-        >>> raw = load_raw_data("data/sub-01_task-rest_eeg.set")  # Raw data
-        >>> raw = load_raw_data("data/sub-01_epochs.set")        # Epoched data (auto-converted)
+        >>> raw = load_raw_data("data/sub-01_task-rest_eeg.set")  # Continuous raw data
         >>> raw = load_raw_data(existing_raw_object)
     """
     if isinstance(raw_input, mne.io.BaseRaw):
@@ -64,22 +63,13 @@ def load_raw_data(raw_input: Union[str, Path, mne.io.BaseRaw]) -> mne.io.BaseRaw
         except TypeError as e:
             # Check if the error is due to epoched data
             if "trials" in str(e).lower() and "epochs" in str(e).lower():
-                logger.info("EEGLAB file contains epochs, converting to raw data: %s", file_path)
-                # Read as epochs and convert to raw
-                epochs = mne.io.read_epochs_eeglab(file_path)
-
-                # Get data array from epochs (n_epochs, n_channels, n_times)
-                data_array = epochs.get_data()  # shape: (n_epochs, n_channels, n_times)
-                # Reshape to continuous format (n_channels, n_epochs * n_times)
-                n_epochs, n_channels, _ = data_array.shape
-                continuous_data = data_array.transpose(1, 0, 2).reshape(n_channels, -1)
-
-                # Create raw info from epochs info
-                raw_info = epochs.info.copy()
-
-                # Create Raw object
-                raw = mne.io.RawArray(continuous_data, raw_info)
-                logger.info("Successfully converted %d epochs to continuous raw data", n_epochs)
+                # Provide graceful error message for epoched data
+                raise ValueError(
+                    f"The EEGLAB file '{file_path}' contains epoched data, but ICVision currently only supports "
+                    f"continuous (raw) EEG data. Please use continuous data for ICA component classification. "
+                    f"You can export continuous data from EEGLAB using: File > Export > Data and epochs > "
+                    f"Export epoch data, or use Tools > Remove epochs to convert back to continuous data."
+                )
             else:
                 # Re-raise if it's a different error
                 raise

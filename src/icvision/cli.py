@@ -312,6 +312,15 @@ Examples:
                     suggestion="Either run ICA decomposition in EEGLAB first, or provide a separate ICA file:\n"
                     f"  autoclean-icvision {args.raw_data_path} your_ica_file.fif",
                 )
+            elif "epoched data" in error_str:
+                print_error(
+                    "Epoched data detected - only continuous data supported",
+                    details="Your EEGLAB file contains epoched data, but ICVision requires continuous data",
+                    suggestion="Convert to continuous data in EEGLAB:\n"
+                    "  File > Export > Data and epochs > Export epoch data\n"
+                    "  OR: Tools > Remove epochs to convert back to continuous data\n"
+                    "  OR: Use continuous raw data that hasn't been epoched yet",
+                )
             elif "API key" in error_str:
                 print_error(
                     "OpenAI API key not found",
