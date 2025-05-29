@@ -92,10 +92,19 @@ CLASSIFICATION PRIORITY (IMPORTANT: Evaluate in this order. Later rules apply on
 
 IMPORTANT: A 60Hz NOTCH (negative dip) in spectrum is normal filtering, seen in most components, and should NOT be used for classification! Do not include this in your reasoning.
 
-Return: ("label", confidence_score, "detailed_reasoning")
+RETURN FORMAT: You must respond with ONLY a valid JSON object in the following exact format:
+{
+    "label": "one_of_the_valid_labels",
+    "confidence": 0.95,
+    "reason": "detailed_reasoning_for_the_classification"
+}
 
-Example: ("eye", 0.95, "Strong frontal topography with left-right dipolar pattern (horizontal eye movement) or frontal positivity with spike-like patterns (vertical eye movement/blinks). Low-frequency dominated spectrum and characteristic time series confirm eye activity.")
-Example: ("other_artifact", 0.3, "No recognizable pattern in the topography. Time series and power spectrum do not show any clear indicators of artifact.)
+The "label" must be exactly one of: brain, eye, muscle, heart, line_noise, channel_noise, other_artifact
+The "confidence" must be a number between 0.0 and 1.0
+The "reason" should provide detailed reasoning for your classification decision.
+
+Example JSON response:
+{"label": "eye", "confidence": 0.95, "reason": "Strong frontal topography with left-right dipolar pattern (horizontal eye movement) or frontal positivity with spike-like patterns (vertical eye movement/blinks). Low-frequency dominated spectrum and characteristic time series confirm eye activity."}
 """
 
 # Default configuration parameters

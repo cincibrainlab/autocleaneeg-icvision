@@ -1,8 +1,9 @@
 """
 OpenAI API interaction for ICVision.
 
-This module handles communication with the OpenAI Vision API, including
-batching image classification requests and parsing responses.
+This module handles communication with the OpenAI Vision API using the new
+responses endpoint for computer vision tasks. Includes batching image 
+classification requests and parsing structured JSON responses.
 """
 
 import base64
@@ -37,6 +38,9 @@ def classify_component_image_openai(
     """
     Sends a single component image to OpenAI Vision API for classification.
 
+    Uses OpenAI's new responses API endpoint for computer vision tasks.
+    Sends the image with base64 encoding and processes structured JSON responses.
+
     Args:
         image_path: Path to the component image file (WebP format preferred).
         api_key: OpenAI API key.
@@ -61,49 +65,53 @@ def classify_component_image_openai(
         client = openai.OpenAI(api_key=api_key)
         logger.debug("Sending %s to OpenAI (model: %s)...", image_path.name, model_name)
 
-        # Define JSON schema for structured output
-        response_format = {
-            "type": "json_schema",
-            "json_schema": {
-                "name": "component_classification",
-                "strict": True,
-                "schema": {
-                    "type": "object",
-                    "properties": {
-                        "label": {"type": "string", "enum": COMPONENT_LABELS},
-                        "confidence": {"type": "number", "minimum": 0.0, "maximum": 1.0},
-                        "reason": {"type": "string", "description": "Detailed reasoning for the classification"},
-                    },
-                    "required": ["label", "confidence", "reason"],
-                    "additionalProperties": False,
-                },
-            },
-        }
-
-        response = client.chat.completions.create(
+        # Use OpenAI's new responses API for computer vision
+        # Text prompt and image are sent as separate input entries
+        # Note: response_format not supported in responses API - structured output must be requested in prompt
+        response = client.responses.create(
             model=model_name,
-            messages=[
+            input=[
+                {
+                    "role": "user",
+                    "content": prompt_to_use
+                },
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": prompt_to_use},
                         {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/webp;base64,{base64_image}",
-                            },
-                        },
-                    ],
+                            "type": "input_image",
+                            "image_url": f"data:image/webp;base64,{base64_image}",
+                        }
+                    ]
                 }
             ],
-            response_format=response_format,
             temperature=0.2,  # Low temperature for more deterministic output
         )
 
-        # Parse structured response
-        if response and response.choices and response.choices[0].message:
-            message_content = response.choices[0].message.content
-            if message_content:
+        # Parse structured response from new responses API
+        # Response structure (based on OpenAI responses API format):
+        # {
+        #   "output": [
+        #     {
+        #       "content": [
+        #         {
+        #           "type": "output_text",
+        #           "text": "{JSON response here}",
+        #           "annotations": []
+        #         }
+        #       ]
+        #     }
+        #   ]
+        # }
+        # The JSON content is in response.output[0].content[0].text
+        if (response and hasattr(response, 'output') and response.output and 
+            len(response.output) > 0 and hasattr(response.output[0], 'content') and 
+            response.output[0].content and len(response.output[0].content) > 0):
+            
+            # Extract text from the first content item
+            content_item = response.output[0].content[0]
+            if hasattr(content_item, 'text'):
+                message_content = content_item.text
                 try:
                     import json
 
@@ -132,7 +140,7 @@ def classify_component_image_openai(
                         confidence,
                     )
 
-                    # Log response metadata
+                    # Log response metadata (updated for new API structure)
                     logger.debug(
                         "Response ID: %s, Usage: %s",
                         getattr(response, "id", "N/A"),

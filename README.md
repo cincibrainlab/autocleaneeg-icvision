@@ -18,6 +18,9 @@ ICVision automates the tedious process of classifying ICA components from EEG da
 - Multi-panel component plots (topography, time series, PSD, ERP-image)
 - MNE-Python integration with `.fif` and `.set` file support
 - **EEGLAB .set file auto-detection**: Single file input with automatic ICA detection
+- **Smart file organization**: Basename-prefixed output files prevent overwrites when processing multiple datasets
+- **Continuous data only**: Graceful error handling for epoched data with helpful conversion instructions
+- **Enhanced PDF reports**: Professional dual-header layout with color-coded classification results
 - Parallel processing with configurable batch sizes
 - Command-line and Python API interfaces
 - Comprehensive PDF reports and CSV results
@@ -59,18 +62,32 @@ ICVision can automatically detect and read ICA data from EEGLAB `.set` files, ma
 This command will:
 1.  Load the raw EEG data and ICA solution (auto-detected from `.set` file or from separate files).
 2.  Classify components using the default settings.
-3.  Create an `icvision_results/` directory in your current working directory.
-4.  Save the following into the output directory:
-    *   Cleaned raw data (artifacts removed).
-    *   Updated ICA object with component labels.
-    *   `icvision_results.csv` detailing classifications for each component.
-    *   `classification_summary.txt` with overall statistics.
-    *   `icvision_report_all_comps.pdf` (if report generation is enabled by default).
+3.  Create an `autoclean_icvision_results/` directory in your current working directory.
+4.  Save the following into the output directory (with input filename prefix for organization):
+    *   Cleaned raw data (artifacts removed): `{basename}_icvis_cleaned_raw.{format}`
+    *   Updated ICA object with component labels: `{basename}_icvis_classified_ica.fif`
+    *   `{basename}_icvis_results.csv` detailing classifications for each component.
+    *   `{basename}_icvis_summary.txt` with overall statistics.
+    *   `{basename}_icvis_report_all_comps.pdf` (comprehensive PDF report with visualizations).
+
+**Note**: `{basename}` is extracted from your input filename (e.g., `sub-01_task-rest_eeg.set` → `sub-01_task-rest_eeg` prefix). This prevents file overwrites when processing multiple datasets.
+
+### Recent Improvements
+
+**Enhanced File Organization (v2024.12)**:
+- **Shared workspace**: All results now saved to `autoclean_icvision_results/` directory by default
+- **Smart naming**: Input filename prefixes (e.g., `sub-01_task-rest_eeg_icvis_results.csv`) prevent conflicts
+- **Multi-file friendly**: Process multiple datasets without overwrites - perfect for batch processing subjects
+
+**Improved User Experience**:
+- **Epoched data handling**: Clear error messages with EEGLAB conversion instructions for unsupported epoched data
+- **Enhanced PDF reports**: Professional layout with IC Component titles and color-coded Vision Classification results
+- **Better error messages**: Informative CLI output with suggested solutions
 
 **Common Options (with defaults):**
 
 *   `--api-key YOUR_API_KEY`: Specify OpenAI API key (default: `OPENAI_API_KEY` env variable)
-*   `--output-dir /path/to/output/`: Output directory (default: `./icvision_results`)
+*   `--output-dir /path/to/output/`: Output directory (default: `./autoclean_icvision_results`)
 *   `--model MODEL_NAME`: OpenAI model (default: `gpt-4.1`)
 *   `--confidence-threshold 0.8`: Confidence threshold for auto-exclusion (default: `0.8`)
 *   `--labels-to-exclude eye muscle heart`: Artifact labels to exclude (default: all non-brain types)
@@ -89,7 +106,6 @@ Single .set file usage:
 ```bash
 autoclean-icvision data/subject01_eeg.set \
     --api-key sk-xxxxxxxxxxxxxxxxxxxx \
-    --output-dir analysis_results/subject01_icvision \
     --confidence-threshold 0.9 \
     --verbose
 ```
@@ -98,12 +114,27 @@ Traditional separate files:
 ```bash
 autoclean-icvision data/subject01_raw.fif data/subject01_ica.fif \
     --api-key sk-xxxxxxxxxxxxxxxxxxxx \
-    --output-dir analysis_results/subject01_icvision \
     --model gpt-4.1 \
     --confidence-threshold 0.8 \
     --labels-to-exclude eye muscle line_noise channel_noise \
     --batch-size 8 \
     --verbose
+```
+
+Multi-file batch processing:
+```bash
+# Process multiple subjects - all results go to shared directory
+autoclean-icvision data/sub-01_task-rest_eeg.set --verbose
+autoclean-icvision data/sub-02_task-rest_eeg.set --verbose  
+autoclean-icvision data/sub-03_task-rest_eeg.set --verbose
+
+# Results organized in autoclean_icvision_results/ with prefixed filenames
+ls autoclean_icvision_results/
+# sub-01_task-rest_eeg_icvis_results.csv
+# sub-01_task-rest_eeg_icvis_classified_ica.fif
+# sub-02_task-rest_eeg_icvis_results.csv
+# sub-02_task-rest_eeg_icvis_classified_ica.fif
+# ...
 ```
 
 ### Python API
@@ -197,7 +228,7 @@ Other supported formats include:
 | `confidence_threshold` | `0.8` | Minimum confidence for auto-exclusion |
 | `auto_exclude` | `True` | Automatically exclude artifact components |
 | `labels_to_exclude` | `["eye", "muscle", "heart", "line_noise", "channel_noise", "other_artifact"]` | Labels to exclude (all non-brain) |
-| `output_dir` | `"./icvision_results"` | Output directory for results |
+| `output_dir` | `"./autoclean_icvision_results"` | Output directory for results |
 | `generate_report` | `True` | Generate PDF report |
 | `batch_size` | `10` | Components per API request |
 | `max_concurrency` | `4` | Maximum parallel API requests |
@@ -219,10 +250,29 @@ These are defined in `src/icvision/config.py`.
 
 ### Output Files
 
-*   `{output_dir}/icvision_classified_ica.fif`: MNE ICA object with labels and exclusions
-*   `{output_dir}/icvision_results.csv`: Detailed classification results per component
-*   `{output_dir}/classification_summary.txt`: Summary statistics by label type
-*   `{output_dir}/icvision_report_all_comps.pdf`: Comprehensive PDF report (if enabled)
+ICVision creates organized output files with input filename prefixes to prevent overwrites when processing multiple datasets:
+
+*   `{basename}_icvis_classified_ica.fif`: MNE ICA object with labels and exclusions
+*   `{basename}_icvis_results.csv`: Detailed classification results per component
+*   `{basename}_icvis_cleaned_raw.{format}`: Cleaned EEG data with artifacts removed
+*   `{basename}_icvis_summary.txt`: Summary statistics by label type
+*   `{basename}_icvis_report_all_comps.pdf`: Comprehensive PDF report (if enabled)
+*   `component_IC{N}_vision_analysis.webp`: Individual component plots used for API classification
+
+**Example**: Processing `sub-01_task-rest_eeg.set` creates files like:
+- `sub-01_task-rest_eeg_icvis_results.csv`
+- `sub-01_task-rest_eeg_icvis_classified_ica.fif`
+- `sub-01_task-rest_eeg_icvis_cleaned_raw.set`
+
+**Multi-file Processing**: All results are saved to the same `autoclean_icvision_results/` directory, with basename prefixes ensuring no conflicts:
+```bash
+autoclean_icvision_results/
+├── sub-01_task-rest_eeg_icvis_results.csv
+├── sub-01_task-rest_eeg_icvis_classified_ica.fif
+├── sub-02_task-rest_eeg_icvis_results.csv
+├── sub-02_task-rest_eeg_icvis_classified_ica.fif
+└── pilot_data_icvis_results.csv
+```
 
 ### Custom Classification Prompt
 
