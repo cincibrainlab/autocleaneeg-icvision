@@ -145,7 +145,7 @@ def load_ica_data(ica_input: Union[str, Path, mne.preprocessing.ICA]) -> mne.pre
             "Unsupported ICA file format: {}. Supported formats: .fif (MNE), .set (EEGLAB)".format(file_extension)
         )
 
-    logger.info("Successfully loaded ICA: %d components", ica.n_components_)
+    logger.debug("Successfully loaded ICA: %d components", ica.n_components_)
     return ica
 
 

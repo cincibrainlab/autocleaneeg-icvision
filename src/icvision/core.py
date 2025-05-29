@@ -116,7 +116,7 @@ def label_components(
         >>> print(f"Processed {len(results)} components")
         >>> print(f"Excluded {results['exclude_vision'].sum()} artifacts")
     """
-    logger.info("Starting ICVision component classification workflow")
+    logger.debug("Starting ICVision component classification workflow")
 
     # Step 1: Validate and prepare inputs
     logger.debug("Loading and validating input data...")
@@ -136,7 +136,7 @@ def label_components(
                     logger.info("Attempting to auto-detect ICA data from EEGLAB .set file: %s", raw_path)
                     if check_eeglab_ica_availability(raw_path):
                         ica_data = raw_path
-                        logger.info("Successfully detected ICA data in .set file")
+                        logger.debug("Successfully detected ICA data in .set file")
                     else:
                         raise ValueError(
                             f"No ICA data found in .set file: {raw_path}. "
@@ -174,7 +174,7 @@ def label_components(
     )
 
     # Step 2: Classify components using OpenAI Vision API
-    logger.info("Classifying ICA components using OpenAI Vision API...")
+    logger.debug("Classifying ICA components using OpenAI Vision API...")
 
     try:
         results_df = classify_components_batch(

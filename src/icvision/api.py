@@ -256,7 +256,7 @@ def classify_components_batch(
     image_output_path = Path(temp_dir_context.name)
 
     try:
-        logger.debug("Generating component images in: %s", image_output_path)
+        logger.info("Generating component images in temporary directory: %s", image_output_path)
 
         # Use improved batch plotting with better error handling
         component_indices = list(range(num_components))

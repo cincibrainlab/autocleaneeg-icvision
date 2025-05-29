@@ -95,6 +95,7 @@ IMPORTANT: A 60Hz NOTCH (negative dip) in spectrum is normal filtering, seen in 
 Return: ("label", confidence_score, "detailed_reasoning")
 
 Example: ("eye", 0.95, "Strong frontal topography with left-right dipolar pattern (horizontal eye movement) or frontal positivity with spike-like patterns (vertical eye movement/blinks). Low-frequency dominated spectrum and characteristic time series confirm eye activity.")
+Example: ("other_artifact", 0.3, "No recognizable pattern in the topography. Time series and power spectrum do not show any clear indicators of artifact.)
 """
 
 # Default configuration parameters
@@ -105,7 +106,7 @@ DEFAULT_CONFIG = {
     "batch_size": 10,
     "max_concurrency": 5,
     "model_name": DEFAULT_MODEL,
-    "generate_report": False,
+    "generate_report": True,
 }
 
 # Color mapping for visualization

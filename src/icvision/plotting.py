@@ -360,20 +360,7 @@ def plot_component_for_classification(
                 bbox=dict(boxstyle="round,pad=0.4", fc="aliceblue", alpha=0.75, ec="lightgrey"),
             )
 
-        # Adjust layout for PDF
-        bottom_adj = gridspec_bottom if classification_reason else 0.03
-        top_adj = gridspec_top - (0.05 if classification_label else 0.02)
-        try:
-            fig.subplots_adjust(
-                left=0.05,
-                right=0.95,
-                bottom=bottom_adj,
-                top=top_adj,
-                hspace=0.7,
-                wspace=0.35,
-            )
-        except ValueError:
-            logger.warning("Could not apply subplots_adjust for IC%d in PDF.", component_idx)
+        # No additional layout adjustment needed - GridSpec already handles proper spacing
         return fig
     else:
         # Save as .webp for OpenAI API (no classification text on image itself)
@@ -432,7 +419,7 @@ def plot_components_batch(
     # Ensure matplotlib backend is set properly
     matplotlib.use("Agg", force=True)
 
-    logger.info(
+    logger.debug(
         "Plotting %d components sequentially with enhanced error handling",
         len(component_indices),
     )
