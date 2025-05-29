@@ -23,11 +23,13 @@ def load_raw_data(raw_input: Union[str, Path, mne.io.BaseRaw]) -> mne.io.BaseRaw
     """
     Load raw EEG data from file path or return existing Raw object.
 
-    Supports EEGLAB .set/.fdt format and MNE-compatible formats.
+    Supports EEGLAB .set/.fdt format (both raw and epoched data) and MNE-compatible formats.
+    If an EEGLAB .set file contains epoched data, it will be automatically converted to 
+    continuous raw data by concatenating epochs.
 
     Args:
         raw_input: Either a file path (str/Path) or an existing mne.io.Raw object.
-                   For EEGLAB format, provide path to .set file.
+                   For EEGLAB format, provide path to .set file (handles both raw and epoched data).
 
     Returns:
         Loaded mne.io.Raw object.
@@ -38,7 +40,8 @@ def load_raw_data(raw_input: Union[str, Path, mne.io.BaseRaw]) -> mne.io.BaseRaw
         RuntimeError: If data loading fails.
 
     Example:
-        >>> raw = load_raw_data("data/sub-01_task-rest_eeg.set")
+        >>> raw = load_raw_data("data/sub-01_task-rest_eeg.set")  # Raw data
+        >>> raw = load_raw_data("data/sub-01_epochs.set")        # Epoched data (auto-converted)
         >>> raw = load_raw_data(existing_raw_object)
     """
     if isinstance(raw_input, mne.io.BaseRaw):
@@ -55,7 +58,31 @@ def load_raw_data(raw_input: Union[str, Path, mne.io.BaseRaw]) -> mne.io.BaseRaw
 
     if file_extension == ".set":
         logger.debug("Loading EEGLAB data from: %s", file_path)
-        raw = mne.io.read_raw_eeglab(file_path, preload=True)
+        try:
+            # First try to read as raw data
+            raw = mne.io.read_raw_eeglab(file_path, preload=True)
+        except TypeError as e:
+            # Check if the error is due to epoched data
+            if "trials" in str(e).lower() and "epochs" in str(e).lower():
+                logger.info("EEGLAB file contains epochs, converting to raw data: %s", file_path)
+                # Read as epochs and convert to raw
+                epochs = mne.io.read_epochs_eeglab(file_path)
+                
+                # Get data array from epochs (n_epochs, n_channels, n_times)
+                data_array = epochs.get_data()  # shape: (n_epochs, n_channels, n_times)
+                # Reshape to continuous format (n_channels, n_epochs * n_times)
+                n_epochs, n_channels, n_times = data_array.shape
+                continuous_data = data_array.transpose(1, 0, 2).reshape(n_channels, -1)
+                
+                # Create raw info from epochs info
+                raw_info = epochs.info.copy()
+                
+                # Create Raw object
+                raw = mne.io.RawArray(continuous_data, raw_info)
+                logger.info("Successfully converted %d epochs to continuous raw data", n_epochs)
+            else:
+                # Re-raise if it's a different error
+                raise
     elif file_extension == ".fif":
         logger.debug("Loading MNE FIF data from: %s", file_path)
         raw = mne.io.read_raw_fif(file_path, preload=True)
