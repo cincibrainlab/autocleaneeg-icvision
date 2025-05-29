@@ -182,3 +182,4 @@ docs/your_package.rst
 # Claude Code files
 .claude/
 CLAUDE.md
+/autoclean_icvision_results
