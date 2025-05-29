@@ -83,6 +83,7 @@ This command will:
 **Improved User Experience**:
 - **Epoched data handling**: Clear error messages with EEGLAB conversion instructions for unsupported epoched data
 - **Enhanced PDF reports**: Professional layout with IC Component titles and color-coded Vision Classification results
+- **Clean logging output**: Professional, user-focused logging with optional verbose mode for debugging
 - **Better error messages**: Informative CLI output with suggested solutions
 
 **Common Options (with defaults):**
@@ -297,6 +298,42 @@ ICVision automatically tracks and estimates OpenAI API costs during processing:
 - 64 components: $0.004-0.077 depending on model
 
 Cost estimates are automatically logged during processing. Use `--verbose` flag to see detailed per-component cost tracking.
+
+### Logging and Verbosity
+
+ICVision provides two logging modes for different use cases:
+
+**Normal Mode** (Default - Clean output for researchers):
+```bash
+autoclean-icvision data.set
+# Output:
+# 2025-05-29 13:33:43 - INFO - Starting ICVision CLI v0.1.0
+# 2025-05-29 13:33:44 - INFO - OpenAI classification complete. Processed 20/20 components
+# 2025-05-29 13:33:45 - INFO - ICVision workflow completed successfully!
+```
+
+**Verbose Mode** (Detailed debugging information):
+```bash
+autoclean-icvision data.set --verbose
+# Output:
+# 2025-05-29 13:33:43 - icvision - INFO - Verbose logging enabled - showing module details
+# 2025-05-29 13:33:44 - icvision.core - DEBUG - Loading and validating input data...
+# 2025-05-29 13:33:45 - icvision.api - DEBUG - Response ID: resp_123..., Tokens: 400/50, Cost: $0.001200
+# 2025-05-29 13:33:45 - icvision.plotting - DEBUG - Plotting progress: 10/20 components completed
+```
+
+**Verbose mode provides**:
+- Module-level debugging information
+- Detailed OpenAI API cost tracking per component
+- Progress indicators for long-running operations
+- External library logging (httpx, openai, etc.)
+- Full error stack traces for troubleshooting
+
+**Use verbose mode when**:
+- Debugging processing issues
+- Monitoring API costs in detail
+- Contributing to development
+- Troubleshooting unexpected behavior
 
 ## Development
 
