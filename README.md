@@ -128,7 +128,7 @@ Multi-file batch processing:
 ```bash
 # Process multiple subjects - all results go to shared directory
 autoclean-icvision data/sub-01_task-rest_eeg.set --verbose
-autoclean-icvision data/sub-02_task-rest_eeg.set --verbose  
+autoclean-icvision data/sub-02_task-rest_eeg.set --verbose
 autoclean-icvision data/sub-03_task-rest_eeg.set --verbose
 
 # Results organized in autoclean_icvision_results/ with prefixed filenames
@@ -261,26 +261,26 @@ The compatibility layer works seamlessly with existing MNE workflows:
 ```python
 def analyze_ica_components(raw, ica, method='icvision'):
     """Generic function that works with both ICLabel and ICVision"""
-    
+
     if method == 'icvision':
         from icvision.compat import label_components
     else:
         from mne_icalabel import label_components
-    
+
     # Same API for both!
     result = label_components(raw, ica, method=method)
-    
+
     # Same return format for both
     print(f"Classified {len(result['labels'])} components")
-    
+
     # Same ICA object modifications for both
     brain_components = ica.labels_['brain']
-    artifact_components = [idx for key, indices in ica.labels_.items() 
+    artifact_components = [idx for key, indices in ica.labels_.items()
                           if key != 'brain' for idx in indices]
-    
+
     print(f"Brain components: {brain_components}")
     print(f"Artifact components: {artifact_components}")
-    
+
     return result
 
 # Works with either classifier
@@ -299,7 +299,7 @@ ICVision provides **two complementary interfaces**:
 
 2. **ICLabel-Compatible API**: Simple output matching ICLabel exactly
    ```python
-   from icvision.compat import label_components  
+   from icvision.compat import label_components
    result = label_components(raw, ica, method='icvision')
    ```
 

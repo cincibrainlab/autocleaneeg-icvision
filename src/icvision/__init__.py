@@ -23,6 +23,6 @@ from .core import label_components
 # Define what gets imported with "from icvision import *"
 __all__ = [
     "label_components",
-    "COMPONENT_LABELS", 
+    "COMPONENT_LABELS",
     "DEFAULT_MODEL",
 ]
