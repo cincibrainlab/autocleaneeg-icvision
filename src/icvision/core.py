@@ -119,13 +119,12 @@ def label_components(
         >>> print(f"Excluded {results['exclude_vision'].sum()} artifacts")
     """
     logger.debug("Starting ICVision component classification workflow")
-    
+
     # Suppress MNE montage warnings for cleaner output
     # These warnings about EOG channel positions don't affect ICA classification
     import warnings
-    warnings.filterwarnings("ignore", 
-                          message="Not setting positions.*eog channels.*montage",
-                          category=RuntimeWarning)
+
+    warnings.filterwarnings("ignore", message="Not setting positions.*eog channels.*montage", category=RuntimeWarning)
 
     # Step 1: Validate and prepare inputs
     logger.debug("Loading and validating input data...")
@@ -189,7 +188,7 @@ def label_components(
     logger.debug("Classifying ICA components using OpenAI Vision API...")
 
     try:
-        results_df = classify_components_batch(
+        results_df, cost_tracking = classify_components_batch(
             ica_obj=ica,
             raw_obj=raw,
             api_key=validated_api_key,
@@ -244,11 +243,13 @@ def label_components(
             logger.info("Cleaned raw data saved to: %s", cleaned_data_path)
 
         # Generate summary statistics
-        summary = format_summary_stats(results_df)
+        summary = format_summary_stats(results_df, cost_tracking, model_name)
         logger.info("\n%s", summary)
 
         # Save summary to file
-        summary_filename = f"{input_basename}_icvis_summary.txt" if input_basename != "icvision" else "classification_summary.txt"
+        summary_filename = (
+            f"{input_basename}_icvis_summary.txt" if input_basename != "icvision" else "classification_summary.txt"
+        )
         summary_path = output_path / summary_filename
         with open(summary_path, "w") as f:
             f.write(summary)
@@ -264,7 +265,7 @@ def label_components(
             source_filename = None
             if original_raw_path:
                 source_filename = Path(original_raw_path).name
-            
+
             report_path = generate_classification_report(
                 ica_obj=ica_updated,
                 raw_obj=raw_cleaned,

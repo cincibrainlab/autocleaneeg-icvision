@@ -60,10 +60,11 @@ def load_raw_data(raw_input: Union[str, Path, mne.io.BaseRaw]) -> mne.io.BaseRaw
         try:
             # Suppress MNE montage warnings for cleaner output
             import warnings
+
             with warnings.catch_warnings():
-                warnings.filterwarnings("ignore", 
-                                      message="Not setting positions.*eog channels.*montage",
-                                      category=RuntimeWarning)
+                warnings.filterwarnings(
+                    "ignore", message="Not setting positions.*eog channels.*montage", category=RuntimeWarning
+                )
                 # First try to read as raw data
                 raw = mne.io.read_raw_eeglab(file_path, preload=True)
         except TypeError as e:
@@ -117,10 +118,11 @@ def check_eeglab_ica_availability(set_file_path: Union[str, Path]) -> bool:
     try:
         # Suppress MNE montage warnings for cleaner output
         import warnings
+
         with warnings.catch_warnings():
-            warnings.filterwarnings("ignore", 
-                                  message="Not setting positions.*eog channels.*montage",
-                                  category=RuntimeWarning)
+            warnings.filterwarnings(
+                "ignore", message="Not setting positions.*eog channels.*montage", category=RuntimeWarning
+            )
             # Attempt to read ICA data from the .set file
             ica = mne.preprocessing.read_ica_eeglab(set_file_path)
         # Additional check to ensure ICA was actually fitted
@@ -182,10 +184,11 @@ def load_ica_data(ica_input: Union[str, Path, mne.preprocessing.ICA]) -> mne.pre
         try:
             # Suppress MNE montage warnings for cleaner output
             import warnings
+
             with warnings.catch_warnings():
-                warnings.filterwarnings("ignore", 
-                                      message="Not setting positions.*eog channels.*montage",
-                                      category=RuntimeWarning)
+                warnings.filterwarnings(
+                    "ignore", message="Not setting positions.*eog channels.*montage", category=RuntimeWarning
+                )
                 ica = mne.preprocessing.read_ica_eeglab(file_path)
         except Exception as e:
             error_msg = str(e).lower()
@@ -253,11 +256,11 @@ def sanitize_filename(filename: str) -> str:
         Sanitized filename safe for filesystem use.
     """
     import re
-    
+
     # Remove or replace problematic characters
-    sanitized = re.sub(r'[<>:"/\\|?*]', '_', filename)
+    sanitized = re.sub(r'[<>:"/\\|?*]', "_", filename)
     # Remove leading/trailing whitespace and dots
-    sanitized = sanitized.strip('. ')
+    sanitized = sanitized.strip(". ")
     # Limit length to reasonable filesystem limits
     if len(sanitized) > 100:
         sanitized = sanitized[:100]
@@ -279,7 +282,7 @@ def extract_input_basename(input_path: Union[str, Path]) -> str:
     """
     if input_path is None:
         return "icvision"
-    
+
     path = Path(input_path)
     # Get filename without extension
     basename = path.stem
@@ -287,10 +290,7 @@ def extract_input_basename(input_path: Union[str, Path]) -> str:
     return sanitize_filename(basename)
 
 
-def create_output_directory(
-    output_dir: Optional[Union[str, Path]], 
-    input_basename: Optional[str] = None
-) -> Path:
+def create_output_directory(output_dir: Optional[Union[str, Path]], input_basename: Optional[str] = None) -> Path:
     """
     Create output directory for results.
 
@@ -340,10 +340,7 @@ def validate_api_key(api_key: Optional[str]) -> str:
 
 
 def save_results(
-    results_df: pd.DataFrame, 
-    output_dir: Path, 
-    input_basename: Optional[str] = None,
-    filename: Optional[str] = None
+    results_df: pd.DataFrame, output_dir: Path, input_basename: Optional[str] = None, filename: Optional[str] = None
 ) -> Path:
     """
     Save classification results to CSV file.
@@ -362,7 +359,7 @@ def save_results(
             filename = "icvision_results.csv"
         else:
             filename = f"{input_basename}_icvis_results.csv"
-    
+
     output_path = output_dir / filename
     if results_df.empty and len(results_df.columns) == 0:
         # Create empty CSV with expected headers for completely empty dataframe
@@ -382,12 +379,16 @@ def save_results(
     return output_path
 
 
-def format_summary_stats(results_df: pd.DataFrame) -> str:
+def format_summary_stats(
+    results_df: pd.DataFrame, cost_tracking: Optional[dict] = None, model_name: Optional[str] = None
+) -> str:
     """
     Create a formatted summary of classification results.
 
     Args:
         results_df: DataFrame with classification results.
+        cost_tracking: Dictionary with cost tracking information (optional).
+        model_name: OpenAI model name used (optional).
 
     Returns:
         Formatted string summary.
@@ -403,6 +404,23 @@ def format_summary_stats(results_df: pd.DataFrame) -> str:
         ]
         for label in COMPONENT_LABELS:
             summary_lines.append(f"- {label.title()}: 0")
+
+        # Add cost information if available
+        if cost_tracking and cost_tracking.get("requests_count", 0) > 0:
+            summary_lines.extend(
+                [
+                    "",
+                    "OpenAI API Cost Summary:",
+                    "=" * 25,
+                    f"Total cost: ${cost_tracking['total_cost']:.6f}",
+                    f"Model used: {model_name or 'Unknown'}",
+                    f"Total requests: {cost_tracking['requests_count']}",
+                    f"Input tokens: {cost_tracking['total_input_tokens']:,}",
+                    f"Output tokens: {cost_tracking['total_output_tokens']:,}",
+                    f"Cached tokens: {cost_tracking['total_cached_tokens']:,} (saved cost)",
+                ]
+            )
+
         return "\n".join(summary_lines)
 
     total_components = len(results_df)
@@ -426,6 +444,22 @@ def format_summary_stats(results_df: pd.DataFrame) -> str:
     for label in COMPONENT_LABELS:
         count = label_counts.get(label, 0)
         summary_lines.append(f"- {label.title()}: {count}")
+
+    # Add cost information if available
+    if cost_tracking and cost_tracking.get("requests_count", 0) > 0:
+        summary_lines.extend(
+            [
+                "",
+                "OpenAI API Cost Summary:",
+                "=" * 25,
+                f"Total cost: ${cost_tracking['total_cost']:.6f}",
+                f"Model used: {model_name or 'Unknown'}",
+                f"Total requests: {cost_tracking['requests_count']}",
+                f"Input tokens: {cost_tracking['total_input_tokens']:,}",
+                f"Output tokens: {cost_tracking['total_output_tokens']:,}",
+                f"Cached tokens: {cost_tracking['total_cached_tokens']:,} (saved cost)",
+            ]
+        )
 
     return "\n".join(summary_lines)
 
@@ -482,11 +516,8 @@ def validate_classification_results(results_df: pd.DataFrame) -> bool:
 
 
 def calculate_openai_cost(
-    input_tokens: int,
-    output_tokens: int, 
-    model_name: str,
-    cached_tokens: int = 0
-) -> Dict[str, float]:
+    input_tokens: int, output_tokens: int, model_name: str, cached_tokens: int = 0
+) -> Dict[str, Any]:
     """
     Calculate OpenAI API costs based on token usage.
 
@@ -501,36 +532,37 @@ def calculate_openai_cost(
         All costs in USD.
     """
     from .config import OPENAI_PRICING
-    
+
     # Normalize model name for pricing lookup
     pricing_key = model_name.lower()
     if pricing_key not in OPENAI_PRICING:
         # Try without version suffix for compatibility
-        base_model = pricing_key.split('-')[0] + '-' + pricing_key.split('-')[1]
+        base_model = pricing_key.split("-")[0] + "-" + pricing_key.split("-")[1]
         if base_model in OPENAI_PRICING:
             pricing_key = base_model
         else:
             logger.warning("Unknown model '%s' for cost calculation, using gpt-4.1 pricing", model_name)
             pricing_key = "gpt-4.1"
-    
+
     pricing = OPENAI_PRICING[pricing_key]
-    
+
     # Calculate costs (pricing is per 1M tokens)
     regular_input_tokens = max(0, input_tokens - cached_tokens)
-    
-    input_cost = (regular_input_tokens * pricing["input"] / 1_000_000) + \
-                 (cached_tokens * pricing["cached_input"] / 1_000_000)
+
+    input_cost = (regular_input_tokens * pricing["input"] / 1_000_000) + (
+        cached_tokens * pricing["cached_input"] / 1_000_000
+    )
     output_cost = output_tokens * pricing["output"] / 1_000_000
     total_cost = input_cost + output_cost
-    
+
     return {
         "input_cost": round(input_cost, 6),
-        "output_cost": round(output_cost, 6), 
+        "output_cost": round(output_cost, 6),
         "total_cost": round(total_cost, 6),
         "model": pricing_key,
-        "input_tokens": input_tokens,
-        "output_tokens": output_tokens,
-        "cached_tokens": cached_tokens
+        "input_tokens": float(input_tokens),
+        "output_tokens": float(output_tokens),
+        "cached_tokens": float(cached_tokens),
     }
 
 
@@ -561,7 +593,7 @@ def save_cleaned_raw_data(
             filename_prefix = "icvision_cleaned"
         else:
             filename_prefix = f"{input_basename}_icvis_cleaned"
-    
+
     if original_raw_path is None:
         logger.info("Original raw data was an MNE object - saving cleaned data as .fif file")
         output_filename = f"{filename_prefix}_raw.fif"

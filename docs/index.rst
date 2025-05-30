@@ -30,6 +30,7 @@ Key Features
 ------------
 
 - Automated classification of 7 component types (brain, eye, muscle, heart, line noise, channel noise, other)
+- **🔄 Drop-in replacement for MNE-ICALabel**: Same API, enhanced with OpenAI Vision
 - Multi-panel component plots (topography, time series, PSD, ERP-image)
 - MNE-Python integration with ``.fif`` and ``.set`` file support
 - Parallel processing with configurable batch sizes
@@ -82,6 +83,7 @@ Documentation Contents
 
    installation
    quickstart
+   icalabel_compatibility
    configuration
    examples
    troubleshooting
@@ -91,6 +93,7 @@ Documentation Contents
    :caption: API Reference
 
    api/core
+   api/compat
    api/api
    api/cli
    api/plotting

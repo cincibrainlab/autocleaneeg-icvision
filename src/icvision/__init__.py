@@ -14,12 +14,15 @@ from .config import COMPONENT_LABELS, DEFAULT_MODEL
 # Public API - Import and expose main functions
 from .core import label_components
 
+# ICLabel compatibility layer - can be imported separately
+# from icvision.compat import label_components  # ICLabel drop-in replacement
+
 # CLI is available but not imported by default to avoid import overhead
 # Users can import it explicitly with: from icvision import cli
 
 # Define what gets imported with "from icvision import *"
 __all__ = [
     "label_components",
-    "COMPONENT_LABELS",
+    "COMPONENT_LABELS", 
     "DEFAULT_MODEL",
 ]

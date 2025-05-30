@@ -2,7 +2,7 @@
 OpenAI API interaction for ICVision.
 
 This module handles communication with the OpenAI Vision API using the new
-responses endpoint for computer vision tasks. Includes batching image 
+responses endpoint for computer vision tasks. Includes batching image
 classification requests and parsing structured JSON responses.
 """
 
@@ -34,7 +34,7 @@ def classify_component_image_openai(
     api_key: str,
     model_name: str,
     custom_prompt: Optional[str] = None,
-) -> Tuple[str, float, str]:
+) -> Tuple[str, float, str, Optional[Dict[str, Any]]]:
     """
     Sends a single component image to OpenAI Vision API for classification.
 
@@ -48,13 +48,13 @@ def classify_component_image_openai(
         custom_prompt: Optional custom prompt to use instead of default.
 
     Returns:
-        Tuple: (label, confidence, reason).
-               Defaults to ("other_artifact", 1.0, "API error or parsing failure") on error.
+        Tuple: (label, confidence, reason, cost_info).
+               Defaults to ("other_artifact", 1.0, "API error or parsing failure", None) on error.
                The label is one of the COMPONENT_LABELS.
     """
     if not image_path or not image_path.exists():
         logger.error("Invalid or non-existent image path: %s", image_path)
-        return "other_artifact", 1.0, "Invalid image path"
+        return "other_artifact", 1.0, "Invalid image path", None
 
     prompt_to_use = custom_prompt or OPENAI_ICA_PROMPT
 
@@ -71,10 +71,7 @@ def classify_component_image_openai(
         response = client.responses.create(
             model=model_name,
             input=[
-                {
-                    "role": "user",
-                    "content": prompt_to_use
-                },
+                {"role": "user", "content": prompt_to_use},
                 {
                     "role": "user",
                     "content": [
@@ -82,8 +79,8 @@ def classify_component_image_openai(
                             "type": "input_image",
                             "image_url": f"data:image/webp;base64,{base64_image}",
                         }
-                    ]
-                }
+                    ],
+                },
             ],
             temperature=0.2,  # Low temperature for more deterministic output
         )
@@ -104,13 +101,19 @@ def classify_component_image_openai(
         #   ]
         # }
         # The JSON content is in response.output[0].content[0].text
-        if (response and hasattr(response, 'output') and response.output and 
-            len(response.output) > 0 and hasattr(response.output[0], 'content') and 
-            response.output[0].content and len(response.output[0].content) > 0):
-            
+        if (
+            response
+            and hasattr(response, "output")
+            and response.output
+            and len(response.output) > 0
+            and hasattr(response.output[0], "content")
+            and response.output[0].content
+            and len(response.output[0].content) > 0
+        ):
+
             # Extract text from the first content item
             content_item = response.output[0].content[0]
-            if hasattr(content_item, 'text'):
+            if hasattr(content_item, "text"):
                 message_content = content_item.text
                 try:
                     import json
@@ -128,7 +131,7 @@ def classify_component_image_openai(
                             label,
                             image_path.name,
                         )
-                        return "other_artifact", 1.0, f"Invalid label '{label}' returned. Reason: {reason}"
+                        return "other_artifact", 1.0, f"Invalid label '{label}' returned. Reason: {reason}", None
 
                     # Validate confidence range
                     confidence = max(0.0, min(1.0, confidence))
@@ -141,36 +144,38 @@ def classify_component_image_openai(
                     )
 
                     # Log response metadata and calculate costs (updated for new API structure)
+                    cost_info = None
                     usage = getattr(response, "usage", None)
                     if usage:
                         from .utils import calculate_openai_cost
-                        
+
                         input_tokens = getattr(usage, "input_tokens", 0)
                         output_tokens = getattr(usage, "output_tokens", 0)
                         cached_tokens = getattr(getattr(usage, "input_tokens_details", None), "cached_tokens", 0) or 0
-                        
+
                         cost_info = calculate_openai_cost(
                             input_tokens=input_tokens,
                             output_tokens=output_tokens,
                             model_name=model_name,
-                            cached_tokens=cached_tokens
+                            cached_tokens=cached_tokens,
                         )
-                        
+                        # Add token counts to cost_info for tracking
+                        cost_info["input_tokens"] = input_tokens
+                        cost_info["output_tokens"] = output_tokens
+                        cost_info["cached_tokens"] = cached_tokens
+
                         logger.debug(
                             "Response ID: %s, Tokens: %d in/%d out/%d cached, Cost: $%.6f",
                             getattr(response, "id", "N/A"),
                             input_tokens,
-                            output_tokens, 
+                            output_tokens,
                             cached_tokens,
-                            cost_info["total_cost"]
+                            cost_info["total_cost"],
                         )
                     else:
-                        logger.debug(
-                            "Response ID: %s, Usage: N/A",
-                            getattr(response, "id", "N/A")
-                        )
+                        logger.debug("Response ID: %s, Usage: N/A", getattr(response, "id", "N/A"))
 
-                    return label, confidence, reason
+                    return label, confidence, reason, cost_info
 
                 except (json.JSONDecodeError, KeyError, ValueError) as e:
                     logger.error(
@@ -179,24 +184,25 @@ def classify_component_image_openai(
                         e,
                         message_content[:200],
                     )
-                    return "other_artifact", 1.0, f"JSON parsing error: {str(e)}"
+                    return "other_artifact", 1.0, f"JSON parsing error: {str(e)}", None
 
         logger.error("No valid structured content in OpenAI response for %s", image_path.name)
-        return "other_artifact", 1.0, "No valid structured response content"
+        return "other_artifact", 1.0, "No valid structured response content", None
 
     except openai.APIConnectionError as e:
         logger.error("OpenAI API connection error for %s: %s", image_path.name, e)
-        return "other_artifact", 1.0, "API Connection Error: {}".format(str(e)[:100])
+        return "other_artifact", 1.0, "API Connection Error: {}".format(str(e)[:100]), None
     except openai.AuthenticationError as e:
         logger.error("OpenAI API authentication error: %s. Check API key.", e)
         return (
             "other_artifact",
             1.0,
             "API Authentication Error: {}".format(str(e)[:100]),
+            None,
         )
     except openai.RateLimitError as e:
         logger.error("OpenAI API rate limit exceeded for %s: %s", image_path.name, e)
-        return "other_artifact", 1.0, "API Rate Limit Error: {}".format(str(e)[:100])
+        return "other_artifact", 1.0, "API Rate Limit Error: {}".format(str(e)[:100]), None
     except openai.APIStatusError as e:
         logger.error(
             "OpenAI API status error for %s: Status=%s, Response=%s",
@@ -208,10 +214,11 @@ def classify_component_image_openai(
             "other_artifact",
             1.0,
             "API Status Error {}: {}".format(e.status_code, str(e.response)[:100]),
+            None,
         )
     except ValueError as e:
         logger.error("Configuration error: %s", e)
-        return "other_artifact", 1.0, "Configuration error: {}".format(str(e)[:100])
+        return "other_artifact", 1.0, "Configuration error: {}".format(str(e)[:100]), None
     except Exception as e:
         logger.error(
             "Unexpected error during vision classification for %s: %s - %s",
@@ -223,16 +230,17 @@ def classify_component_image_openai(
             "other_artifact",
             1.0,
             "Unexpected Exception: {} - {}".format(type(e).__name__, str(e)[:100]),
+            None,
         )
 
 
 def _classify_single_component_wrapper(
     args_tuple: Tuple[int, Optional[Path], str, str, Optional[str]],
-) -> Tuple[int, str, float, str]:
+) -> Tuple[int, str, float, str, Optional[Dict[str, Any]]]:
     """Helper for parallel execution of classify_component_image_openai."""
     comp_idx, image_path, api_key, model_name, custom_prompt = args_tuple
     if image_path is None:
-        return comp_idx, "other_artifact", 1.0, "Plotting failed for this component"
+        return comp_idx, "other_artifact", 1.0, "Plotting failed for this component", None
 
     # Call the classification function and prepend component index to its result tuple
     classification_result = classify_component_image_openai(image_path, api_key, model_name, custom_prompt)
@@ -251,7 +259,7 @@ def classify_components_batch(
     auto_exclude: bool = cast(bool, DEFAULT_CONFIG["auto_exclude"]),
     labels_to_exclude: Optional[List[str]] = None,
     output_dir: Optional[Path] = None,
-) -> pd.DataFrame:
+) -> Tuple[pd.DataFrame, dict]:
     """
     Classifies ICA components in batches using OpenAI Vision API with parallel processing.
 
@@ -269,7 +277,7 @@ def classify_components_batch(
         output_dir: Directory to save temporary component images.
 
     Returns:
-        pd.DataFrame with classification results for each component.
+        Tuple of (pd.DataFrame with classification results, dict with cost tracking information).
     """
     logger.debug("Starting batch classification of %d components.", ica_obj.n_components_)
 
@@ -288,7 +296,7 @@ def classify_components_batch(
         "total_output_tokens": 0,
         "total_cached_tokens": 0,
         "total_cost": 0.0,
-        "requests_count": 0
+        "requests_count": 0,
     }
 
     # Always use a temporary directory for component images (keeps output dir clean)
@@ -325,7 +333,16 @@ def classify_components_batch(
 
             for future in concurrent.futures.as_completed(futures):
                 try:
-                    comp_idx, label, confidence, reason = future.result()
+                    comp_idx, label, confidence, reason, cost_info = future.result()
+
+                    # Update cost tracking with actual costs
+                    if cost_info:
+                        total_cost_tracking["total_input_tokens"] += cost_info.get("input_tokens", 0)
+                        total_cost_tracking["total_output_tokens"] += cost_info.get("output_tokens", 0)
+                        total_cost_tracking["total_cached_tokens"] += cost_info.get("cached_tokens", 0)
+                        total_cost_tracking["total_cost"] += cost_info.get("total_cost", 0.0)
+                        total_cost_tracking["requests_count"] += 1
+
                 except Exception as e:
                     # This catches errors from _classify_single_component_wrapper itself
                     # Fallback if future.result() fails unexpectedly for a component
@@ -372,32 +389,18 @@ def classify_components_batch(
             processed_count,
             num_components,
         )
-        
-        # Calculate estimated costs for the batch
-        if processed_count > 0:
-            from .utils import calculate_openai_cost
-            
-            # Estimate typical token usage per component (based on prompt + image + response)
-            # These are rough estimates - actual usage will vary
-            estimated_input_per_component = 400  # ~300 for prompt + ~100 for image tokens
-            estimated_output_per_component = 50   # ~30-70 tokens for JSON response
-            
-            estimated_total_input = processed_count * estimated_input_per_component
-            estimated_total_output = processed_count * estimated_output_per_component
-            
-            cost_estimate = calculate_openai_cost(
-                input_tokens=estimated_total_input,
-                output_tokens=estimated_total_output,
-                model_name=model_name
-            )
-            
+
+        # Log actual costs from cost tracking
+        if total_cost_tracking["requests_count"] > 0:
             logger.info(
-                "Cost estimate for %d components: ~$%.4f (Model: %s, ~%d input + %d output tokens)",
+                "Actual total cost for %d components: $%.6f (Model: %s, %d input + %d output + %d cached tokens, %d requests)",
                 processed_count,
-                cost_estimate["total_cost"],
-                cost_estimate["model"],
-                estimated_total_input,
-                estimated_total_output
+                total_cost_tracking["total_cost"],
+                model_name,
+                total_cost_tracking["total_input_tokens"],
+                total_cost_tracking["total_output_tokens"],
+                total_cost_tracking["total_cached_tokens"],
+                total_cost_tracking["requests_count"],
             )
 
     finally:
@@ -412,4 +415,4 @@ def classify_components_batch(
     if not results_df.empty:
         results_df = results_df.set_index("component_index", drop=False)
 
-    return results_df
+    return results_df, total_cost_tracking

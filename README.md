@@ -15,6 +15,7 @@ ICVision automates the tedious process of classifying ICA components from EEG da
 
 **Key Features**:
 - Automated classification of 7 component types (brain, eye, muscle, heart, line noise, channel noise, other)
+- **🔄 Drop-in replacement for MNE-ICALabel**: Same API, enhanced with OpenAI Vision
 - Multi-panel component plots (topography, time series, PSD, ERP-image)
 - MNE-Python integration with `.fif` and `.set` file support
 - **EEGLAB .set file auto-detection**: Single file input with automatic ICA detection
@@ -207,6 +208,104 @@ except Exception as e:
     print(f"An error occurred: {e}")
 
 ```
+
+## 🔄 ICLabel Drop-in Replacement
+
+ICVision can serve as a **drop-in replacement** for MNE-ICALabel with identical API and output format. This means you can upgrade existing ICLabel workflows to use OpenAI Vision API without changing any other code.
+
+### Quick Migration
+
+**Before (using MNE-ICALabel):**
+```python
+from mne_icalabel import label_components
+
+# Classify components with ICLabel
+result = label_components(raw, ica, method='iclabel')
+print(result['labels'])  # ['brain', 'eye blink', 'other', ...]
+print(ica.labels_scores_.shape)  # (n_components, 7)
+```
+
+**After (using ICVision):**
+```python
+from icvision.compat import label_components  # <-- Only line that changes!
+
+# Classify components with ICVision (same API!)
+result = label_components(raw, ica, method='icvision')
+print(result['labels'])  # Same format: ['brain', 'eye blink', 'other', ...]
+print(ica.labels_scores_.shape)  # Same shape: (n_components, 7)
+```
+
+### What You Get
+
+- **🎯 Identical API**: Same function signature, same return format
+- **📊 Same Output**: Returns dict with `'y_pred_proba'` and `'labels'` keys
+- **⚙️ Same ICA Modifications**: Sets `ica.labels_scores_` and `ica.labels_` exactly like ICLabel
+- **🚀 Enhanced Intelligence**: OpenAI Vision API instead of fixed neural network
+- **💡 Detailed Reasoning**: Each classification includes explanation (available in full API)
+
+### Why Use ICVision over ICLabel?
+
+| Feature | ICLabel | ICVision |
+|---------|---------|----------|
+| **Classification Method** | Fixed neural network (2019) | OpenAI Vision API (latest models) |
+| **Accuracy** | Good on typical datasets | Enhanced with modern vision AI |
+| **Reasoning** | No explanations | Detailed reasoning for each decision |
+| **Customization** | Fixed model | Customizable prompts and models |
+| **Updates** | Static model | Benefits from OpenAI improvements |
+| **API Compatibility** | ✅ Original | ✅ Drop-in replacement |
+
+### Integration Example
+
+The compatibility layer works seamlessly with existing MNE workflows:
+
+```python
+def analyze_ica_components(raw, ica, method='icvision'):
+    """Generic function that works with both ICLabel and ICVision"""
+    
+    if method == 'icvision':
+        from icvision.compat import label_components
+    else:
+        from mne_icalabel import label_components
+    
+    # Same API for both!
+    result = label_components(raw, ica, method=method)
+    
+    # Same return format for both
+    print(f"Classified {len(result['labels'])} components")
+    
+    # Same ICA object modifications for both
+    brain_components = ica.labels_['brain']
+    artifact_components = [idx for key, indices in ica.labels_.items() 
+                          if key != 'brain' for idx in indices]
+    
+    print(f"Brain components: {brain_components}")
+    print(f"Artifact components: {artifact_components}")
+    
+    return result
+
+# Works with either classifier
+result = analyze_ica_components(raw, ica, method='icvision')
+```
+
+### Two APIs, Same Power
+
+ICVision provides **two complementary interfaces**:
+
+1. **Original ICVision API**: Rich output with detailed results and file generation
+   ```python
+   from icvision.core import label_components
+   raw_cleaned, ica_updated, results_df = label_components(...)
+   ```
+
+2. **ICLabel-Compatible API**: Simple output matching ICLabel exactly
+   ```python
+   from icvision.compat import label_components  
+   result = label_components(raw, ica, method='icvision')
+   ```
+
+Choose the API that best fits your workflow - both use the same underlying OpenAI Vision classification.
+
+---
 
 ## Configuration Details
 

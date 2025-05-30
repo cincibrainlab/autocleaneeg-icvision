@@ -13,6 +13,10 @@ Before starting, ensure you have:
 3. EEG data in MNE-compatible format (.fif, .set)
 4. An ICA decomposition file (.fif)
 
+.. note::
+   **Already using MNE-ICALabel?** ICVision can serve as a drop-in replacement! 
+   See :doc:`icalabel_compatibility` for seamless migration.
+
 Basic Workflow
 --------------
 
