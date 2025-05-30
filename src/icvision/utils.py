@@ -8,7 +8,7 @@ that support the main functionality of the ICVision package.
 import logging
 import os
 from pathlib import Path
-from typing import Dict, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 import mne
 import pandas as pd
