@@ -184,3 +184,4 @@ docs/your_package.rst
 CLAUDE.md
 /autoclean_icvision_results
 bandit_report.json
+/comparison_results

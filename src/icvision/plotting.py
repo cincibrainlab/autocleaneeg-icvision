@@ -147,7 +147,7 @@ def plot_component_for_classification(
 
     # 2. Scrolling IC Activity (Time Series)
     try:
-        duration_segment_ts = 3.0  # seconds
+        duration_segment_ts = 2.5  # seconds
         max_samples_ts = min(int(duration_segment_ts * sfreq), len(component_data_array))
         times_ts_ms = (np.arange(max_samples_ts) / sfreq) * 1000  # convert to ms
 
@@ -157,7 +157,7 @@ def plot_component_for_classification(
             linewidth=0.8,
             color="dodgerblue",
         )
-        ax_ts_scroll.set_title("Scrolling IC Activity (First 3s)", fontsize=10)
+        ax_ts_scroll.set_title("Scrolling IC Activity (First 2.5s)", fontsize=10)
         ax_ts_scroll.set_xlabel("Time (ms)", fontsize=9)
         ax_ts_scroll.set_ylabel("Amplitude (a.u.)", fontsize=9)
         if max_samples_ts > 0 and times_ts_ms.size > 0:
@@ -313,7 +313,7 @@ def plot_component_for_classification(
         from .config import (  # Local import to avoid circular dependency if any
             COLOR_MAP,
         )
-        
+
         # Left-justified main title
         fig.text(
             0.05,
@@ -325,7 +325,7 @@ def plot_component_for_classification(
             fontweight="bold",
             transform=fig.transFigure,
         )
-        
+
         # Right-justified classification subtitle
         subtitle_color = COLOR_MAP.get(classification_label.lower(), "black")
         classification_subtitle = (
@@ -518,7 +518,7 @@ def save_ica_data(
             filename_prefix = "icvision_classified"
         else:
             filename_prefix = f"{input_basename}_icvis_classified"
-    
+
     output_filename = f"{filename_prefix}_ica.fif"
     output_path = output_dir / output_filename
 
