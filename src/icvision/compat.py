@@ -6,11 +6,10 @@ allowing ICVision to be used as a direct substitute for mne_icalabel.label_compo
 """
 
 import logging
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Optional, Union
 
 import mne
 import numpy as np
-import pandas as pd
 
 from .core import label_components as icvision_label_components
 
@@ -159,7 +158,9 @@ def update_ica_with_icalabel_format(
 def label_components(
     inst: Union[mne.io.Raw, mne.BaseEpochs],
     ica: mne.preprocessing.ICA,
-    method: str = "icvision"
+    method: str = "icvision",
+    generate_report: bool = True,
+    output_dir: Optional[str] = None
 ) -> Dict[str, Union[np.ndarray, List[str]]]:
     """
     Drop-in replacement for mne_icalabel.label_components.
@@ -171,6 +172,8 @@ def label_components(
         inst: Raw or Epochs object used to fit the ICA
         ica: Fitted ICA object  
         method: Classification method ('icvision' only)
+        generate_report: Whether to generate ICVision PDF report (default: True)
+        output_dir: Output directory for ICVision files (default: auto-generated)
         
     Returns:
         Dictionary with ICLabel-compatible structure:
@@ -204,8 +207,8 @@ def label_components(
             raw_data=inst,
             ica_data=ica,
             auto_exclude=False,  # Don't modify exclude list in compatibility mode
-            generate_report=False,  # Don't generate files in compatibility mode
-            output_dir=None  # No file output needed
+            generate_report=generate_report,  # Allow ICVision PDF report generation
+            output_dir=output_dir  # Use specified output directory
         )
         
         # Extract classification results

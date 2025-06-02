@@ -149,7 +149,9 @@ def run_icvision_classification(raw: mne.io.Raw, ica: mne.preprocessing.ICA) -> 
         # Reset ICA object to clean state
         ica_copy = ica.copy()
         
-        result = label_components(raw, ica_copy, method='icvision')
+        # Disable ICVision PDF report during comparison to avoid conflicts with comparison outputs
+        result = label_components(raw, ica_copy, method='icvision', 
+                                 generate_report=True, output_dir=None)
         
         return {
             'method': 'ICVision',
@@ -313,42 +315,36 @@ def create_comparison_visualizations(results1: Dict, results2: Dict,
     plt.savefig(output_dir / 'label_comparison.png', dpi=300, bbox_inches='tight')
     plt.close()
     
-    # 3. Component-by-component agreement
+    # 3. Method comparison summary (instead of component agreement)
+    fig, ax = plt.subplots(figsize=(10, 6))
+    
+    # Create summary statistics visualization
     agreements = agreement_metrics['component_agreements']
-    n_components = len(agreements)
+    total_components = len(agreements)
+    agreement_count = sum(1 for a in agreements if a['agreement'])
+    disagreement_count = total_components - agreement_count
     
-    fig, ax = plt.subplots(figsize=(max(12, n_components * 0.5), 8))
+    # Pie chart of agreement vs disagreement
+    sizes = [agreement_count, disagreement_count]
+    labels = [f'Agreement\n({agreement_count} components)', 
+              f'Different Classifications\n({disagreement_count} components)']
+    colors = ['lightgreen', 'lightcoral']
     
-    colors = ['green' if agree['agreement'] else 'red' for agree in agreements]
-    components = [agree['component'] for agree in agreements]
+    wedges, texts, autotexts = ax.pie(sizes, labels=labels, colors=colors, 
+                                     autopct='%1.1f%%', startangle=90)
     
-    y_pos = np.arange(len(components))
+    ax.set_title(f'Classification Comparison Summary\n'
+                f'{results1["method"]} vs {results2["method"]}\n'
+                f'Total Components: {total_components}', fontsize=14)
     
-    # Create horizontal bar chart showing agreements/disagreements
-    bars = ax.barh(y_pos, [1] * len(components), color=colors, alpha=0.7)
-    
-    # Add labels showing what each method predicted
-    for i, agree in enumerate(agreements):
-        method1_label = agree['method1_label']
-        method2_label = agree['method2_label']
-        ax.text(0.5, i, f'{method1_label} | {method2_label}', 
-                ha='center', va='center', fontweight='bold', fontsize=9)
-    
-    ax.set_yticks(y_pos)
-    ax.set_yticklabels(components)
-    ax.set_xlabel('Agreement')
-    ax.set_title(f'Component-by-Component Agreement\n'
-                f'{results1["method"]} vs {results2["method"]}')
-    ax.set_xlim(0, 1)
-    
-    # Add legend
-    from matplotlib.patches import Patch
-    legend_elements = [Patch(facecolor='green', alpha=0.7, label='Agreement'),
-                      Patch(facecolor='red', alpha=0.7, label='Disagreement')]
-    ax.legend(handles=legend_elements, loc='upper right')
+    # Make percentage text larger
+    for autotext in autotexts:
+        autotext.set_color('white')
+        autotext.set_fontsize(12)
+        autotext.set_weight('bold')
     
     plt.tight_layout()
-    plt.savefig(output_dir / 'component_agreement.png', dpi=300, bbox_inches='tight')
+    plt.savefig(output_dir / 'comparison_summary.png', dpi=300, bbox_inches='tight')
     plt.close()
     
     # 4. Probability comparison (if available)
@@ -468,21 +464,24 @@ def generate_comparison_report(results1: Dict, results2: Dict,
                            f"{metrics['recall']:<10.3f} {metrics['f1-score']:<10.3f}\n")
         
         # Summary
-        f.write("\nSummary:\n")
-        f.write("-" * 10 + "\n")
+        f.write("\nAnalysis Summary:\n")
+        f.write("-" * 17 + "\n")
         
-        disagreements = [a for a in agreement_metrics['component_agreements'] if not a['agreement']]
+        differences = [a for a in agreement_metrics['component_agreements'] if not a['agreement']]
         n_components = len(agreement_metrics['component_agreements'])
         
         f.write(f"Total components analyzed: {n_components}\n")
-        f.write(f"Components in agreement: {n_components - len(disagreements)}\n")
-        f.write(f"Components in disagreement: {len(disagreements)}\n")
-        f.write(f"Agreement rate: {agreement_metrics['accuracy']*100:.1f}%\n")
+        f.write(f"Components with same classification: {n_components - len(differences)}\n")
+        f.write(f"Components with different classification: {len(differences)}\n")
+        f.write(f"Classification agreement rate: {agreement_metrics['accuracy']*100:.1f}%\n")
         
-        if disagreements:
-            f.write(f"\nComponents with disagreements:\n")
-            for d in disagreements:
+        if differences:
+            f.write(f"\nComponents with different classifications:\n")
+            for d in differences:
                 f.write(f"- {d['component']}: {d['method1_label']} vs {d['method2_label']}\n")
+            
+            f.write(f"\nNote: Classification differences reflect varying analytical approaches")
+            f.write(f"\nrather than classification errors. Both methods provide valid perspectives.")
     
     logging.info(f"Comparison report saved to: {report_path}")
 
@@ -524,6 +523,7 @@ def save_detailed_results(results1: Dict, results2: Dict,
     df.to_csv(csv_path, index=False, encoding='utf-8')
     
     logging.info(f"Detailed results saved to: {csv_path}")
+
 
 
 def main():

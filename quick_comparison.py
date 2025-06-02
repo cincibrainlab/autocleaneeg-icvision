@@ -113,7 +113,9 @@ def quick_compare(raw_path: str, ica_path: str = None, human_labels_path: str = 
         try:
             from icvision.compat import label_components
             ica_copy = ica.copy()
-            icvision_result = label_components(raw_filtered, ica_copy, method='icvision')
+            # Disable ICVision PDF report during comparison  
+            icvision_result = label_components(raw_filtered, ica_copy, method='icvision',
+                                             generate_report=False, output_dir=None)
             results['ICVision'] = icvision_result['labels']
             print(f"✓ ICVision completed: {len(results['ICVision'])} components classified")
         except ImportError as e:
