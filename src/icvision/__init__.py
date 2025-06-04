@@ -17,6 +17,9 @@ from .core import label_components
 # ICLabel compatibility layer - can be imported separately
 # from icvision.compat import label_components  # ICLabel drop-in replacement
 
+# EEGLAB compatibility layer - can be imported separately
+# from icvision.eeglab_compat import label_components_for_eeglab  # EEGLAB export
+
 # CLI is available but not imported by default to avoid import overhead
 # Users can import it explicitly with: from icvision import cli
 
