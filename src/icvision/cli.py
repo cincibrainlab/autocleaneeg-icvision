@@ -31,13 +31,12 @@ logger = logging.getLogger("icvision")
 def setup_cli_logging(verbose: bool = False) -> None:
     """Set up more detailed logging if verbose flag is used."""
     level = logging.DEBUG if verbose else logging.INFO
-    
+
     # Configure formatter based on verbosity
     if verbose:
         # Detailed format with module names for debugging
         formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-            datefmt="%Y-%m-%d %H:%M:%S"
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
         )
         # Apply to all handlers
         for handler in logging.getLogger().handlers:
@@ -45,14 +44,11 @@ def setup_cli_logging(verbose: bool = False) -> None:
         logger.info("Verbose logging enabled - showing module details")
     else:
         # Clean format for normal use
-        formatter = logging.Formatter(
-            "%(asctime)s - %(levelname)s - %(message)s",
-            datefmt="%Y-%m-%d %H:%M:%S"
-        )
+        formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
         # Apply to all handlers
         for handler in logging.getLogger().handlers:
             handler.setFormatter(formatter)
-    
+
     # Get root logger to change level for all package loggers
     logging.getLogger("icvision").setLevel(level)
     logger.setLevel(level)
@@ -257,13 +253,12 @@ Examples:
 
     logger.info("Starting ICVision CLI v%s", __version__)
     logger.info("Processing Raw: %s, ICA: %s", args.raw_data_path, args.ica_data_path)
-    
+
     # Suppress MNE montage warnings globally for cleaner CLI output
     # These warnings about EOG channel positions don't affect ICA classification
     import warnings
-    warnings.filterwarnings("ignore", 
-                          message="Not setting positions.*eog channels.*montage",
-                          category=RuntimeWarning)
+
+    warnings.filterwarnings("ignore", message="Not setting positions.*eog channels.*montage", category=RuntimeWarning)
 
     try:
         raw_cleaned, ica_updated, results_df = label_components(

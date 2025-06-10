@@ -393,7 +393,8 @@ def classify_components_batch(
         # Log actual costs from cost tracking
         if total_cost_tracking["requests_count"] > 0:
             logger.info(
-                "Actual total cost for %d components: $%.6f (Model: %s, %d input + %d output + %d cached tokens, %d requests)",
+                "Actual total cost for %d components: $%.6f "
+                "(Model: %s, %d input + %d output + %d cached tokens, %d requests)",
                 processed_count,
                 total_cost_tracking["total_cost"],
                 model_name,

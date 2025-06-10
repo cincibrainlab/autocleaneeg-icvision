@@ -43,29 +43,45 @@ DEFAULT_EXCLUDE_LABELS = [
 # OpenAI prompt for ICA component classification
 OPENAI_ICA_PROMPT = """Analyze this EEG ICA component image and classify into ONE category:
 
+**UNDERSTANDING THE PLOTS:**
+- **Topography** (top left): Spatial distribution of component activity across the scalp
+- **Time Series** (top right): Component activation over time - look for rhythmic patterns, spikes, or characteristic temporal signatures
+- **Power Spectrum** (bottom right): Frequency content - shows how power varies across frequencies
+- **Continuous Data Segments** (bottom left): Trial-by-trial visualization showing component activity across multiple time segments. This ERP-image style plot reveals:
+  * **Temporal consistency**: Consistent patterns across trials indicate reliable sources (brain/artifacts)
+  * **Artifact signatures**: Sporadic, random patterns often indicate noise; regular artifact patterns (eye, heart, muscle) show characteristic timing
+  * **Neural oscillations**: Brain components often show consistent oscillatory patterns across trials
+  * **Artifact detection**: Muscle artifacts show sporadic high-frequency bursts; eye artifacts show movement-related patterns; heart artifacts show regular ~1Hz rhythmic activity
+
+**COMPONENT CLASSIFICATION:**
+
 - "brain": Dipolar pattern in CENTRAL, PARIETAL, or TEMPORAL regions (NOT FRONTAL or EDGE-FOCUSED). 1/f-like spectrum with possible peaks at 8-12Hz. Rhythmic, wave-like time series WITHOUT abrupt level shifts. MUST show decreasing power with increasing frequency (1/f pattern) - a flat or random fluctuating spectrum is NOT brain activity.
 
-- "eye":
-  * Two main types of eye components:
-    1. HORIZONTAL eye movements: Characterized by a TIGHTLY FOCUSED dipolar pattern, CONFINED PRIMARILY to the LEFT-RIGHT FRONTAL regions (e.g., distinct red on one far-frontal side, blue on the opposite far-frontal side). The active areas should be relatively compact and clearly located frontally. Time series typically shows step-like or square-wave patterns. This pattern is eye UNLESS the time series shows the prominent, sharp, repetitive QRS-like spikes characteristic of "heart".
-    2. VERTICAL eye movements/blinks: FRONTAL midline or bilateral positivity/negativity. Time series shows distinctive spikes or slow waves.
-  * Both types show power concentrated in lower frequencies (<5Hz).
-  * DO NOT be misled by 60Hz notches in the spectrum - these are normal filtering artifacts, NOT line noise.
-  * Key distinction: Eye components have activity TIGHTLY FOCUSED in frontal regions. Eye component dipoles are much more FOCUSED and less widespread than the broad gradients seen in "heart" components.
-  * CRITICAL: NEVER classify a component with clear FOCUSED LEFT-RIGHT FRONTAL dipole as muscle. This pattern is eye, BUT ALWAYS CHECK TIME SERIES FOR QRS COMPLEXES TO RULE OUT "heart" if the 'dipole' appears very broad or global.
-  * RULE: If you see TIGHTLY FOCUSED LEFT-RIGHT FRONTAL dipole pattern or STRONG FRONTAL activation with spike patterns, AND NO QRS in time series, classify as "eye".
+- "eye": (Be more liberal with eye detection)
+  * **PRIMARY PATTERN**: DIPOLAR pattern (two opposite poles) typically in frontal regions but can extend more broadly
+  * **TOPOGRAPHY**: Look for bilateral activity across the frontal region - can be left-right OR up-down oriented. Key is having CLEAR DIPOLAR STRUCTURE with both positive and negative poles.
+  * **SPECTRUM**: Usually dominated by low frequencies (1-30Hz) with 1/f-like decrease
+  * **TIME SERIES**: Step-like, slow waves, or blink-related patterns
+  * **CRITICAL DISTINCTION**: Eye has DIPOLAR structure (two opposite poles), while channel_noise has only ONE focal spot without opposite pole
+  * **KEY RULE**: If you see any clear dipolar pattern with frontal involvement and 1/f spectrum → likely "eye" rather than channel_noise
+  * **PRIORITY**: Frontal patterns with bilateral/dipolar structure = eye, single frontal spots = muscle
 
 - "muscle": (SPECTRAL SIGNATURE IS THE MOST DOMINANT INDICATOR)
   * DECISIVE SPECTRAL FEATURE (Primary and Often Conclusive Muscle Indicator): The power spectrum exhibits a CLEAR and SUSTAINED POSITIVE SLOPE, meaning power consistently INCREASES with increasing frequency, typically starting from around 20-30Hz and continuing upwards. This often looks like the spectrum is 'curving upwards' or 'scooping upwards' at higher frequencies. IF THIS DISTINCT SPECTRAL SIGNATURE IS OBSERVED, THE COMPONENT IS TO BE CLASSIFIED AS 'muscle', EVEN IF other features might seem ambiguous or resemble other categories. This spectral cue is the strongest determinant for muscle.
+  * IMPORTANT: Muscle artifacts often appear as SINGLE FOCAL SPOTS that look like channel noise. The distinction is BIOLOGICAL PLAUSIBILITY - focal spots near muscle areas (temporal, frontal, jaw) are usually muscle, not channel noise.
+  * **CONTINUOUS DATA SEGMENTS**: Muscle artifacts often show sporadic, high-frequency bursts or irregular patterns across trials, unlike the consistent patterns of brain activity
   * OTHER SUPPORTING MUSCLE CHARACTERISTICS (Use if spectral cue is present, or with caution if spectral cue is less definitive but clearly NOT 1/f):
-    *   Topography: Common patterns include (a) very localized 'bowtie' or 'shallow dipole' patterns (two small, adjacent areas of opposite polarity, often taking up <25% of the scalp map, can appear anywhere but frequently temporal/posterior) OR (b) more diffuse activity, typically along the EDGE of the scalp (temporal, occipital, neck regions).
+    *   Topography: Common patterns include (a) very localized 'bowtie' or 'shallow dipole' patterns (two small, adjacent areas of opposite polarity, often taking up <25% of the scalp map, can appear anywhere but frequently temporal/posterior) OR (b) more diffuse activity, typically along the EDGE of the scalp (temporal, occipital, neck regions) OR (c) single focal spots near muscle locations.
     *   Time Series: Often shows spiky, high-frequency, and somewhat erratic activity.
 
-- "heart":
-  * TOPOGRAPHY: Characterized by a VERY BROAD, diffuse electrical field gradient across a large area of the scalp. This often manifests as large positive (red) and negative (blue) regions on somewhat opposite sides of the head, but these regions are WIDESPREAD and NOT TIGHTLY FOCUSED like an eye dipole.
-  * TIME SERIES (CRITICAL & DECISIVE IDENTIFIER): Look for PROMINENT, SHARP, REPETITIVE SPIKES in the 'Scrolling IC Activity' plot that stand out significantly from the background rhythm. These are QRS-like complexes (heartbeats). They are typically large in amplitude, can be positive-going or negative-going sharp deflections, and repeat at roughly 0.8-1.5 Hz (around once per second, though ICA can make the rhythm appear less than perfectly regular). THE PRESENCE OF THESE DISTINCTIVE, RECURRING, SHARP SPIKES IS THE STRONGEST AND MOST DEFINITIVE INDICATOR FOR "heart".
-  * IF QRS IS PRESENT: If these clear, sharp, repetitive QRS-like spikes are visible in the time series, the component should be classified as "heart". This QRS signature, when combined with a BROAD topography, takes precedence over superficial resemblances to other patterns.
-  * SPECTRUM: Often noisy or may not show a clear 1/f pattern. May show harmonics of the heart rate.
+- "heart": (CRITICAL - EXAMINE TIME SERIES AND CONTINUOUS DATA SEGMENTS!)
+  * **PRIMARY INDICATOR**: TIME SERIES must show ANY KIND of rhythmic deflections (upward spikes, downward dips, or step changes) that repeat approximately every 1 second (0.8-1.5 seconds apart). These can be subtle - look for ANY regular pattern that occurs roughly once per second.
+  * **CONTINUOUS DATA SEGMENTS**: Look for regular vertical bands or stripes occurring ~once per second across trials - this shows consistent cardiac activity across time segments
+  * **DECISIVE RULE**: If you see ANY rhythmic pattern repeating every ~1000ms in the time series OR regular temporal patterns in continuous data segments, classify as "heart" IMMEDIATELY regardless of all other features.
+  * **COMMON PATTERNS**: Heart artifacts often appear as regular downward deflections, upward spikes, or step-like changes occurring ~once per second
+  * **TOPOGRAPHY**: IGNORE topography for heart detection - can be dipolar, broad, focal, or any pattern
+  * **SPECTRUM**: IGNORE spectrum for heart detection - often looks brain-like with 1/f pattern
+  * **CRITICAL**: The ONLY diagnostic feature for heart is rhythmic ~1Hz activity in time series AND/OR consistent temporal patterns in continuous data segments
 
 - "line_noise":
   * MUST show SHARP PEAK at 50/60Hz in spectrum - NOT a notch/dip (notches are filters, not line noise).
@@ -73,22 +89,32 @@ OPENAI_ICA_PROMPT = """Analyze this EEG ICA component image and classify into ON
   * Line noise requires a POSITIVE PEAK at 50/60Hz, not a negative dip.
 
 - "channel_noise":
-  * SINGLE ELECTRODE "hot/cold spot" - tiny, isolated circular area typically without an opposite pole.
-  * Compare with eye: Channel noise has only ONE focal point, while eye has TWO opposite poles (dipole). Eye dipoles are also typically larger and more structured.
-  * Example: A tiny isolated red or blue spot on one electrode, not a dipolar pattern.
-  * Time series may show any pattern; the focal topography is decisive.
+  * **PRIMARY CRITERION**: SINGLE ELECTRODE "hot/cold spot" - tiny, isolated circular area WITHOUT an opposite pole (not dipolar).
+  * **DECISIVE SPATIAL RULE**: If topography shows single tiny focal spot with NO clear opposite pole, this is likely channel_noise regardless of spectrum appearance (bad electrodes can have noisy/artifactual spectra).
+  * **LOCATION GUIDE**: More common in central/interior regions, but can occur anywhere due to electrode problems.
+  * **KEY DISTINCTION FROM MUSCLE**: Muscle can also appear as focal spots but usually has some spatial extent or is part of broader patterns. True channel noise is extremely localized to essentially one electrode.
+  * **CONTINUOUS DATA SEGMENTS**: True channel noise shows extremely localized, often random or flat patterns across trials, different from the structured patterns of other artifacts
+  * **Compare with eye**: Channel noise has only ONE focal point, while eye has TWO opposite poles (dipole). Eye dipoles are also typically larger and more structured.
+  * **Compare with muscle**: If uncertain between channel_noise and muscle for focal spots, prioritize spatial characteristics over spectral ones
+  * TRUE channel noise is rare but when present, spatial localization is the most reliable indicator.
 
-- "other_artifact": Components not fitting above categories.
+- "other_artifact": Components that don't clearly fit other categories, INCLUDING:
+  * Complex multi-polar topographies (multiple hotspots, irregular patterns)
+  * Dipolar patterns that are noisy, irregular, or poorly formed
+  * Components with mixed or contradictory features
+  * Any pattern that looks "brain-like" but is complex, noisy, or atypical
+  * When in doubt between brain and other patterns → choose "other_artifact"
 
 CLASSIFICATION PRIORITY (IMPORTANT: Evaluate in this order. Later rules apply only if earlier conditions are not met or are ambiguous):
-1.  IF 'Scrolling IC Activity' shows PROMINENT, SHARP, REPETITIVE SPIKES (QRS-like complexes...) AND topography is VERY BROAD... → "heart".
-2.  ELSE IF TIGHTLY FOCUSED LEFT-RIGHT FRONTAL dipole... (and NO QRS) → "eye"
-3.  ELSE IF SINGLE ELECTRODE isolated focality → "channel_noise"
+1.  FIRST: EXAMINE TIME SERIES CAREFULLY for ANY rhythmic deflections (up/down spikes, dips, steps) repeating every ~1 second → "heart" (OVERRIDES all other features)
+2.  ELSE IF SINGLE TINY FOCAL SPOT without clear opposite pole (non-dipolar) → "channel_noise" (spatial characteristics are decisive for bad electrodes, regardless of spectrum)
+3.  ELSE IF CLEAR DIPOLAR pattern (two opposite poles) with frontal involvement and 1/f spectrum → "eye"
 4.  ELSE IF Spectrum shows SHARP PEAK (not notch) at 50/60Hz → "line_noise"
 5.  ELSE IF Power spectrum exhibits a CLEAR and SUSTAINED POSITIVE SLOPE (power INCREASES with increasing frequency from ~20-30Hz upwards, often 'curving' or 'scooping' upwards) → "muscle". (THIS IS A DECISIVE RULE FOR MUSCLE. If this spectral pattern is present, classify as 'muscle' even if the topography isn't a perfect 'bowtie' or edge artifact, and before considering 'brain').
-6.  ELSE IF (Topography is a clear 'bowtie'/'shallow dipole' OR distinct EDGE activity) AND (Time series is spiky/high-frequency OR spectrum is generally high-frequency without being clearly 1/f and also not clearly a positive slope) → "muscle" (Secondary muscle check, for cases where the positive slope is less perfect but other muscle signs are strong and it's definitely not brain).
-7.  ELSE IF Dipolar pattern in CENTRAL, PARIETAL, or TEMPORAL regions (AND NOT already definitively classified as 'muscle' by its spectral signature under rule 5) AND spectrum shows a clear general 1/f pattern (overall DECREASING power with increasing frequency, AND ABSOLUTELY NO sustained positive slope at high frequencies) → "brain"
-8.  ELSE → "other_artifact"
+6.  ELSE IF Single focal spot near muscle areas (temporal, frontal, jaw) → "muscle" (many muscle artifacts look like single spots)
+7.  ELSE IF (Topography is a clear 'bowtie'/'shallow dipole' OR distinct EDGE activity) AND (Time series is spiky/high-frequency OR spectrum is generally high-frequency without being clearly 1/f and also not clearly a positive slope) → "muscle" (Secondary muscle check, for cases where the positive slope is less perfect but other muscle signs are strong and it's definitely not brain).
+8.  ELSE IF Dipolar pattern in CENTRAL, PARIETAL, or TEMPORAL regions (AND NOT already definitively classified as 'muscle' by its spectral signature under rule 5) AND spectrum shows a clear general 1/f pattern (overall DECREASING power with increasing frequency, AND ABSOLUTELY NO sustained positive slope at high frequencies) → "brain"
+9.  ELSE → "other_artifact"
 
 IMPORTANT: A 60Hz NOTCH (negative dip) in spectrum is normal filtering, seen in most components, and should NOT be used for classification! Do not include this in your reasoning.
 
@@ -132,18 +158,18 @@ COLOR_MAP = {
 # OpenAI Pricing (as of 2025-05-29)
 OPENAI_PRICING = {
     "gpt-4.1": {
-        "input": 2.00,      # $2.00 per 1M tokens
+        "input": 2.00,  # $2.00 per 1M tokens
         "cached_input": 0.50,  # $0.50 per 1M tokens (cached)
-        "output": 8.00,     # $8.00 per 1M tokens
+        "output": 8.00,  # $8.00 per 1M tokens
     },
     "gpt-4.1-mini": {
-        "input": 0.40,      # $0.40 per 1M tokens
+        "input": 0.40,  # $0.40 per 1M tokens
         "cached_input": 0.10,  # $0.10 per 1M tokens (cached)
-        "output": 1.60,     # $1.60 per 1M tokens
+        "output": 1.60,  # $1.60 per 1M tokens
     },
     "gpt-4.1-nano": {
-        "input": 0.10,      # $0.10 per 1M tokens
-        "cached_input": 0.025, # $0.025 per 1M tokens (cached)
-        "output": 0.40,     # $0.40 per 1M tokens
+        "input": 0.10,  # $0.10 per 1M tokens
+        "cached_input": 0.025,  # $0.025 per 1M tokens (cached)
+        "output": 0.40,  # $0.40 per 1M tokens
     },
 }

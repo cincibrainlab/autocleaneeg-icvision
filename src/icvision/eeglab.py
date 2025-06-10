@@ -4,10 +4,9 @@ Simple module with just the essential functions needed for MATLAB integration.
 """
 
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Union
 
 import numpy as np
-import scipy.io
 
 from .core import label_components
 
