@@ -346,7 +346,8 @@ Examples:
                     "OpenAI API key not found",
                     details=error_str,
                     suggestion="Set your API key as an environment variable:\n"
-                    "  export OPENAI_API_KEY='sk-your-api-key-here'\n"
+                    " for linux: export OPENAI_API_KEY='sk-your-api-key-here'\n"
+                    " for windows: set OPENAI_API_KEY='sk-your-api-key-here'\n"
                     "Or provide it directly:\n"
                     f"  autoclean-icvision {args.raw_data_path} --api-key sk-your-key",
                 )

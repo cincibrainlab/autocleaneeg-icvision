@@ -57,8 +57,8 @@ OPENAI_ICA_PROMPT = """Analyze this EEG ICA component image and classify into ON
 
 - "brain": Dipolar pattern in CENTRAL, PARIETAL, or TEMPORAL regions (NOT FRONTAL or EDGE-FOCUSED). 1/f-like spectrum with possible peaks at 8-12Hz. Rhythmic, wave-like time series WITHOUT abrupt level shifts. MUST show decreasing power with increasing frequency (1/f pattern) - a flat or random fluctuating spectrum is NOT brain activity.
 
-- "eye": (Be more liberal with eye detection)
-  * **PRIMARY PATTERN**: DIPOLAR pattern (two opposite poles) typically in frontal regions but can extend more broadly
+- "eye":
+  * **PRIMARY PATTERN**: DIPOLAR pattern (two opposite poles) ALWAYS tightly focused in frontal regions
   * **TOPOGRAPHY**: Look for bilateral activity across the frontal region - can be left-right OR up-down oriented. Key is having CLEAR DIPOLAR STRUCTURE with both positive and negative poles.
   * **SPECTRUM**: Usually dominated by low frequencies (1-30Hz) with 1/f-like decrease
   * **TIME SERIES**: Step-like, slow waves, or blink-related patterns
