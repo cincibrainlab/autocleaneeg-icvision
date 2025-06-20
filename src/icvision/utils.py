@@ -12,6 +12,7 @@ from typing import Any, Dict, Optional, Union
 
 import mne
 import pandas as pd
+from dotenv import load_dotenv
 
 from .config import COMPONENT_LABELS
 
@@ -330,6 +331,7 @@ def validate_api_key(api_key: Optional[str]) -> str:
         return api_key
 
     # Try environment variable
+    load_dotenv()
     env_key = os.getenv("OPENAI_API_KEY")
     if env_key:
         return env_key

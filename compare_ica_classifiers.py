@@ -430,12 +430,12 @@ def create_comparison_visualizations(
     plt.style.use("default")
     sns.set_palette("husl")
 
-    # 1. Label distribution comparison
+    # 1. Label distribution comparison (limited to first 20 components for visualization)
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
 
-    # Count labels for each method
-    labels1 = agreement_metrics["harmonized_labels1"]
-    labels2 = agreement_metrics["harmonized_labels2"]
+    # Count labels for each method - limit to first 20 components for cleaner visualization
+    labels1 = agreement_metrics["harmonized_labels1"][:20]
+    labels2 = agreement_metrics["harmonized_labels2"][:20]
 
     unique_labels = agreement_metrics["labels"]
     counts1 = [labels1.count(label) for label in unique_labels]
@@ -454,12 +454,12 @@ def create_comparison_visualizations(
     ax1.legend()
     ax1.grid(True, alpha=0.3)
 
-    # 2. Confusion Matrix
-    cm = agreement_metrics["confusion_matrix"]
+    # 2. Confusion Matrix (for first 20 components)
+    cm = confusion_matrix(labels1, labels2, labels=unique_labels)
     sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=unique_labels, yticklabels=unique_labels, ax=ax2)
     ax2.set_xlabel(f'{results2["method"]} Labels')
     ax2.set_ylabel(f'{results1["method"]} Labels')
-    ax2.set_title("Confusion Matrix")
+    ax2.set_title("Confusion Matrix (First 20 Components)")
     ax2.tick_params(axis="x", rotation=45)
     ax2.tick_params(axis="y", rotation=0)
 
@@ -467,29 +467,41 @@ def create_comparison_visualizations(
     plt.savefig(output_dir / "label_comparison.png", dpi=300, bbox_inches="tight")
     plt.close()
 
-    # 3. Method comparison summary (instead of component agreement)
+    # 3. Method comparison summary (first 20 components only)
     fig, ax = plt.subplots(figsize=(10, 6))
 
-    # Create summary statistics visualization
-    agreements = agreement_metrics["component_agreements"]
+    # Create summary statistics visualization - limit to first 20 components
+    agreements = agreement_metrics["component_agreements"][:20]
     total_components = len(agreements)
     agreement_count = sum(1 for a in agreements if a["agreement"])
     disagreement_count = total_components - agreement_count
 
-    # Pie chart of agreement vs disagreement
-    sizes = [agreement_count, disagreement_count]
-    pie_labels = [
-        f"Agreement\n({agreement_count} components)",
-        f"Different Classifications\n({disagreement_count} components)",
-    ]
-    colors = ["lightgreen", "lightcoral"]
+    # Pie chart of agreement vs disagreement - filter out zero sizes
+    sizes = []
+    pie_labels = []
+    colors = []
 
-    wedges, texts, autotexts = ax.pie(sizes, labels=pie_labels, colors=colors, autopct="%1.1f%%", startangle=90)
+    if agreement_count > 0:
+        sizes.append(agreement_count)
+        pie_labels.append(f"Agreement\n({agreement_count} components)")
+        colors.append("lightgreen")
+
+    if disagreement_count > 0:
+        sizes.append(disagreement_count)
+        pie_labels.append(f"Different Classifications\n({disagreement_count} components)")
+        colors.append("lightcoral")
+
+    # Only create pie chart if we have data
+    if sizes:
+        wedges, texts, autotexts = ax.pie(sizes, labels=pie_labels, colors=colors, autopct="%1.1f%%", startangle=90)
+    else:
+        ax.text(0.5, 0.5, "No data to display", ha="center", va="center", transform=ax.transAxes)
+        autotexts = []
 
     ax.set_title(
         f"Classification Comparison Summary\n"
         f'{results1["method"]} vs {results2["method"]}\n'
-        f"Total Components: {total_components}",
+        f"First {total_components} Components",
         fontsize=14,
     )
 
@@ -511,9 +523,9 @@ def create_comparison_visualizations(
     if results1["success"] and results2["success"]:
         fig, axes = plt.subplots(2, 1, figsize=(12, 10))
 
-        # Max probabilities comparison
-        proba1 = results1["y_pred_proba"]
-        proba2 = results2["y_pred_proba"]
+        # Max probabilities comparison - limit to first 20 components
+        proba1 = results1["y_pred_proba"][:20]
+        proba2 = results2["y_pred_proba"][:20]
 
         x = np.arange(len(proba1))
 
@@ -594,7 +606,7 @@ def create_comparison_visualizations(
                 fontweight="bold",
             )
 
-        # Triple agreement analysis
+        # Triple agreement analysis (ALL components)
         agreements = agreement_metrics["component_agreements"]
         triple_agreement = sum(
             1
@@ -617,12 +629,25 @@ def create_comparison_visualizations(
             - sum(1 for a in agreements if a.get("agreement", False)),
         }
 
-        sizes = list(agreement_counts.values())
-        labels_pie = list(agreement_counts.keys())
-        colors = ["lightgreen", "yellow", "lightcoral"]
+        # Filter out zero-sized wedges
+        sizes = []
+        labels_pie = []
+        colors_pie = []
+        color_map = {"All Agree": "lightgreen", "Methods Agree\n(vs Human)": "yellow", "Mixed Agreement": "lightcoral"}
 
-        axes[1, 1].pie(sizes, labels=labels_pie, colors=colors, autopct="%1.1f%%", startangle=90)
-        axes[1, 1].set_title("Agreement Patterns\n(Methods vs Human Ground Truth)")
+        for label, count in agreement_counts.items():
+            if count > 0:
+                sizes.append(count)
+                labels_pie.append(label)
+                colors_pie.append(color_map[label])
+
+        # Only create pie chart if we have data
+        if sizes:
+            axes[1, 1].pie(sizes, labels=labels_pie, colors=colors_pie, autopct="%1.1f%%", startangle=90)
+            axes[1, 1].set_title("Agreement Patterns\n(Methods vs Human Ground Truth, All Components)")
+        else:
+            axes[1, 1].text(0.5, 0.5, "No data to display", ha="center", va="center", transform=axes[1, 1].transAxes)
+            axes[1, 1].set_title("Agreement Patterns\n(No Data Available)")
 
         plt.tight_layout()
         plt.savefig(output_dir / "human_labels_comparison.png", dpi=300, bbox_inches="tight")
@@ -766,10 +791,15 @@ def save_detailed_results(results1: Dict, results2: Dict, agreement_metrics: Dic
             "component_index": i,
             f'{results1["method"]}_label': agree["method1_label"],
             f'{results2["method"]}_label': agree["method2_label"],
-            f'{results1["method"]}_probability': results1["y_pred_proba"][i],
-            f'{results2["method"]}_probability': results2["y_pred_proba"][i],
+            f'{results1["method"]}_probability': (
+                results1["y_pred_proba"][i] if i < len(results1["y_pred_proba"]) else 0
+            ),
+            f'{results2["method"]}_probability': (
+                results2["y_pred_proba"][i] if i < len(results2["y_pred_proba"]) else 0
+            ),
             "agreement": agree["agreement"],
-            "probability_difference": results1["y_pred_proba"][i] - results2["y_pred_proba"][i],
+            "probability_difference": (results1["y_pred_proba"][i] if i < len(results1["y_pred_proba"]) else 0)
+            - (results2["y_pred_proba"][i] if i < len(results2["y_pred_proba"]) else 0),
         }
         comparison_data.append(row)
 
