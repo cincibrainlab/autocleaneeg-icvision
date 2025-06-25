@@ -55,16 +55,17 @@ OPENAI_ICA_PROMPT = """Analyze this EEG ICA component image and classify into ON
 
 **COMPONENT CLASSIFICATION:**
 
-- "brain": Dipolar pattern in CENTRAL, PARIETAL, or TEMPORAL regions (NOT FRONTAL or EDGE-FOCUSED). 1/f-like spectrum with possible peaks at 8-12Hz. Rhythmic, wave-like time series WITHOUT abrupt level shifts. MUST show decreasing power with increasing frequency (1/f pattern) - a flat or random fluctuating spectrum is NOT brain activity.
+- "brain": Dipolar pattern in CENTRAL, PARIETAL, or TEMPORAL regions (NOT PERIOCULAR FOCUSED or EDGE-FOCUSED). 1/f-like spectrum with possible peaks at 6-35Hz. Rhythmic, wave-like time series WITHOUT abrupt level shifts. MUST show decreasing power with increasing frequency (1/f pattern).
 
 - "eye":
-  * **PRIMARY PATTERN**: DIPOLAR pattern (two opposite poles) ALWAYS tightly focused in frontal regions
-  * **TOPOGRAPHY**: Look for bilateral activity across the frontal region - can be left-right OR up-down oriented. Key is having CLEAR DIPOLAR STRUCTURE with both positive and negative poles.
-  * **SPECTRUM**: Usually dominated by low frequencies (1-30Hz) with 1/f-like decrease
+  * **PRIMARY PATTERN**: DIPOLAR pattern (two opposite poles) ALWAYS tightly focused ABOVE/BESIDE the PERIOCULAR regions (Fp1, Fp2, F7, F8)
+  * **TOPOGRAPHY**: Look for bilateral activity in the ANTERIOR-MOST electrodes (Fp1, Fp2, F7, F8) - can be left-right OR up-down oriented. Key is having CLEAR DIPOLAR STRUCTURE with both positive and negative poles CONFINED TO EYE-ADJACENT ELECTRODES.
+  * **SPECTRUM**: Usually dominated by low frequencies (1-5Hz) with 1/f-like decrease
   * **TIME SERIES**: Step-like, slow waves, or blink-related patterns
-  * **CRITICAL DISTINCTION**: Eye has DIPOLAR structure (two opposite poles), while channel_noise has only ONE focal spot without opposite pole
-  * **KEY RULE**: If you see any clear dipolar pattern with frontal involvement and 1/f spectrum → likely "eye" rather than channel_noise
-  * **PRIORITY**: Frontal patterns with bilateral/dipolar structure = eye, single frontal spots = muscle
+  * **CRITICAL DISTINCTION**: Eye has DIPOLAR pattern ONLY ANTERIOR to the PERIOCULAR electrodes (Fp1, Fp2, F7, F8) AND ABSOLUTELY NO dipolar pattern extension to mid-frontal (F3, F4, Fz), CENTRAL, PARIETAL, TEMPORAL, or OCCIPITAL regions, while channel_noise has only ONE focal spot without opposite pole and brain can have dipolar pattern extension to the mid-frontal (F3, F4, Fz), CENTRAL, PARIETAL, TEMPORAL, or OCCIPITAL regions
+  * **ANATOMICAL BOUNDARY**: Must be strongest at electrodes DIRECTLY ABOVE/BESIDE the PERIOCULAR regions (Fp1, Fp2, F7, F8) with no dipolar pattern extension to mid-frontal (F3, F4, Fz), CENTRAL, PARIETAL, TEMPORAL, or OCCIPITAL regions
+  * **KEY RULE**: If you see dipolar pattern ONLY ABOVE/BESIDE the eyes (Fp1, Fp2, F7, F8) with 1/f spectrum → "eye". If dipolar pattern includes ANY electrodes over CENTRAL, PARIETAL, TEMPORAL, or OCCIPITAL regions → NOT eye.
+  * **PRIORITY**: Periocular dipolar patterns = eye, frontal cortical patterns that extend to mid-frontal (F3, F4, Fz) or central regions = brain, single spots = muscle/noise
 
 - "muscle": (SPECTRAL SIGNATURE IS THE MOST DOMINANT INDICATOR)
   * DECISIVE SPECTRAL FEATURE (Primary and Often Conclusive Muscle Indicator): The power spectrum exhibits a CLEAR and SUSTAINED POSITIVE SLOPE, meaning power consistently INCREASES with increasing frequency, typically starting from around 20-30Hz and continuing upwards. This often looks like the spectrum is 'curving upwards' or 'scooping upwards' at higher frequencies. IF THIS DISTINCT SPECTRAL SIGNATURE IS OBSERVED, THE COMPONENT IS TO BE CLASSIFIED AS 'muscle', EVEN IF other features might seem ambiguous or resemble other categories. This spectral cue is the strongest determinant for muscle.
@@ -108,12 +109,12 @@ OPENAI_ICA_PROMPT = """Analyze this EEG ICA component image and classify into ON
 CLASSIFICATION PRIORITY (IMPORTANT: Evaluate in this order. Later rules apply only if earlier conditions are not met or are ambiguous):
 1.  FIRST: EXAMINE TIME SERIES CAREFULLY for ANY rhythmic deflections (up/down spikes, dips, steps) repeating every ~1 second → "heart" (OVERRIDES all other features)
 2.  ELSE IF SINGLE TINY FOCAL SPOT without clear opposite pole (non-dipolar) → "channel_noise" (spatial characteristics are decisive for bad electrodes, regardless of spectrum)
-3.  ELSE IF CLEAR DIPOLAR pattern (two opposite poles) with frontal involvement and 1/f spectrum → "eye"
+3.  ELSE IF power spectrum dominated by low frequencies (1-5Hz) and clear dipolar pattern STRICTLY ONLY ANTERIOR to the PERIOCULAR electrodes (Fp1, Fp2, F7, F8) AND ABSOLUTELY NO dipolar pattern extension to mid-frontal (F3, F4, Fz), CENTRAL, PARIETAL, TEMPORAL, or OCCIPITAL regions → "eye"
 4.  ELSE IF Spectrum shows SHARP PEAK (not notch) at 50/60Hz → "line_noise"
-5.  ELSE IF Power spectrum exhibits a CLEAR and SUSTAINED POSITIVE SLOPE (power INCREASES with increasing frequency from ~20-30Hz upwards, often 'curving' or 'scooping' upwards) → "muscle". (THIS IS A DECISIVE RULE FOR MUSCLE. If this spectral pattern is present, classify as 'muscle' even if the topography isn't a perfect 'bowtie' or edge artifact, and before considering 'brain').
+5.  ELSE IF Power spectrum exhibits a CLEAR and SUSTAINED increase in power from ~20-30 Hz through higher frequencies. The slope must be consistently upward, not flat or decreasing, and the trend should be visually obvious. Disregard any dips or notches at 50 or 60 Hz, as these result from filtering and do not reflect the true slope. → "muscle". (THIS IS A DECISIVE RULE FOR MUSCLE. If this spectral pattern is present, classify as 'muscle' even if the topography isn't a perfect 'bowtie' or edge artifact, and before considering 'brain').
 6.  ELSE IF Single focal spot near muscle areas (temporal, frontal, jaw) → "muscle" (many muscle artifacts look like single spots)
 7.  ELSE IF (Topography is a clear 'bowtie'/'shallow dipole' OR distinct EDGE activity) AND (Time series is spiky/high-frequency OR spectrum is generally high-frequency without being clearly 1/f and also not clearly a positive slope) → "muscle" (Secondary muscle check, for cases where the positive slope is less perfect but other muscle signs are strong and it's definitely not brain).
-8.  ELSE IF Dipolar pattern in CENTRAL, PARIETAL, or TEMPORAL regions (AND NOT already definitively classified as 'muscle' by its spectral signature under rule 5) AND spectrum shows a clear general 1/f pattern (overall DECREASING power with increasing frequency, AND ABSOLUTELY NO sustained positive slope at high frequencies) → "brain"
+8.  ELSE IF Dipolar pattern in mid-frontal (F3, F4, Fz), CENTRAL, PARIETAL, or TEMPORAL regions (AND NOT already definitively classified as 'muscle' by its spectral signature under rule 5) AND spectrum shows a clear general 1/f pattern (overall DECREASING power with increasing frequency, AND ABSOLUTELY NO sustained positive slope at high frequencies) → "brain"
 9.  ELSE → "other_artifact"
 
 IMPORTANT: A 60Hz NOTCH (negative dip) in spectrum is normal filtering, seen in most components, and should NOT be used for classification! Do not include this in your reasoning.
