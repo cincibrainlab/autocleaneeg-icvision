@@ -448,8 +448,10 @@ def plot_components_batch(
     # Ensure matplotlib backend is set properly
     matplotlib.use("Agg", force=True)
 
-    logger.debug(
-        "Plotting %d components sequentially with enhanced error handling",
+    import time
+    start_time = time.time()
+    logger.info(
+        "Starting plot_components_batch: %d components to plot sequentially with enhanced error handling",
         len(component_indices),
     )
 
@@ -495,10 +497,14 @@ def plot_components_batch(
     plt.close("all")
 
     successful_plots = sum(1 for path in results_dict.values() if path is not None)
+    end_time = time.time()
+    elapsed_time = end_time - start_time
     logger.info(
-        "Plotting completed: %d/%d components plotted successfully",
+        "plot_components_batch completed: %d/%d components plotted successfully in %.2f seconds (%.2f sec/component)",
         successful_plots,
         len(component_indices),
+        elapsed_time,
+        elapsed_time / len(component_indices) if component_indices else 0,
     )
 
     return results_dict

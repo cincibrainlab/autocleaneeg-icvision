@@ -276,6 +276,7 @@ def label_components(
                 output_dir=output_path,
                 input_basename=input_basename,
                 source_filename=source_filename,
+                psd_fmax=psd_fmax,  # Pass through PSD frequency limit to PDF
             )
             logger.info("Report saved to: %s", report_path)
         except Exception as e:

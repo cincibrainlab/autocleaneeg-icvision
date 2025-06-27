@@ -287,10 +287,15 @@ def classify_components_batch(
         labels_to_exclude = [lbl for lbl in COMPONENT_LABELS if lbl != "brain"]
 
     classification_results_list: List[Dict[str, Any]] = []
+    import time
+    batch_start_time = time.time()
+    
     num_components = ica_obj.n_components_
     if num_components == 0:
         logger.warning("No ICA components found to classify.")
         return pd.DataFrame()
+
+    logger.info("Starting classify_components_batch: processing %d components", num_components)
 
     # Initialize cost tracking
     total_cost_tracking = {
@@ -418,5 +423,14 @@ def classify_components_batch(
 
     if not results_df.empty:
         results_df = results_df.set_index("component_index", drop=False)
+
+    batch_end_time = time.time()
+    batch_elapsed_time = batch_end_time - batch_start_time
+    logger.info(
+        "classify_components_batch completed: %d components processed in %.2f seconds (%.2f sec/component)",
+        num_components,
+        batch_elapsed_time,
+        batch_elapsed_time / num_components if num_components > 0 else 0,
+    )
 
     return results_df, total_cost_tracking

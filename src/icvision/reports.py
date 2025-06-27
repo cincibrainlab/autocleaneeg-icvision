@@ -170,6 +170,7 @@ def generate_classification_report(
     report_filename_prefix: Optional[str] = None,
     components_to_detail: str = "all",  # "all" or "artifacts_only"
     source_filename: Optional[str] = None,
+    psd_fmax: Optional[float] = None,
 ) -> Optional[Path]:
     """
     Generates a comprehensive PDF report for ICA component classifications.
@@ -184,6 +185,7 @@ def generate_classification_report(
         components_to_detail: Which components to include detail pages for:
                              "all" or "artifacts_only" (where 'exclude_vision' is True).
         source_filename: Original filename for PDF footer.
+        psd_fmax: Maximum frequency for PSD plots in Hz (default: None for auto).
 
     Returns:
         Path to the generated PDF report, or None if generation failed.
@@ -310,6 +312,7 @@ def generate_classification_report(
                         classification_reason=reason,
                         return_fig_object=True,
                         source_filename=source_filename,
+                        psd_fmax=psd_fmax,  # Pass through PSD frequency limit
                     )
 
                     if fig_detail:
