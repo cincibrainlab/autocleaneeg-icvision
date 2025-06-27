@@ -41,7 +41,7 @@ DEFAULT_EXCLUDE_LABELS = [
 ]
 
 # OpenAI prompt for ICA component classification
-OPENAI_ICA_PROMPT = """Analyze this EEG ICA component image and classify into ONE category:
+OPENAI_ICA_PROMPT_PROSE = """Analyze this EEG ICA component image and classify into ONE category:
 
 **UNDERSTANDING THE PLOTS:**
 - **Topography** (top left): Spatial distribution of component activity across the scalp
@@ -132,6 +132,136 @@ The "reason" should provide detailed reasoning for your classification decision.
 
 Example JSON response:
 {"label": "eye", "confidence": 0.95, "reason": "Strong frontal topography with left-right dipolar pattern (horizontal eye movement) or frontal positivity with spike-like patterns (vertical eye movement/blinks). Low-frequency dominated spectrum and characteristic time series confirm eye activity."}
+"""
+
+OPENAI_ICA_PROMPT = """
+{
+  "task": "Analyze an EEG ICA component image and classify into ONE category",
+  "plot_descriptions": {
+    "topography": {
+      "location": "top left",
+      "description": "Spatial distribution of component activity across the scalp"
+    },
+    "time_series": {
+      "location": "top right",
+      "description": "Component activation over time - look for rhythmic patterns, spikes, or characteristic temporal signatures"
+    },
+    "power_spectrum": {
+      "location": "bottom right",
+      "description": "Frequency content - shows how power varies across frequencies"
+    },
+    "continuous_data_segments": {
+      "location": "bottom left",
+      "description": "Trial-by-trial visualization showing component activity across multiple time segments. This ERP-image style plot reveals: Temporal consistency (Consistent patterns across trials indicate reliable sources - brain/artifacts), Artifact signatures (Sporadic, random patterns often indicate noise; regular artifact patterns - eye, heart, muscle - show characteristic timing), Neural oscillations (Brain components often show consistent oscillatory patterns across trials), Artifact detection (Muscle artifacts show sporadic high-frequency bursts; eye artifacts show movement-related patterns; heart artifacts show regular ~1Hz rhythmic activity)"
+    }
+  },
+  "classification_categories": {
+    "brain": {
+      "topography": "Dipolar pattern in CENTRAL, PARIETAL, or TEMPORAL regions (NOT PERIOCULAR FOCUSED or EDGE-FOCUSED)",
+      "spectrum": "1/f-like spectrum with possible peaks at 6-35Hz",
+      "time_series": "Rhythmic, wave-like time series WITHOUT abrupt level shifts",
+      "additional": "MUST show decreasing power with increasing frequency (1/f pattern)"
+    },
+    "eye": {
+      "primary_pattern": "DIPOLAR pattern (two opposite poles) ALWAYS tightly focused ABOVE/BESIDE the PERIOCULAR regions (Fp1, Fp2, F7, F8)",
+      "topography": "Bilateral activity in the ANTERIOR-MOST electrodes (Fp1, Fp2, F7, F8) - can be left-right OR up-down oriented. Key is having CLEAR DIPOLAR STRUCTURE with both positive and negative poles CONFINED TO EYE-ADJACENT ELECTRODES",
+      "spectrum": "Usually dominated by low frequencies (1-5Hz) with 1/f-like decrease",
+      "time_series": "Step-like, slow waves, or blink-related patterns",
+      "critical_distinction": "Eye has DIPOLAR pattern ONLY ANTERIOR to the PERIOCULAR electrodes (Fp1, Fp2, F7, F8) AND ABSOLUTELY NO dipolar pattern extension to mid-frontal (F3, F4, Fz), CENTRAL, PARIETAL, TEMPORAL, or OCCIPITAL regions, while channel_noise has only ONE focalteller focal spot without opposite pole and brain can have dipolar pattern extension to the mid-frontal (F3, F4, Fz), CENTRAL, PARIETAL, TEMPORAL, or OCCIPITAL regions",
+      "anatomical_boundary": "Must be strongest at electrodes DIRECTLY ABOVE/BESIDE the PERIOCULAR regions (Fp1, Fp2, F7, F8) with no dipolar pattern extension to mid-frontal (F3, F4, Fz), CENTRAL, PARIETAL, TEMPORAL, or OCCIPITAL regions",
+      "key_rule": "If you see dipolar pattern ONLY ABOVE/BESIDE the eyes (Fp1, Fp2, F7, F8) with 1/f spectrum → 'eye'. If dipolar pattern includes ANY electrodes over CENTRAL, PARIETAL, TEMPORAL, or OCCIPITAL regions → NOT eye",
+      "priority": "Periocular dipolar patterns = eye, frontal cortical patterns that extend to mid-frontal (F3, F4, Fz) or central regions = brain, single spots = muscle/noise"
+    },
+    "muscle": {
+      "decisive_spectral_feature": "The power spectrum exhibits a CLEAR and SUSTAINED POSITIVE SLOPE, meaning power consistently INCREASES with increasing frequency, typically starting from around 20-30Hz and continuing upwards. This often looks like the spectrum is 'curving upwards' or 'scooping upwards' at higher frequencies. IF THIS DISTINCT SPECTRAL SIGNATURE IS OBSERVED, THE COMPONENT IS TO BE CLASSIFIED AS 'muscle', EVEN IF other features might seem ambiguous or resemble other categories",
+      "important_note": "Muscle artifacts often appear as SINGLE FOCAL SPOTS that look like channel noise. The distinction is BIOLOGICAL PLAUSIBILITY - focal spots near muscle areas (temporal, frontal, jaw) are usually muscle, not channel noise",
+      "continuous_data_segments": "Muscle artifacts often show sporadic, high-frequency bursts or irregular patterns across trials, unlike the consistent patterns of brain activity",
+      "other_characteristics": {
+        "topography": "Common patterns include (a) very localized 'bowtie' or 'shallow dipole' patterns (two small, adjacent areas of opposite polarity, often taking up <25% of the scalp map, can appear anywhere but frequently temporal/posterior) OR (b) more diffuse activity, typically along the EDGE of the scalp (temporal, occipital, neck regions) OR (c) single focal spots near muscle locations",
+        "time_series": "Often shows spiky, high-frequency, and somewhat erratic activity"
+      }
+    },
+    "heart": {
+      "primary_indicator": "TIME SERIES must show ANY KIND of rhythmic deflections (upward spikes, downward dips, or step changes) that repeat approximately every 1 second (0.8-1.5 seconds apart). These can be subtle - look for ANY regular pattern that occurs roughly once per second",
+      "continuous_data_segments": "Regular vertical bands or stripes occurring ~once per second across trials - this shows consistent cardiac activity across time segments",
+      "decisive_rule": "If you see ANY rhythmic pattern repeating every ~1000ms in the time series OR regular temporal patterns in continuous data segments, classify as 'heart' IMMEDIATELY regardless of all other features",
+      "common_patterns": "Heart artifacts often appear as regular downward deflections, upward spikes, or step-like changes occurring ~once per second",
+      "topography": "IGNORE topography for heart detection - can be dipolar, broad, focal, or any pattern",
+      "spectrum": "IGNORE spectrum for heart detection - often looks brain-like with 1/f pattern",
+      "critical": "The ONLY diagnostic feature for heart is rhythmic ~1Hz activity in time series AND/OR consistent temporal patterns in continuous data segments"
+    },
+    "line_noise": {
+      "criterion": "MUST show SHARP PEAK at 50/60Hz in spectrum - NOT a notch/dip (notches are filters, not line noise)",
+      "note": "Almost all components show a notch at 60Hz from filtering - this is NOT line noise! Line noise requires a POSITIVE PEAK at 50/60Hz, not a negative dip"
+    },
+    "channel_noise": {
+      "primary_criterion": "SINGLE ELECTRODE 'hot/cold spot' - tiny, isolated circular area WITHOUT an opposite pole (not dipolar)",
+      "decisive_spatial_rule": "If topography shows single tiny focal spot with NO clear opposite pole, this is likely channel_noise regardless of spectrum appearance (bad electrodes can have noisy/artifactual spectra)",
+      "location_guide": "More common in central/interior regions, but can occur anywhere due to electrode problems",
+      "key_distinction_from_muscle": "Muscle can also appear as focal spots but usually has some spatial extent or is part of broader patterns. True channel noise is extremely localized to essentially one electrode",
+      "continuous_data_segments": "True channel noise shows extremely localized, often random or flat patterns across trials, different from the structured patterns of other artifacts",
+      "compare_with_eye": "Channel noise has only ONE focal point, while eye has TWO opposite poles (dipole). Eye dipoles are also typically larger and more structured",
+      "compare_with_muscle": "If uncertain between channel_noise and muscle for focal spots, prioritize spatial characteristics over spectral ones",
+      "note": "True channel noise is rare but when present, spatial localization is the most reliable indicator"
+    },
+    "other_artifact": {
+      "description": "Components that don't clearly fit other categories, INCLUDING: Complex multi-polar topographies (multiple hotspots, irregular patterns), Dipolar patterns that are noisy, irregular, or poorly formed, Components with mixed or contradictory features, Any pattern that looks 'brain-like' but is complex, noisy, or atypical, When in doubt between brain and other patterns → choose 'other_artifact'"
+    }
+  },
+  "classification_priority": [
+    {
+      "step": 1,
+      "rule": "EXAMINE TIME SERIES CAREFULLY for ANY rhythmic deflections (up/down spikes, dips, steps) repeating every ~1 second → 'heart' (OVERRIDES all other features)"
+    },
+    {
+      "step": 2,
+      "rule": "ELSE IF SINGLE TINY FOCAL SPOT without clear opposite pole (non-dipolar) → 'channel_noise' (spatial characteristics are decisive for bad electrodes, regardless of spectrum)"
+    },
+    {
+      "step": 3,
+      "rule": "ELSE IF power spectrum dominated by low frequencies (1-5Hz) and clear dipolar pattern STRICTLY ONLY ANTERIOR to the PERIOCULAR electrodes (Fp1, Fp2, F7, F8) AND ABSOLUTELY NO dipolar pattern extension to mid-frontal (F3, F4, Fz), CENTRAL, PARIETAL, TEMPORAL, or OCCIPITAL regions → 'eye'"
+    },
+    {
+      "step": 4,
+      "rule": "ELSE IF Spectrum shows SHARP PEAK (not notch) at 50/60Hz → 'line_noise'"
+    },
+    {
+      "step": 5,
+      "rule": "ELSE IF Power spectrum exhibits a CLEAR and SUSTAINED increase in power from ~20-30 Hz through higher frequencies. The slope must be consistently upward, not flat or decreasing, and the trend should be visually obvious. Disregard any dips or notches at 50 or 60 Hz, as these result from filtering and do not reflect the true slope. → 'muscle'. (THIS IS A DECISIVE RULE FOR MUSCLE. If this spectral pattern is present, classify as 'muscle' even if the topography isn't a perfect 'bowtie' or edge artifact, and before considering 'brain')"
+    },
+    {
+      "step": 6,
+      "rule": "ELSE IF Single focal spot near muscle areas (temporal, frontal, jaw) → 'muscle' (many muscle artifacts look like single spots)"
+    },
+    {
+      "step": 7,
+      "rule": "ELSE IF (Topography is a clear 'bowtie'/'shallow dipole' OR distinct EDGE activity) AND (Time series is spiky/high-frequency OR spectrum is generally high-frequency without being clearly 1/f and also not clearly a positive slope) → 'muscle' (Secondary muscle check, for cases where the positive slope is less perfect but other muscle signs are strong and it's definitely not brain)"
+    },
+    {
+      "step": 8,
+      "rule": "ELSE IF Dipolar pattern in mid-frontal (F3, F4, Fz), CENTRAL, PARIETAL, or TEMPORAL regions (AND NOT already definitively classified as 'muscle' by its spectral signature under rule 5) AND spectrum shows a clear general 1/f pattern (overall DECREASING power with increasing frequency, AND ABSOLUTELY NO sustained positive slope at high frequencies) → 'brain'"
+    },
+    {
+      "step": 9,
+      "rule": "ELSE → 'other_artifact'"
+    }
+  ],
+  "important_note": "A 50HZ or 60Hz NOTCH (negative dip) in spectrum is normal filtering, seen in most components, and should NOT be used for classification! Do not include this in your reasoning",
+}
+RETURN FORMAT: You must respond with ONLY a valid JSON object in the following exact format:
+{
+    "label": "one_of_the_valid_labels",
+    "confidence": 0.95,
+    "reason": "detailed_reasoning_for_the_classification"
+}
+
+The "label" must be exactly one of: brain, eye, muscle, heart, line_noise, channel_noise, other_artifact
+The "confidence" must be a number between 0.0 and 1.0
+The "reason" should provide detailed reasoning for your classification decision.
+
+Example JSON response:
+{"label": "eye", "confidence": 0.95, "reason": "Strong frontal topography with left-right dipolar pattern (horizontal eye movement) or frontal positivity with spike-like patterns (vertical eye movement/blinks). Low-frequency dominated spectrum and characteristic time series confirm eye activity."}
+
 """
 
 # Default configuration parameters

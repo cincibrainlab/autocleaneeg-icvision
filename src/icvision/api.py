@@ -56,11 +56,19 @@ def classify_component_image_openai(
         logger.error("Invalid or non-existent image path: %s", image_path)
         return "other_artifact", 1.0, "Invalid image path", None
 
+    import time
+    function_start_time = time.time()
+    logger.info("Starting classification for %s", image_path.name)
+    
     prompt_to_use = custom_prompt or OPENAI_ICA_PROMPT
 
     try:
+        import time
+        encode_start_time = time.time()
         with open(image_path, "rb") as image_file:
             base64_image = base64.b64encode(image_file.read()).decode("utf-8")
+        encode_end_time = time.time()
+        logger.debug("Base64 encoding for %s took %.3f seconds", image_path.name, encode_end_time - encode_start_time)
 
         client = openai.OpenAI(api_key=api_key)
         logger.debug("Sending %s to OpenAI (model: %s)...", image_path.name, model_name)
@@ -68,6 +76,11 @@ def classify_component_image_openai(
         # Use OpenAI's new responses API for computer vision
         # Text prompt and image are sent as separate input entries
         # Note: response_format not supported in responses API - structured output must be requested in prompt
+        
+        import time
+        api_start_time = time.time()
+        logger.info("Starting OpenAI API call for %s", image_path.name)
+        
         response = client.responses.create(
             model=model_name,
             input=[
@@ -84,6 +97,10 @@ def classify_component_image_openai(
             ],
             temperature=0.2,  # Low temperature for more deterministic output
         )
+        
+        api_end_time = time.time()
+        api_elapsed_time = api_end_time - api_start_time
+        logger.info("OpenAI API call completed for %s in %.2f seconds", image_path.name, api_elapsed_time)
 
         # Parse structured response from new responses API
         # Response structure (based on OpenAI responses API format):
@@ -118,7 +135,10 @@ def classify_component_image_openai(
                 try:
                     import json
 
+                    parse_start_time = time.time()
                     structured_response = json.loads(message_content)
+                    parse_end_time = time.time()
+                    logger.debug("JSON parsing for %s took %.3f seconds", image_path.name, parse_end_time - parse_start_time)
 
                     label = structured_response.get("label", "").lower()
                     confidence = float(structured_response.get("confidence", 0.0))
@@ -175,6 +195,10 @@ def classify_component_image_openai(
                     else:
                         logger.debug("Response ID: %s, Usage: N/A", getattr(response, "id", "N/A"))
 
+                    function_end_time = time.time()
+                    function_elapsed_time = function_end_time - function_start_time
+                    logger.info("Classification completed for %s in %.2f seconds (Label: %s, Confidence: %.2f)", 
+                               image_path.name, function_elapsed_time, label, confidence)
                     return label, confidence, reason, cost_info
 
                 except (json.JSONDecodeError, KeyError, ValueError) as e:
@@ -184,13 +208,23 @@ def classify_component_image_openai(
                         e,
                         message_content[:200],
                     )
+                    function_end_time = time.time()
+                    function_elapsed_time = function_end_time - function_start_time
+                    logger.warning("Classification failed for %s in %.2f seconds (JSON parsing error)", 
+                                  image_path.name, function_elapsed_time)
                     return "other_artifact", 1.0, f"JSON parsing error: {str(e)}", None
 
+        function_end_time = time.time()
+        function_elapsed_time = function_end_time - function_start_time
+        logger.warning("Classification failed for %s in %.2f seconds (No valid response content)", 
+                      image_path.name, function_elapsed_time)
         logger.error("No valid structured content in OpenAI response for %s", image_path.name)
         return "other_artifact", 1.0, "No valid structured response content", None
 
     except openai.APIConnectionError as e:
-        logger.error("OpenAI API connection error for %s: %s", image_path.name, e)
+        function_end_time = time.time()
+        function_elapsed_time = function_end_time - function_start_time
+        logger.error("OpenAI API connection error for %s after %.2f seconds: %s", image_path.name, function_elapsed_time, e)
         return "other_artifact", 1.0, "API Connection Error: {}".format(str(e)[:100]), None
     except openai.AuthenticationError as e:
         logger.error("OpenAI API authentication error: %s. Check API key.", e)
@@ -201,7 +235,9 @@ def classify_component_image_openai(
             None,
         )
     except openai.RateLimitError as e:
-        logger.error("OpenAI API rate limit exceeded for %s: %s", image_path.name, e)
+        function_end_time = time.time()
+        function_elapsed_time = function_end_time - function_start_time
+        logger.error("OpenAI API rate limit exceeded for %s after %.2f seconds: %s", image_path.name, function_elapsed_time, e)
         return "other_artifact", 1.0, "API Rate Limit Error: {}".format(str(e)[:100]), None
     except openai.APIStatusError as e:
         logger.error(
