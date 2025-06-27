@@ -148,6 +148,13 @@ Examples:
         help="Minimum confidence for auto-exclusion (0.0-1.0; " f"default: {DEFAULT_CONFIG['confidence_threshold']}).",
     )
     class_group.add_argument(
+        "--psd-fmax",
+        type=float,
+        default=None,
+        help="Maximum frequency for PSD plots in Hz (default: 80 or Nyquist). "
+        "Useful for ERP studies where data is filtered at lower frequencies.",
+    )
+    class_group.add_argument(
         "--no-auto-exclude",
         action="store_false",
         dest="auto_exclude",
@@ -274,6 +281,7 @@ Examples:
             max_concurrency=args.max_concurrency,
             model_name=args.model,
             custom_prompt=custom_prompt_text,
+            psd_fmax=args.psd_fmax,
         )
 
         # Determine output path

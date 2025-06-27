@@ -259,6 +259,7 @@ def classify_components_batch(
     auto_exclude: bool = cast(bool, DEFAULT_CONFIG["auto_exclude"]),
     labels_to_exclude: Optional[List[str]] = None,
     output_dir: Optional[Path] = None,
+    psd_fmax: Optional[float] = None,
 ) -> Tuple[pd.DataFrame, dict]:
     """
     Classifies ICA components in batches using OpenAI Vision API with parallel processing.
@@ -275,6 +276,7 @@ def classify_components_batch(
         auto_exclude: If True, mark components for exclusion.
         labels_to_exclude: List of labels to exclude (e.g., ["eye", "muscle"]).
         output_dir: Directory to save temporary component images.
+        psd_fmax: Maximum frequency for PSD plot (default: None, uses 80 Hz or Nyquist).
 
     Returns:
         Tuple of (pd.DataFrame with classification results, dict with cost tracking information).
@@ -314,6 +316,7 @@ def classify_components_batch(
             component_indices,
             image_output_path,
             batch_size=5,  # Process in small batches to manage memory
+            psd_fmax=psd_fmax,
         )
 
         # Convert plotting results to the format expected by the classification pipeline

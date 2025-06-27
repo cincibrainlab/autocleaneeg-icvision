@@ -34,6 +34,7 @@ def plot_component_for_classification(
     classification_reason: Optional[str] = None,
     return_fig_object: bool = False,
     source_filename: Optional[str] = None,
+    psd_fmax: Optional[float] = None,
 ) -> Union[Path, plt.Figure, None]:
     """
     Creates a standardized plot for an ICA component.
@@ -48,6 +49,7 @@ def plot_component_for_classification(
         raw_obj: The MNE Raw object used for ICA.
         component_idx: Index of the component to plot.
         output_dir: Directory to save the plot (if not returning a figure object).
+        psd_fmax: Maximum frequency for PSD plot (default: None, uses 80 Hz or Nyquist).
         classification_label: Vision API label (for PDF report).
         classification_confidence: Vision API confidence (for PDF report).
         classification_reason: Vision API reason (for PDF report).
@@ -261,7 +263,11 @@ def plot_component_for_classification(
     # 4. IC Activity Power Spectrum
     try:
         fmin_psd = 1.0
-        fmax_psd = min(80.0, sfreq / 2.0 - 0.51)  # Cap at 80Hz or Nyquist
+        # Use provided psd_fmax or default to 80Hz
+        if psd_fmax is not None:
+            fmax_psd = min(psd_fmax, sfreq / 2.0 - 0.51)  # Cap at provided value or Nyquist
+        else:
+            fmax_psd = min(80.0, sfreq / 2.0 - 0.51)  # Default: Cap at 80Hz or Nyquist
         n_fft_psd = int(sfreq * 2.0)  # 2-second window
         if n_fft_psd > len(component_data_array):
             n_fft_psd = len(component_data_array)
@@ -297,7 +303,9 @@ def plot_component_for_classification(
         psds_db = 10 * np.log10(np.maximum(psds, 1e-20))  # Avoid log(0)
 
         ax_psd.plot(freqs, psds_db, color="red", linewidth=1.2)
-        ax_psd.set_title(f"IC{component_idx} Power Spectrum (1-80Hz)", fontsize=10)
+        # Update title to show actual frequency range
+        actual_fmax = int(fmax_psd)
+        ax_psd.set_title(f"IC{component_idx} Power Spectrum (1-{actual_fmax}Hz)", fontsize=10)
         ax_psd.set_xlabel("Frequency (Hz)", fontsize=9)
         ax_psd.set_ylabel("Power (dB)", fontsize=9)
         if len(freqs) > 0:
@@ -408,6 +416,7 @@ def plot_components_batch(
     component_indices: List[int],
     output_dir: Path,
     batch_size: int = 1,
+    psd_fmax: Optional[float] = None,
 ) -> Dict[int, Optional[Path]]:
     """
     Generate component plots with improved error handling and memory management.
@@ -421,6 +430,7 @@ def plot_components_batch(
         component_indices: List of component indices to plot.
         output_dir: Directory to save the component images.
         batch_size: Number of components to process before cleanup (default: 1).
+        psd_fmax: Maximum frequency for PSD plot (default: None, uses 80 Hz or Nyquist).
 
     Returns:
         Dictionary mapping component_idx to image path (or None if plotting failed).
@@ -453,7 +463,7 @@ def plot_components_batch(
 
             # Plot the component with enhanced error handling
             image_path = plot_component_for_classification(
-                ica_obj, raw_obj, component_idx, output_dir, return_fig_object=False
+                ica_obj, raw_obj, component_idx, output_dir, return_fig_object=False, psd_fmax=psd_fmax
             )
 
             results_dict[component_idx] = image_path

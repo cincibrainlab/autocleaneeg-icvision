@@ -93,6 +93,7 @@ This command will:
 *   `--output-dir /path/to/output/`: Output directory (default: `./autoclean_icvision_results`)
 *   `--model MODEL_NAME`: OpenAI model (default: `gpt-4.1`)
 *   `--confidence-threshold 0.8`: Confidence threshold for auto-exclusion (default: `0.8`)
+*   `--psd-fmax 40`: Maximum frequency for PSD plots in Hz (default: `80` or Nyquist)
 *   `--labels-to-exclude eye muscle heart`: Artifact labels to exclude (default: all non-brain types)
 *   `--batch-size 10`: Components per API request (default: `10`)
 *   `--max-concurrency 4`: Max parallel requests (default: `4`)
@@ -121,6 +122,14 @@ autoclean-icvision data/subject01_raw.fif data/subject01_ica.fif \
     --confidence-threshold 0.8 \
     --labels-to-exclude eye muscle line_noise channel_noise \
     --batch-size 8 \
+    --verbose
+```
+
+For ERP studies with low-pass filtered data:
+```bash
+autoclean-icvision data/erp_study.set \
+    --psd-fmax 40 \
+    --confidence-threshold 0.85 \
     --verbose
 ```
 
@@ -189,7 +198,8 @@ try:
         batch_size=5,                    # Default: 10
         max_concurrency=3,               # Default: 4
         auto_exclude=True,               # Default: True
-        custom_prompt=None               # Default: None (uses built-in prompt)
+        custom_prompt=None,              # Default: None (uses built-in prompt)
+        psd_fmax=40.0                    # Default: None (uses 80 Hz); useful for ERP studies
     )
 
     print("\n--- ICVision Processing Complete ---")

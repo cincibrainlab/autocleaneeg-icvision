@@ -47,6 +47,7 @@ def label_components(
     max_concurrency: int = 4,
     model_name: str = "gpt-4.1",
     custom_prompt: Optional[str] = None,
+    psd_fmax: Optional[float] = None,
 ) -> Tuple[mne.io.Raw, mne.preprocessing.ICA, pd.DataFrame]:
     """
     Classify ICA components using OpenAI Vision API and apply artifact rejection.
@@ -79,6 +80,7 @@ def label_components(
         max_concurrency: Maximum concurrent API requests (1-10).
         model_name: OpenAI model to use (e.g., 'gpt-4.1', 'gpt-4.1-mini').
         custom_prompt: Custom classification prompt. If None, uses default.
+        psd_fmax: Maximum frequency for PSD plot (default: None, uses 80 Hz or Nyquist).
 
     Returns:
         Tuple containing:
@@ -200,6 +202,7 @@ def label_components(
             auto_exclude=auto_exclude,
             labels_to_exclude=labels_to_exclude,
             output_dir=output_path,
+            psd_fmax=psd_fmax,
         )
     except Exception as e:
         logger.error("Component classification failed: %s", e)
