@@ -17,9 +17,18 @@ import pandas as pd
 from fastapi import HTTPException
 
 from ..config import COMPONENT_LABELS
-from ..plotting import plot_component_for_classification
+from ..plotting import plot_component_for_web, validate_web_plotting_inputs
 from ..utils import load_raw_data, load_ica_data, extract_input_basename
-from .models import SubjectData, ComponentData, SessionData
+
+# Import models with try/except to handle circular imports
+try:
+    from .models import SubjectData, ComponentData, SessionData
+except ImportError:
+    # Define minimal types for development
+    from typing import Any
+    SubjectData = Any
+    ComponentData = Any  
+    SessionData = Any
 
 logger = logging.getLogger("icvision.web.utils")
 
@@ -194,14 +203,10 @@ def process_subject_components(subject: SubjectData) -> None:
     
     for comp_idx in range(n_components):
         try:
-            # Generate component plot
-            fig = plot_component_for_classification(
-                ica_obj, raw_obj, comp_idx,
-                output_dir=None, return_fig_object=True
+            # Generate component plot using web helper
+            image_base64 = plot_component_for_web(
+                ica_obj, raw_obj, comp_idx
             )
-            
-            # Convert to base64
-            image_base64 = fig_to_base64(fig)
             
             # Get existing classification or use defaults
             if comp_idx in existing_results:

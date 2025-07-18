@@ -187,3 +187,5 @@ bandit_report.json
 /comparison_results
 232_human.csv
 prompt_refinement_workflow.md
+
+temporary_test_files/

@@ -571,8 +571,88 @@ def plot_ica_topographies_overview(
 
     if not indices_to_plot:
         logger.info("No component topographies to plot for overview.")
-        return figures
+    return figures
 
+
+# Web Interface Helper Functions
+def plot_component_for_web(ica_obj, raw_obj, component_idx, psd_fmax=None):
+    """
+    Generate component plot for web interface and return as base64 string.
+    
+    This function creates a component plot suitable for web display by generating
+    the plot and converting it to a base64-encoded PNG image.
+    
+    Args:
+        ica_obj: MNE ICA object containing component data
+        raw_obj: MNE Raw object containing EEG data
+        component_idx: Index of component to plot
+        psd_fmax: Maximum frequency for PSD plot (optional)
+        
+    Returns:
+        Base64-encoded PNG image string
+    """
+    import base64
+    import io
+    import tempfile
+    
+    # Validate inputs
+    validate_web_plotting_inputs(ica_obj, raw_obj, component_idx)
+    
+    # Create temporary directory for plot generation
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_path = Path(temp_dir)
+        
+        # Generate component plot using existing function
+        result = plot_component_for_classification(
+            ica_obj=ica_obj,
+            raw_obj=raw_obj,
+            component_idx=component_idx,
+            output_dir=temp_path,
+            return_fig_object=True,
+            psd_fmax=psd_fmax
+        )
+        
+        # The function returns a Figure when return_fig_object=True
+        if not hasattr(result, 'savefig'):
+            raise ValueError(f"Failed to generate plot for component {component_idx}")
+        
+        fig = result
+        
+        # Convert figure to base64
+        buffer = io.BytesIO()
+        fig.savefig(buffer, format='png', bbox_inches='tight', dpi=100)
+        buffer.seek(0)
+        img_base64 = base64.b64encode(buffer.getvalue()).decode()
+        plt.close(fig)  # Important: cleanup matplotlib figures
+        
+        return img_base64
+
+
+def validate_web_plotting_inputs(ica_obj, raw_obj, component_idx):
+    """
+    Validate inputs for web plotting functions.
+    
+    Args:
+        ica_obj: MNE ICA object
+        raw_obj: MNE Raw object  
+        component_idx: Component index to validate
+        
+    Raises:
+        ValueError: If inputs are invalid
+    """
+    if ica_obj is None:
+        raise ValueError("ICA object cannot be None")
+    
+    if raw_obj is None:
+        raise ValueError("Raw object cannot be None")
+    
+    if not hasattr(ica_obj, 'n_components_'):
+        raise ValueError("Invalid ICA object: missing n_components_ attribute")
+    
+    if component_idx < 0 or component_idx >= ica_obj.n_components_:
+        raise ValueError(f"Component index {component_idx} out of range [0, {ica_obj.n_components_-1}]")
+    
+    return True
     for i in range(0, len(indices_to_plot), max_plots_per_fig):
         batch_indices = indices_to_plot[i : i + max_plots_per_fig]
         if not batch_indices:

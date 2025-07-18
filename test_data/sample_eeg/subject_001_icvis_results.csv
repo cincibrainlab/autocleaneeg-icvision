@@ -1,0 +1,11 @@
+component_index,component_name,label,confidence,reason,exclude_vision
+0,IC0,brain,0.95,"Clear brain activity with typical topography and frequency characteristics",false
+1,IC1,eye,0.88,"Frontal topography consistent with eye movement artifacts",true
+2,IC2,muscle,0.92,"High frequency activity with temporal topography indicating muscle artifacts",true
+3,IC3,brain,0.87,"Neural activity with posterior topography",false
+4,IC4,line_noise,0.99,"60Hz line noise clearly visible in power spectrum",true
+5,IC5,heart,0.85,"Cardiac artifact with characteristic timing and amplitude",true
+6,IC6,brain,0.91,"Sensorimotor rhythm with central topography",false
+7,IC7,other_artifact,0.75,"Unclear artifact type requiring manual review",true
+8,IC8,brain,0.89,"Alpha rhythm with occipital topography",false
+9,IC9,channel_noise,0.93,"Single channel noise artifact",true
