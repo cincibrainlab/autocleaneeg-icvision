@@ -43,6 +43,7 @@ dependencies = [
     "Pillow>=9.0.0",
     "pathlib-mate>=1.0.0",
     "eeglabio",
+    "python-dotenv>=0.19.0",
 ]
 
 [project.optional-dependencies]
