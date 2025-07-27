@@ -68,7 +68,7 @@ OPENAI_ICA_PROMPT_PROSE = """Analyze this EEG ICA component image and classify i
   * **PRIORITY**: Periocular dipolar patterns = eye, frontal cortical patterns that extend to mid-frontal (F3, F4, Fz) or central regions = brain, single spots = muscle/noise
 
 - "muscle": (SPECTRAL SIGNATURE IS THE MOST DOMINANT INDICATOR)
-  * DECISIVE SPECTRAL FEATURE (Primary and Often Conclusive Muscle Indicator): The power spectrum exhibits a CLEAR and SUSTAINED POSITIVE SLOPE, meaning power consistently INCREASES with increasing frequency, typically starting from around 20-30Hz and continuing upwards. This often looks like the spectrum is 'curving upwards' or 'scooping upwards' at higher frequencies. IF THIS DISTINCT SPECTRAL SIGNATURE IS OBSERVED, THE COMPONENT IS TO BE CLASSIFIED AS 'muscle', EVEN IF other features might seem ambiguous or resemble other categories. This spectral cue is the strongest determinant for muscle.
+  * DECISIVE SPECTRAL FEATURE (Primary and Often Conclusive Muscle Indicator): The power spectrum exhibits a CLEAR and SUSTAINED POSITIVE SLOPE, meaning power consistently INCREASES with increasing frequency, starting from the available frequency range upwards (typically from around 20-30Hz if present, or from the lowest available frequency if data is high-pass filtered above 30Hz). This often looks like the spectrum is 'curving upwards' or 'scooping upwards' at higher frequencies. IF THIS DISTINCT SPECTRAL SIGNATURE IS OBSERVED, THE COMPONENT IS TO BE CLASSIFIED AS 'muscle', EVEN IF other features might seem ambiguous or resemble other categories. This spectral cue is the strongest determinant for muscle.
   * IMPORTANT: Muscle artifacts often appear as SINGLE FOCAL SPOTS that look like channel noise. The distinction is BIOLOGICAL PLAUSIBILITY - focal spots near muscle areas (temporal, frontal, jaw) are usually muscle, not channel noise.
   * **CONTINUOUS DATA SEGMENTS**: Muscle artifacts often show sporadic, high-frequency bursts or irregular patterns across trials, unlike the consistent patterns of brain activity
   * OTHER SUPPORTING MUSCLE CHARACTERISTICS (Use if spectral cue is present, or with caution if spectral cue is less definitive but clearly NOT 1/f):
@@ -88,6 +88,7 @@ OPENAI_ICA_PROMPT_PROSE = """Analyze this EEG ICA component image and classify i
   * MUST show SHARP PEAK at 50/60Hz in spectrum - NOT a notch/dip (notches are filters, not line noise).
   * NOTE: Almost all components show a notch at 60Hz from filtering - this is NOT line noise!
   * Line noise requires a POSITIVE PEAK at 50/60Hz, not a negative dip.
+  * IMPORTANT: If data is high-pass filtered above 50/60Hz, line noise detection is not applicable.
 
 - "channel_noise":
   * **PRIMARY CRITERION**: SINGLE ELECTRODE "hot/cold spot" - tiny, isolated circular area WITHOUT an opposite pole (not dipolar).
@@ -111,7 +112,7 @@ CLASSIFICATION PRIORITY (IMPORTANT: Evaluate in this order. Later rules apply on
 2.  ELSE IF SINGLE TINY FOCAL SPOT without clear opposite pole (non-dipolar) → "channel_noise" (spatial characteristics are decisive for bad electrodes, regardless of spectrum)
 3.  ELSE IF power spectrum dominated by low frequencies (1-5Hz) and clear dipolar pattern STRICTLY ONLY ANTERIOR to the PERIOCULAR electrodes (Fp1, Fp2, F7, F8) AND ABSOLUTELY NO dipolar pattern extension to mid-frontal (F3, F4, Fz), CENTRAL, PARIETAL, TEMPORAL, or OCCIPITAL regions → "eye"
 4.  ELSE IF Spectrum shows SHARP PEAK (not notch) at 50/60Hz → "line_noise"
-5.  ELSE IF Power spectrum exhibits a CLEAR and SUSTAINED increase in power from ~20-30 Hz through higher frequencies. The slope must be consistently upward, not flat or decreasing, and the trend should be visually obvious. Disregard any dips or notches at 50 or 60 Hz, as these result from filtering and do not reflect the true slope. → "muscle". (THIS IS A DECISIVE RULE FOR MUSCLE. If this spectral pattern is present, classify as 'muscle' even if the topography isn't a perfect 'bowtie' or edge artifact, and before considering 'brain').
+5.  ELSE IF Power spectrum exhibits a CLEAR and SUSTAINED increase in power starting from the available frequency range upwards (typically from ~20-30 Hz if present, or from the lowest available frequency if data is high-pass filtered above 30Hz). The slope must be consistently upward, not flat or decreasing, and the trend should be visually obvious. Disregard any dips or notches at 50 or 60 Hz, as these result from filtering and do not reflect the true slope. → "muscle". (THIS IS A DECISIVE RULE FOR MUSCLE. If this spectral pattern is present, classify as 'muscle' even if the topography isn't a perfect 'bowtie' or edge artifact, and before considering 'brain').
 6.  ELSE IF Single focal spot near muscle areas (temporal, frontal, jaw) → "muscle" (many muscle artifacts look like single spots)
 7.  ELSE IF (Topography is a clear 'bowtie'/'shallow dipole' OR distinct EDGE activity) AND (Time series is spiky/high-frequency OR spectrum is generally high-frequency without being clearly 1/f and also not clearly a positive slope) → "muscle" (Secondary muscle check, for cases where the positive slope is less perfect but other muscle signs are strong and it's definitely not brain).
 8.  ELSE IF Dipolar pattern in mid-frontal (F3, F4, Fz), CENTRAL, PARIETAL, or TEMPORAL regions (AND NOT already definitively classified as 'muscle' by its spectral signature under rule 5) AND spectrum shows a clear general 1/f pattern (overall DECREASING power with increasing frequency, AND ABSOLUTELY NO sustained positive slope at high frequencies) → "brain"
@@ -173,7 +174,7 @@ OPENAI_ICA_PROMPT_JSON = """
       "priority": "Periocular dipolar patterns = eye, frontal cortical patterns that extend to mid-frontal (F3, F4, Fz) or central regions = brain, single spots = muscle/noise"
     },
     "muscle": {
-      "decisive_spectral_feature": "The power spectrum exhibits a CLEAR and SUSTAINED POSITIVE SLOPE, meaning power consistently INCREASES with increasing frequency, typically starting from around 20-30Hz and continuing upwards. This often looks like the spectrum is 'curving upwards' or 'scooping upwards' at higher frequencies. IF THIS DISTINCT SPECTRAL SIGNATURE IS OBSERVED, THE COMPONENT IS TO BE CLASSIFIED AS 'muscle', EVEN IF other features might seem ambiguous or resemble other categories",
+      "decisive_spectral_feature": "The power spectrum exhibits a CLEAR and SUSTAINED POSITIVE SLOPE, meaning power consistently INCREASES with increasing frequency, starting from the available frequency range upwards (typically from around 20-30Hz if present, or from the lowest available frequency if data is high-pass filtered above 30Hz). This often looks like the spectrum is 'curving upwards' or 'scooping upwards' at higher frequencies. IF THIS DISTINCT SPECTRAL SIGNATURE IS OBSERVED, THE COMPONENT IS TO BE CLASSIFIED AS 'muscle', EVEN IF other features might seem ambiguous or resemble other categories",
       "important_note": "Muscle artifacts often appear as SINGLE FOCAL SPOTS that look like channel noise. The distinction is BIOLOGICAL PLAUSIBILITY - focal spots near muscle areas (temporal, frontal, jaw) are usually muscle, not channel noise",
       "continuous_data_segments": "Muscle artifacts often show sporadic, high-frequency bursts or irregular patterns across trials, unlike the consistent patterns of brain activity",
       "other_characteristics": {
@@ -192,7 +193,8 @@ OPENAI_ICA_PROMPT_JSON = """
     },
     "line_noise": {
       "criterion": "MUST show SHARP PEAK at 50/60Hz in spectrum - NOT a notch/dip (notches are filters, not line noise)",
-      "note": "Almost all components show a notch at 60Hz from filtering - this is NOT line noise! Line noise requires a POSITIVE PEAK at 50/60Hz, not a negative dip"
+      "note": "Almost all components show a notch at 60Hz from filtering - this is NOT line noise! Line noise requires a POSITIVE PEAK at 50/60Hz, not a negative dip",
+      "important": "If data is high-pass filtered above 50/60Hz, line noise detection is not applicable"
     },
     "channel_noise": {
       "primary_criterion": "SINGLE ELECTRODE 'hot/cold spot' - tiny, isolated circular area WITHOUT an opposite pole (not dipolar)",
@@ -227,7 +229,7 @@ OPENAI_ICA_PROMPT_JSON = """
     },
     {
       "step": 5,
-      "rule": "ELSE IF Power spectrum exhibits a CLEAR and SUSTAINED increase in power from ~20-30 Hz through higher frequencies. The slope must be consistently upward, not flat or decreasing, and the trend should be visually obvious. Disregard any dips or notches at 50 or 60 Hz, as these result from filtering and do not reflect the true slope. → 'muscle'. (THIS IS A DECISIVE RULE FOR MUSCLE. If this spectral pattern is present, classify as 'muscle' even if the topography isn't a perfect 'bowtie' or edge artifact, and before considering 'brain')"
+      "rule": "ELSE IF Power spectrum exhibits a CLEAR and SUSTAINED increase in power starting from the available frequency range upwards (typically from ~20-30 Hz if present, or from the lowest available frequency if data is high-pass filtered above 30Hz). The slope must be consistently upward, not flat or decreasing, and the trend should be visually obvious. Disregard any dips or notches at 50 or 60 Hz, as these result from filtering and do not reflect the true slope. → 'muscle'. (THIS IS A DECISIVE RULE FOR MUSCLE. If this spectral pattern is present, classify as 'muscle' even if the topography isn't a perfect 'bowtie' or edge artifact, and before considering 'brain')"
     },
     {
       "step": 6,
@@ -325,9 +327,9 @@ OPENAI_ICA_PROMPT = """
         "scoring_criteria": {
           "brain": {"description": "1/f-like with peaks at 6-35Hz", "score": {"1f_with_peaks_6_35hz": 0.9, "1f_no_peaks": 0.7, "positive_slope_or_flat": 0.1}},
           "eye": {"description": "Low frequencies (1-5Hz) with 1/f-like decrease", "score": {"low_freq_1_5hz_1f": 0.8, "other_patterns": 0.2}},
-          "muscle": {"description": "CLEAR POSITIVE SLOPE from ~20-30Hz upwards (decisive)", "score": {"positive_slope_20_30hz": 0.95, "high_freq_no_clear_slope": 0.4, "1f_like": 0.05}},
+          "muscle": {"description": "CLEAR POSITIVE SLOPE starting from the available frequency range upwards (typically from ~20-30Hz if present, or from the lowest available frequency if data is high-pass filtered above 30Hz) (decisive)", "score": {"positive_slope_available_freq": 0.95, "high_freq_no_clear_slope": 0.4, "1f_like": 0.05}},
           "heart": {"description": "IGNORE spectrum", "score": {"any_pattern": 0.0}},
-          "line_noise": {"description": "SHARP PEAK at 50/60Hz", "score": {"sharp_peak_50_60hz": 0.95, "notch_or_other": 0.05}},
+          "line_noise": {"description": "SHARP PEAK at 50/60Hz (if these frequencies are present in the data; if high-pass filtered above 50/60Hz, line noise detection is not applicable)", "score": {"sharp_peak_50_60hz": 0.95, "notch_or_other": 0.05}},
           "channel_noise": {"description": "Noisy or artifactual", "score": {"noisy_artifactual": 0.7, "other_patterns": 0.3}},
           "other_artifact": {"description": "Mixed or contradictory", "score": {"mixed_contradictory": 0.6, "other_patterns": 0.3}}
         }
@@ -371,7 +373,7 @@ OPENAI_ICA_PROMPT = """
         },
         {
           "step": 4,
-          "description": "Apply priority rules: If heart’s time series or segments score ≥0.95, set heart to 1.0, others to 0.0. If muscle’s power spectrum scores ≥0.95 for positive_slope_20_30hz, downweight channel_noise topography to 0.1 unless isolated to one electrode. If line_noise’s spectrum scores ≥0.95, set line_noise to 1.0, others to 0.0."
+          "description": "Apply priority rules: If heart's time series or segments score ≥0.95, set heart to 1.0, others to 0.0. If muscle's power spectrum scores ≥0.95 for positive_slope_available_freq, downweight channel_noise topography to 0.1 unless isolated to one electrode. If line_noise's spectrum scores ≥0.95, set line_noise to 1.0, others to 0.0."
         },
         {
           "step": 5,
