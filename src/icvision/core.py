@@ -47,6 +47,7 @@ def label_components(
     max_concurrency: int = 4,
     model_name: str = "gpt-4.1",
     custom_prompt: Optional[str] = None,
+    component_indices: Optional[List[int]] = None,
     psd_fmax: Optional[float] = None,
 ) -> Tuple[mne.io.Raw, mne.preprocessing.ICA, pd.DataFrame]:
     """
@@ -80,6 +81,8 @@ def label_components(
         max_concurrency: Maximum concurrent API requests (1-10).
         model_name: OpenAI model to use (e.g., 'gpt-4.1', 'gpt-4.1-mini').
         custom_prompt: Custom classification prompt. If None, uses default.
+        component_indices: Optional list of component indices to classify. If None,
+            all components are processed.
         psd_fmax: Maximum frequency for PSD plot (default: None, uses 80 Hz or Nyquist).
 
     Returns:
@@ -190,7 +193,7 @@ def label_components(
     logger.debug("Classifying ICA components using OpenAI Vision API...")
 
     try:
-        results_df, cost_tracking = classify_components_batch(
+        classification_result = classify_components_batch(
             ica_obj=ica,
             raw_obj=raw,
             api_key=validated_api_key,
@@ -203,7 +206,13 @@ def label_components(
             labels_to_exclude=labels_to_exclude,
             output_dir=output_path,
             psd_fmax=psd_fmax,
+            component_indices=component_indices,
         )
+        if isinstance(classification_result, tuple):
+            results_df, cost_tracking = classification_result
+        else:  # Backward compatibility if API returns only DataFrame
+            results_df = classification_result
+            cost_tracking = {}
     except Exception as e:
         logger.error("Component classification failed: %s", e)
         raise RuntimeError("Failed to classify components: {}".format(e))

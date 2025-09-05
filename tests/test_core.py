@@ -170,9 +170,9 @@ def test_label_components_successful_run(
     mock_gen_report.assert_called_once()
 
     # Check if files were created in output_dir
-    assert (temp_test_dir / "icvision_results.csv").exists(), "Results CSV not created"
-    assert (temp_test_dir / "icvision_classified_ica.fif").exists(), "Updated ICA FIF not created"
-    assert (temp_test_dir / "classification_summary.txt").exists(), "Summary TXT not created"
+    assert (temp_test_dir / "dummy_raw_icvis_results.csv").exists(), "Results CSV not created"
+    assert (temp_test_dir / "dummy_raw_icvis_classified_ica.fif").exists(), "Updated ICA FIF not created"
+    assert (temp_test_dir / "dummy_raw_icvis_summary.txt").exists(), "Summary TXT not created"
 
     # Verify ICA object update
     assert ica_updated.labels_ is not None, "ICA labels_ should be set"
@@ -206,6 +206,49 @@ def test_label_components_api_failure(
             generate_report=False,  # Disable report to isolate API error
         )
     logger.info("API failure handling test completed.")
+
+
+@patch("icvision.core.classify_components_batch")
+@patch("icvision.core.generate_classification_report")
+def test_label_components_with_component_indices(
+    mock_gen_report: MagicMock,
+    mock_classify_batch_api: MagicMock,
+    dummy_raw_data: mne.io.Raw,
+    dummy_ica_data: mne.preprocessing.ICA,
+    temp_test_dir: Path,
+) -> None:
+    """Ensure only specified component indices are classified."""
+    component_indices = [0]
+
+    def mock_classify_batch(*args: Any, **kwargs: Any) -> pd.DataFrame:
+        assert kwargs.get("component_indices") == component_indices
+        idx = component_indices[0]
+        df = pd.DataFrame(
+            {
+                "component_index": [idx],
+                "component_name": [f"IC{idx}"],
+                "label": ["brain"],
+                "mne_label": ["brain"],
+                "confidence": [0.99],
+                "reason": ["mock"],
+                "exclude_vision": [False],
+            }
+        )
+        return df.set_index("component_index", drop=False)
+
+    mock_classify_batch_api.side_effect = mock_classify_batch
+
+    raw_cleaned, ica_updated, results_df = label_components(
+        raw_data=dummy_raw_data,
+        ica_data=dummy_ica_data,
+        api_key="FAKE_API_KEY",
+        output_dir=temp_test_dir,
+        component_indices=component_indices,
+        generate_report=True,
+    )
+
+    assert list(results_df.index) == component_indices
+    mock_classify_batch_api.assert_called_once()
 
 
 @patch("icvision.core.classify_components_batch")

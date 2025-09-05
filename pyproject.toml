@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "autoclean-icvision"
-version = "0.1.1"
+version = "0.1.3"
 description = "Automated ICA component classification using OpenAI Vision API for EEG data"
 readme = "README.md"
 license = {file = "LICENSE"}

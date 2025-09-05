@@ -296,6 +296,7 @@ def classify_components_batch(
     labels_to_exclude: Optional[List[str]] = None,
     output_dir: Optional[Path] = None,
     psd_fmax: Optional[float] = None,
+    component_indices: Optional[List[int]] = None,
 ) -> Tuple[pd.DataFrame, dict]:
     """
     Classifies ICA components in batches using OpenAI Vision API with parallel processing.
@@ -313,11 +314,13 @@ def classify_components_batch(
         labels_to_exclude: List of labels to exclude (e.g., ["eye", "muscle"]).
         output_dir: Directory to save temporary component images.
         psd_fmax: Maximum frequency for PSD plot (default: None, uses 80 Hz or Nyquist).
+        component_indices: Optional list of component indices to classify. If None,
+            all components are processed.
 
     Returns:
         Tuple of (pd.DataFrame with classification results, dict with cost tracking information).
     """
-    logger.debug("Starting batch classification of %d components.", ica_obj.n_components_)
+    logger.debug("Starting batch classification of ICA components.")
 
     if labels_to_exclude is None:
         labels_to_exclude = [lbl for lbl in COMPONENT_LABELS if lbl != "brain"]
@@ -325,13 +328,13 @@ def classify_components_batch(
     classification_results_list: List[Dict[str, Any]] = []
     import time
     batch_start_time = time.time()
-    
-    num_components = ica_obj.n_components_
-    if num_components == 0:
-        logger.warning("No ICA components found to classify.")
-        return pd.DataFrame()
 
-    logger.info("Starting classify_components_batch: processing %d components", num_components)
+    if component_indices is None:
+        component_indices = list(range(ica_obj.n_components_))
+    else:
+        component_indices = sorted({i for i in component_indices if 0 <= i < ica_obj.n_components_})
+
+    num_components = len(component_indices)
 
     # Initialize cost tracking
     total_cost_tracking = {
@@ -342,6 +345,14 @@ def classify_components_batch(
         "requests_count": 0,
     }
 
+    if num_components == 0:
+        logger.warning("No ICA components found to classify.")
+        return pd.DataFrame(), total_cost_tracking
+
+    logger.info(
+        "Starting classify_components_batch: processing %d components", num_components
+    )
+
     # Always use a temporary directory for component images (keeps output dir clean)
     temp_dir_context = tempfile.TemporaryDirectory(prefix="icvision_temp_plots_")
     image_output_path = Path(temp_dir_context.name)
@@ -350,7 +361,6 @@ def classify_components_batch(
         logger.info("Generating component images in temporary directory: %s", image_output_path)
 
         # Use improved batch plotting with better error handling
-        component_indices = list(range(num_components))
         plotting_results = plot_components_batch(
             ica_obj,
             raw_obj,
@@ -362,7 +372,7 @@ def classify_components_batch(
 
         # Convert plotting results to the format expected by the classification pipeline
         component_plot_args = []
-        for i in range(num_components):
+        for i in component_indices:
             image_path = plotting_results.get(i, None)
             component_plot_args.append((i, image_path, api_key, model_name, custom_prompt))
 
