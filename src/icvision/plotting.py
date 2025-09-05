@@ -35,6 +35,7 @@ def plot_component_for_classification(
     return_fig_object: bool = False,
     source_filename: Optional[str] = None,
     psd_fmax: Optional[float] = None,
+    precomputed_sources: Optional[mne.io.Raw] = None,
 ) -> Union[Path, plt.Figure, None]:
     """
     Creates a standardized plot for an ICA component.
@@ -54,6 +55,7 @@ def plot_component_for_classification(
         classification_confidence: Vision API confidence (for PDF report).
         classification_reason: Vision API reason (for PDF report).
         return_fig_object: If True, returns matplotlib Figure object instead of saving.
+        precomputed_sources: Optional precomputed ICA sources to speed up plotting.
 
     Returns:
         Path to saved image file (if return_fig_object is False).
@@ -110,7 +112,7 @@ def plot_component_for_classification(
 
     try:
         # Get ICA sources with error handling
-        sources = ica_obj.get_sources(raw_obj)
+        sources = precomputed_sources or ica_obj.get_sources(raw_obj)
         sfreq = sources.info["sfreq"]
         component_data_array = sources.get_data(picks=[component_idx])[0]
 
@@ -449,6 +451,7 @@ def plot_components_batch(
     matplotlib.use("Agg", force=True)
 
     import time
+
     start_time = time.time()
     logger.info(
         "Starting plot_components_batch: %d components to plot sequentially with enhanced error handling",
@@ -458,6 +461,9 @@ def plot_components_batch(
     results_dict = {}
     completed_count = 0
 
+    # Precompute ICA sources once to avoid repeated heavy calculations
+    precomputed_sources = ica_obj.get_sources(raw_obj)
+
     for i, component_idx in enumerate(component_indices):
         try:
             # Clear any existing plots to prevent memory issues
@@ -465,7 +471,13 @@ def plot_components_batch(
 
             # Plot the component with enhanced error handling
             image_path = plot_component_for_classification(
-                ica_obj, raw_obj, component_idx, output_dir, return_fig_object=False, psd_fmax=psd_fmax
+                ica_obj,
+                raw_obj,
+                component_idx,
+                output_dir,
+                return_fig_object=False,
+                psd_fmax=psd_fmax,
+                precomputed_sources=precomputed_sources,
             )
 
             results_dict[component_idx] = image_path
