@@ -137,6 +137,7 @@ def label_components(
     generate_report: bool = True,
     output_dir: Optional[str] = None,
     psd_fmax: Optional[float] = None,
+    component_indices: Optional[List[int]] = None,
 ) -> Dict[str, Union[np.ndarray, List[str]]]:
     """
     Drop-in replacement for mne_icalabel.label_components.
@@ -151,6 +152,8 @@ def label_components(
         generate_report: Whether to generate ICVision PDF report (default: True)
         output_dir: Output directory for ICVision files (default: auto-generated)
         psd_fmax: Maximum frequency for PSD calculation in Hz (default: None for auto)
+        component_indices: Optional list of component indices to classify. If None,
+            all components are processed.
 
     Returns:
         Dictionary with ICLabel-compatible structure:
@@ -187,6 +190,7 @@ def label_components(
             generate_report=generate_report,  # Allow ICVision PDF report generation
             output_dir=output_dir,  # Use specified output directory
             psd_fmax=psd_fmax,  # Pass through PSD frequency limit
+            component_indices=component_indices,
         )
 
         # Extract classification results
