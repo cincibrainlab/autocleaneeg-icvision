@@ -3,8 +3,8 @@ requires = ["hatchling>=1.13.0"]
 build-backend = "hatchling.build"
 
 [project]
-name = "autoclean-icvision"
-version = "0.1.3"
+name = "autocleaneeg-icvision"
+version = "0.2.0"
 description = "Automated ICA component classification using OpenAI Vision API for EEG data"
 readme = "README.md"
 license = {file = "LICENSE"}
@@ -82,8 +82,9 @@ test = [
 
 [project.scripts]
 # CLI command entry point
+autocleaneeg-icvision = "icvision.cli:main"
+# Legacy aliases for backward compatibility
 autoclean-icvision = "icvision.cli:main"
-# Legacy alias for backward compatibility
 icvision = "icvision.cli:main"
 
 # Tool configurations

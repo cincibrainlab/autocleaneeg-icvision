@@ -30,7 +30,7 @@ ICVision automates the tedious process of classifying ICA components from EEG da
 ## Installation
 
 ```bash
-pip install autoclean-icvision
+pip install autocleaneeg-icvision
 ```
 
 **Requirements**: Python 3.8+ and OpenAI API key with vision model access (e.g., `gpt-4.1`)

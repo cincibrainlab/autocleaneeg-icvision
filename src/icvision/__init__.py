@@ -5,7 +5,7 @@ This package provides automated classification of ICA components in EEG data
 using OpenAI's Vision API, enabling efficient artifact detection and removal.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __author__ = "Gavin Gammoh"
 __email__ = "gavin.gammoh@gmail.com"
 
