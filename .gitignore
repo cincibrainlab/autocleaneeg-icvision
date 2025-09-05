@@ -268,6 +268,7 @@ cache/
 # Project specific - ICVision
 /icvision_results/
 /autoclean_icvision_results/
+/autocleaneeg_icvision_results/
 /comparison_results/
 icvision_temp_plots_*/
 component_plots/
@@ -276,6 +277,7 @@ component_plots/
 232_human.csv
 prompt_refinement_workflow.md
 bandit_report.json
+CLAUDE.md
 
 # Model outputs and artifacts
 models/
