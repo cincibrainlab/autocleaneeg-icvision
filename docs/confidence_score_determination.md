@@ -133,7 +133,7 @@ results = icvision.label_ica_components(
 
 **Command Line:**
 ```bash
-autoclean-icvision data.set --category-thresholds muscle:0.99 eye:0.7 heart:0.85
+autocleaneeg-icvision data.set --category-thresholds muscle:0.99 eye:0.7 heart:0.85
 ```
 
 Category-specific thresholds override the general `confidence_threshold` for their respective categories. Categories not specified in `category_confidence_thresholds` will use the general threshold.

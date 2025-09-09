@@ -28,7 +28,7 @@ Open your terminal or command prompt and run:
 
 .. code-block:: bash
 
-   pip install autoclean-icvision
+   pip install autocleaneeg-icvision
 
 **Step 2: Verify Installation**
 
@@ -342,7 +342,7 @@ Common Issues and Solutions
       python -m venv icvision_env
       source icvision_env/bin/activate  # macOS/Linux
       icvision_env\Scripts\activate     # Windows
-      pip install autoclean-icvision
+      pip install autocleaneeg-icvision
 
 2. **Use user installation**:
    
@@ -355,7 +355,7 @@ Common Issues and Solutions
    .. code-block:: bash
    
       pip install --upgrade pip
-      pip install autoclean-icvision
+      pip install autocleaneeg-icvision
 
 Python Version Issues
 ~~~~~~~~~~~~~~~~~~~~
@@ -379,7 +379,7 @@ Python Version Issues
      
         conda create -n icvision python=3.11
         conda activate icvision
-        pip install autoclean-icvision
+        pip install autocleaneeg-icvision
 
 Cost and Usage Management
 -------------------------

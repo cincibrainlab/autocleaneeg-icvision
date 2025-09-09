@@ -1,7 +1,7 @@
 # ICVision Security Audit Report
 
 **Date:** May 29, 2025  
-**Package:** ICVision (autoclean-icvision) v0.1.0  
+**Package:** ICVision (autocleaneeg-icvision) v0.1.0  
 **Audit Scope:** API functionality, data handling, and security vulnerabilities  
 
 ## Executive Summary

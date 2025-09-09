@@ -64,7 +64,7 @@ def setup_cli_logging(verbose: bool = False) -> None:
 def main() -> None:
     """Main CLI entry point for ICVision."""
     parser = argparse.ArgumentParser(
-        prog="autoclean-icvision",
+        prog="autocleaneeg-icvision",
         description=(
             f"ICVision v{__version__}: Automated ICA component classification " "using OpenAI Vision API for EEG data."
         ),
@@ -73,27 +73,27 @@ def main() -> None:
             """
 Examples:
   Basic usage with EEGLAB .set file (auto-detects ICA):
-    autoclean-icvision path/to/your_raw.set
+    autocleaneeg-icvision path/to/your_raw.set
 
   Basic usage with separate files:
-    autoclean-icvision path/to/your_raw.set path/to/your_ica.fif
+    autocleaneeg-icvision path/to/your_raw.set path/to/your_ica.fif
 
   With API key and custom output directory:
-    autoclean-icvision raw_data.set --api-key YOUR_API_KEY --output-dir results/
+    autocleaneeg-icvision raw_data.set --api-key YOUR_API_KEY --output-dir results/
 
   Using separate ICA file:
-    autoclean-icvision raw_data.set ica_data.fif --api-key YOUR_API_KEY --output-dir results/
+    autocleaneeg-icvision raw_data.set ica_data.fif --api-key YOUR_API_KEY --output-dir results/
 
   Adjusting classification parameters:
-    autoclean-icvision raw.set -ct 0.7 --model gpt-4.1 --batch-size 5
+    autocleaneeg-icvision raw.set -ct 0.7 --model gpt-4.1 --batch-size 5
 
   Using a custom prompt file:
-    autoclean-icvision raw.set --prompt-file my_custom_prompt.txt
+    autocleaneeg-icvision raw.set --prompt-file my_custom_prompt.txt
 
   Disabling report generation:
-    autoclean-icvision raw.set --no-report
+    autocleaneeg-icvision raw.set --no-report
 
-  For more help on a specific command or option, use: autoclean-icvision <command> --help
+  For more help on a specific command or option, use: autocleaneeg-icvision <command> --help
 """
         ),
     )
@@ -338,7 +338,7 @@ Examples:
                     "No ICA decomposition found in your data file",
                     details=error_str,
                     suggestion="Either run ICA decomposition in EEGLAB first, or provide a separate ICA file:\n"
-                    f"  autoclean-icvision {args.raw_data_path} your_ica_file.fif",
+                    f"  autocleaneeg-icvision {args.raw_data_path} your_ica_file.fif",
                 )
             elif "epoched data" in error_str:
                 print_error(
@@ -357,7 +357,7 @@ Examples:
                     " for linux: export OPENAI_API_KEY='sk-your-api-key-here'\n"
                     " for windows: set OPENAI_API_KEY='sk-your-api-key-here'\n"
                     "Or provide it directly:\n"
-                    f"  autoclean-icvision {args.raw_data_path} --api-key sk-your-key",
+                    f"  autocleaneeg-icvision {args.raw_data_path} --api-key sk-your-key",
                 )
             else:
                 print_error("Invalid input or configuration", details=error_str)
@@ -392,7 +392,7 @@ Examples:
                 "An unexpected error occurred",
                 details=str(e),
                 suggestion="Try running with --verbose for more details:\n"
-                f"  autoclean-icvision {args.raw_data_path} --verbose",
+                f"  autocleaneeg-icvision {args.raw_data_path} --verbose",
             )
         sys.exit(1)
 

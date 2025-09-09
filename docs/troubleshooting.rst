@@ -169,7 +169,7 @@ API Key Issues
 Installation Issues
 -------------------
 
-"pip install autoclean-icvision" Fails
+"pip install autocleaneeg-icvision" Fails
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **Symptoms**: Installation command doesn't work.
@@ -184,7 +184,7 @@ Installation Issues
    python -m venv icvision_env
    source icvision_env/bin/activate  # macOS/Linux
    icvision_env\Scripts\activate     # Windows
-   pip install autoclean-icvision
+   pip install autocleaneeg-icvision
 
    # OR use user installation
    pip install --user icvision
@@ -388,7 +388,7 @@ Environment and Configuration Issues
    
       conda create -n icvision python=3.11
       conda activate icvision
-      pip install autoclean-icvision
+      pip install autocleaneeg-icvision
 
 3. **Use pyenv** (macOS/Linux):
    
@@ -411,7 +411,7 @@ Environment and Configuration Issues
    
       python -m venv fresh_env
       source fresh_env/bin/activate  # macOS/Linux
-      pip install autoclean-icvision
+      pip install autocleaneeg-icvision
 
 2. **Update all packages**:
    

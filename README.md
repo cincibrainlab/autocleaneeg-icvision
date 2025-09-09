@@ -1,7 +1,7 @@
 # Autoclean EEG ICVision (Standalone)
 
-[![PyPI version](https://badge.fury.io/py/autoclean-icvision.svg)](https://badge.fury.io/py/autoclean-icvision)
-[![Python versions](https://img.shields.io/pypi/pyversions/autoclean-icvision.svg)](https://pypi.org/project/autoclean-icvision/)
+[![PyPI version](https://badge.fury.io/py/autocleaneeg-icvision.svg)](https://badge.fury.io/py/autocleaneeg-icvision)
+[![Python versions](https://img.shields.io/pypi/pyversions/autocleaneeg-icvision.svg)](https://pypi.org/project/autocleaneeg-icvision/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
@@ -49,13 +49,15 @@ The primary way to use ICVision is through its command-line interface.
 
 **Single EEGLAB .set file (Recommended):**
 ```bash
-autoclean-icvision /path/to/your_data.set
+autocleaneeg-icvision /path/to/your_data.set
+# or legacy command: autoclean-icvision /path/to/your_data.set
 # or legacy command: icvision /path/to/your_data.set
 ```
 
 **Separate files:**
 ```bash
-autoclean-icvision /path/to/your_raw_data.set /path/to/your_ica_decomposition.fif
+autocleaneeg-icvision /path/to/your_raw_data.set /path/to/your_ica_decomposition.fif
+# or legacy command: autoclean-icvision /path/to/your_raw_data.set /path/to/your_ica_decomposition.fif
 # or legacy command: icvision /path/to/your_raw_data.set /path/to/your_ica_decomposition.fif
 ```
 
@@ -108,7 +110,7 @@ This command will:
 
 Single .set file usage:
 ```bash
-autoclean-icvision data/subject01_eeg.set \
+autocleaneeg-icvision data/subject01_eeg.set \
     --api-key sk-xxxxxxxxxxxxxxxxxxxx \
     --confidence-threshold 0.9 \
     --verbose
@@ -116,7 +118,7 @@ autoclean-icvision data/subject01_eeg.set \
 
 Traditional separate files:
 ```bash
-autoclean-icvision data/subject01_raw.fif data/subject01_ica.fif \
+autocleaneeg-icvision data/subject01_raw.fif data/subject01_ica.fif \
     --api-key sk-xxxxxxxxxxxxxxxxxxxx \
     --model gpt-4.1 \
     --confidence-threshold 0.8 \
@@ -127,7 +129,7 @@ autoclean-icvision data/subject01_raw.fif data/subject01_ica.fif \
 
 For ERP studies with low-pass filtered data:
 ```bash
-autoclean-icvision data/erp_study.set \
+autocleaneeg-icvision data/erp_study.set \
     --psd-fmax 40 \
     --confidence-threshold 0.85 \
     --verbose
@@ -136,9 +138,9 @@ autoclean-icvision data/erp_study.set \
 Multi-file batch processing:
 ```bash
 # Process multiple subjects - all results go to shared directory
-autoclean-icvision data/sub-01_task-rest_eeg.set --verbose
-autoclean-icvision data/sub-02_task-rest_eeg.set --verbose
-autoclean-icvision data/sub-03_task-rest_eeg.set --verbose
+autocleaneeg-icvision data/sub-01_task-rest_eeg.set --verbose
+autocleaneeg-icvision data/sub-02_task-rest_eeg.set --verbose
+autocleaneeg-icvision data/sub-03_task-rest_eeg.set --verbose
 
 # Results organized in autoclean_icvision_results/ with prefixed filenames
 ls autoclean_icvision_results/
@@ -414,7 +416,7 @@ ICVision provides two logging modes for different use cases:
 
 **Normal Mode** (Default - Clean output for researchers):
 ```bash
-autoclean-icvision data.set
+autocleaneeg-icvision data.set
 # Output:
 # 2025-05-29 13:33:43 - INFO - Starting ICVision CLI v0.1.0
 # 2025-05-29 13:33:44 - INFO - OpenAI classification complete. Processed 20/20 components
@@ -423,7 +425,7 @@ autoclean-icvision data.set
 
 **Verbose Mode** (Detailed debugging information):
 ```bash
-autoclean-icvision data.set --verbose
+autocleaneeg-icvision data.set --verbose
 # Output:
 # 2025-05-29 13:33:43 - icvision - INFO - Verbose logging enabled - showing module details
 # 2025-05-29 13:33:44 - icvision.core - DEBUG - Loading and validating input data...

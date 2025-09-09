@@ -396,7 +396,7 @@ Solution: Use ``method='icvision'`` with ICVision compatibility layer
 
    ImportError: No module named 'icvision'
 
-Solution: Install ICVision: ``pip install autoclean-icvision``
+Solution: Install ICVision: ``pip install autocleaneeg-icvision``
 
 Getting Help
 ~~~~~~~~~~~~

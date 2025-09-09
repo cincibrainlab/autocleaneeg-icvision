@@ -155,9 +155,9 @@ class CLIFormatter:
         print(f"{cls._colorize(separator, cls.GRAY)}")
         print(
             f"{cls._colorize('Usage:', cls.WHITE + cls.BOLD)} "
-            "autoclean-icvision raw_data_path [ica_data_path] [options]"
+            "autocleaneeg-icvision raw_data_path [ica_data_path] [options]"
         )
-        print(f"{cls._colorize('Help:', cls.WHITE + cls.BOLD)}  autoclean-icvision --help")
+        print(f"{cls._colorize('Help:', cls.WHITE + cls.BOLD)}  autocleaneeg-icvision --help")
         print(f"{cls._colorize(separator, cls.GRAY)}\n")
 
     @classmethod
