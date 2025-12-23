@@ -32,6 +32,7 @@ logger = logging.getLogger("icvision.api")
 def classify_component_image_openai(
     image_path: Path,
     api_key: str,
+    base_url: Optional[str],
     model_name: str,
     custom_prompt: Optional[str] = None,
 ) -> Tuple[str, float, str, Optional[Dict[str, Any]]]:
@@ -44,6 +45,7 @@ def classify_component_image_openai(
     Args:
         image_path: Path to the component image file (WebP format preferred).
         api_key: OpenAI API key.
+        base_url: Custom API base URL. If None, uses OPENAI_BASE_URL env var or OpenAI default.
         model_name: OpenAI model to use (e.g., "gpt-4.1").
         custom_prompt: Optional custom prompt to use instead of default.
 
@@ -70,7 +72,7 @@ def classify_component_image_openai(
         encode_end_time = time.time()
         logger.debug("Base64 encoding for %s took %.3f seconds", image_path.name, encode_end_time - encode_start_time)
 
-        client = openai.OpenAI(api_key=api_key)
+        client = openai.OpenAI(api_key=api_key, base_url=base_url)
         logger.debug("Sending %s to OpenAI (model: %s)...", image_path.name, model_name)
 
         # Use OpenAI's new responses API for computer vision
@@ -271,15 +273,15 @@ def classify_component_image_openai(
 
 
 def _classify_single_component_wrapper(
-    args_tuple: Tuple[int, Optional[Path], str, str, Optional[str]],
+    args_tuple: Tuple[int, Optional[Path], str, Optional[str], str, Optional[str]],
 ) -> Tuple[int, str, float, str, Optional[Dict[str, Any]]]:
     """Helper for parallel execution of classify_component_image_openai."""
-    comp_idx, image_path, api_key, model_name, custom_prompt = args_tuple
+    comp_idx, image_path, api_key, base_url, model_name, custom_prompt = args_tuple
     if image_path is None:
         return comp_idx, "other_artifact", 1.0, "Plotting failed for this component", None
 
     # Call the classification function and prepend component index to its result tuple
-    classification_result = classify_component_image_openai(image_path, api_key, model_name, custom_prompt)
+    classification_result = classify_component_image_openai(image_path, api_key, base_url, model_name, custom_prompt)
     return (comp_idx,) + classification_result
 
 
@@ -287,6 +289,7 @@ def classify_components_batch(
     ica_obj: mne.preprocessing.ICA,
     raw_obj: mne.io.Raw,
     api_key: str,
+    base_url: Optional[str] = None,
     model_name: str = cast(str, DEFAULT_CONFIG["model_name"]),
     batch_size: int = cast(int, DEFAULT_CONFIG["batch_size"]),
     max_concurrency: int = cast(int, DEFAULT_CONFIG["max_concurrency"]),
@@ -305,6 +308,7 @@ def classify_components_batch(
         ica_obj: Fitted MNE ICA object.
         raw_obj: MNE Raw object used for ICA.
         api_key: OpenAI API key.
+        base_url: Custom API base URL. If None, uses OPENAI_BASE_URL env var or OpenAI default.
         model_name: OpenAI model (e.g., "gpt-4.1").
         batch_size: Number of images per concurrent processing batch (not API batch).
         max_concurrency: Max parallel API requests.
@@ -374,7 +378,7 @@ def classify_components_batch(
         component_plot_args = []
         for i in component_indices:
             image_path = plotting_results.get(i, None)
-            component_plot_args.append((i, image_path, api_key, model_name, custom_prompt))
+            component_plot_args.append((i, image_path, api_key, base_url, model_name, custom_prompt))
 
         processed_count = 0
         # Process in batches for concurrency management

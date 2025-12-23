@@ -84,6 +84,9 @@ Examples:
   Using separate ICA file:
     autoclean-icvision raw_data.set ica_data.fif --api-key YOUR_API_KEY --output-dir results/
 
+  Using a custom API endpoint (e.g., CLIProxyAPI):
+    autoclean-icvision raw.set --base-url https://vision.autocleaneeg.org/v1 --api-key dev-local-key
+
   Adjusting classification parameters:
     autoclean-icvision raw.set -ct 0.7 --model gpt-4.1 --batch-size 5
 
@@ -121,6 +124,13 @@ Examples:
         type=str,
         default=None,
         help="OpenAI API key. If not provided, uses OPENAI_API_KEY env variable.",
+    )
+    api_group.add_argument(
+        "--base-url",
+        type=str,
+        default=None,
+        help="Custom API base URL (e.g., https://vision.autocleaneeg.org/v1). "
+        "If not provided, uses OPENAI_BASE_URL env variable or defaults to OpenAI.",
     )
     api_group.add_argument(
         "-m",
@@ -272,6 +282,7 @@ Examples:
             raw_data=args.raw_data_path,
             ica_data=args.ica_data_path,
             api_key=args.api_key,
+            base_url=args.base_url,
             confidence_threshold=args.confidence_threshold,
             auto_exclude=args.auto_exclude,
             labels_to_exclude=args.labels_to_exclude,

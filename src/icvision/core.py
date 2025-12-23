@@ -38,6 +38,7 @@ def label_components(
     raw_data: Union[str, Path, mne.io.Raw],
     ica_data: Optional[Union[str, Path, mne.preprocessing.ICA]] = None,
     api_key: Optional[str] = None,
+    base_url: Optional[str] = None,
     confidence_threshold: float = 0.8,
     auto_exclude: bool = True,
     labels_to_exclude: Optional[List[str]] = None,
@@ -72,6 +73,8 @@ def label_components(
                  - Existing mne.preprocessing.ICA object
                  - None (auto-detects ICA from .set file if raw_data is .set format)
         api_key: OpenAI API key. If None, uses OPENAI_API_KEY environment variable.
+        base_url: Custom API base URL (e.g., https://vision.autocleaneeg.org/v1).
+                  If None, uses OPENAI_BASE_URL env variable or defaults to OpenAI.
         confidence_threshold: Minimum confidence for auto-exclusion (0.0-1.0).
         auto_exclude: Whether to automatically exclude classified artifact components.
         labels_to_exclude: List of labels to exclude. If None, excludes all except 'brain'.
@@ -197,6 +200,7 @@ def label_components(
             ica_obj=ica,
             raw_obj=raw,
             api_key=validated_api_key,
+            base_url=base_url,
             model_name=model_name,
             batch_size=batch_size,
             max_concurrency=max_concurrency,
