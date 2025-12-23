@@ -1,462 +1,166 @@
-# Autoclean EEG ICVision (Standalone)
+# Autoclean EEG ICVision
 
 [![PyPI version](https://badge.fury.io/py/autoclean-icvision.svg)](https://badge.fury.io/py/autoclean-icvision)
 [![Python versions](https://img.shields.io/pypi/pyversions/autoclean-icvision.svg)](https://pypi.org/project/autoclean-icvision/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-Automated ICA component classification for EEG data using OpenAI's Vision API.
+**Automated ICA component classification for EEG data using OpenAI Vision API.**
 
-## Overview
+Internal tool for CinciBrain Lab - classifies ICA components from EEG data by sending component visualizations to OpenAI's Vision API for intelligent artifact identification.
 
-ICVision automates the tedious process of classifying ICA components from EEG data by generating component visualizations and sending them to OpenAI's Vision API for intelligent artifact identification.
-
-**Workflow**: Raw EEG + ICA → Generate component plots → OpenAI Vision classification → Automated artifact removal → Clean EEG data
-
-**Key Features**:
-- Automated classification of 7 component types (brain, eye, muscle, heart, line noise, channel noise, other)
-- **🔄 Drop-in replacement for MNE-ICALabel**: Same API, enhanced with OpenAI Vision
-- Multi-panel component plots (topography, time series, PSD, ERP-image)
-- MNE-Python integration with `.fif` and `.set` file support
-- **EEGLAB .set file auto-detection**: Single file input with automatic ICA detection
-- **Smart file organization**: Basename-prefixed output files prevent overwrites when processing multiple datasets
-- **Continuous data only**: Graceful error handling for epoched data with helpful conversion instructions
-- **Enhanced PDF reports**: Professional dual-header layout with color-coded classification results
-- **OpenAI cost tracking**: Automatic cost estimation and logging for budget monitoring
-- Parallel processing with configurable batch sizes
-- Command-line and Python API interfaces
-- Comprehensive PDF reports and CSV results
-
-## Installation
+## Quick Start
 
 ```bash
 pip install autocleaneeg-icvision
 ```
 
-**Requirements**: Python 3.8+ and OpenAI API key with vision model access (e.g., `gpt-4.1`)
+### Using CinciBrain Lab Proxy (Recommended)
 
 ```bash
-export OPENAI_API_KEY='your_api_key_here'
+export OPENAI_BASE_URL=https://vision.autocleaneeg.org/v1
+export OPENAI_API_KEY=dev-local-key
+
+autoclean-icvision your_data.set
 ```
 
-## Usage
+Or pass directly:
 
-### Command-Line Interface (CLI)
-
-The primary way to use ICVision is through its command-line interface.
-
-**Basic Usage:**
-
-**Single EEGLAB .set file (Recommended):**
 ```bash
-autoclean-icvision /path/to/your_data.set
-# or legacy command: icvision /path/to/your_data.set
+autoclean-icvision your_data.set \
+    --base-url https://vision.autocleaneeg.org/v1 \
+    --api-key dev-local-key \
+    --model gpt-5.1
 ```
 
-**Separate files:**
+### Using OpenAI Directly
+
 ```bash
-autoclean-icvision /path/to/your_raw_data.set /path/to/your_ica_decomposition.fif
-# or legacy command: icvision /path/to/your_raw_data.set /path/to/your_ica_decomposition.fif
+export OPENAI_API_KEY=sk-your-api-key
+autoclean-icvision your_data.set
 ```
 
-ICVision can automatically detect and read ICA data from EEGLAB `.set` files, making single-file usage possible when your `.set` file contains both raw data and ICA decomposition.
+## Available Models
 
-This command will:
-1.  Load the raw EEG data and ICA solution (auto-detected from `.set` file or from separate files).
-2.  Classify components using the default settings.
-3.  Create an `autoclean_icvision_results/` directory in your current working directory.
-4.  Save the following into the output directory (with input filename prefix for organization):
-    *   Cleaned raw data (artifacts removed): `{basename}_icvis_cleaned_raw.{format}`
-    *   Updated ICA object with component labels: `{basename}_icvis_classified_ica.fif`
-    *   `{basename}_icvis_results.csv` detailing classifications for each component.
-    *   `{basename}_icvis_summary.txt` with overall statistics.
-    *   `{basename}_icvis_report_all_comps.pdf` (comprehensive PDF report with visualizations).
+**Via CinciBrain Lab Proxy** (`vision.autocleaneeg.org`):
+- `gpt-5.1` (default)
+- `gpt-5.2-codex`
+- `gpt-5`
+- `gpt-5-codex`
+- `gpt-5-codex-mini`
+- `gpt-5.1-codex`
+- `gpt-5.1-codex-mini`
+- `gpt-5.1-codex-max`
+- `gpt-5.2`
 
-**Note**: `{basename}` is extracted from your input filename (e.g., `sub-01_task-rest_eeg.set` → `sub-01_task-rest_eeg` prefix). This prevents file overwrites when processing multiple datasets.
+**Via OpenAI Direct**:
+- `gpt-4.1`
+- `gpt-4.1-mini`
+- `gpt-4.1-nano`
 
-### Recent Improvements
+## CLI Usage
 
-**Enhanced File Organization (v2024.12)**:
-- **Shared workspace**: All results now saved to `autoclean_icvision_results/` directory by default
-- **Smart naming**: Input filename prefixes (e.g., `sub-01_task-rest_eeg_icvis_results.csv`) prevent conflicts
-- **Multi-file friendly**: Process multiple datasets without overwrites - perfect for batch processing subjects
-
-**Improved User Experience**:
-- **Epoched data handling**: Clear error messages with EEGLAB conversion instructions for unsupported epoched data
-- **Enhanced PDF reports**: Professional layout with IC Component titles and color-coded Vision Classification results
-- **Clean logging output**: Professional, user-focused logging with optional verbose mode for debugging
-- **Better error messages**: Informative CLI output with suggested solutions
-
-**Common Options (with defaults):**
-
-*   `--api-key YOUR_API_KEY`: Specify OpenAI API key (default: `OPENAI_API_KEY` env variable)
-*   `--output-dir /path/to/output/`: Output directory (default: `./autoclean_icvision_results`)
-*   `--model MODEL_NAME`: OpenAI model (default: `gpt-4.1`)
-*   `--confidence-threshold 0.8`: Confidence threshold for auto-exclusion (default: `0.8`)
-*   `--psd-fmax 40`: Maximum frequency for PSD plots in Hz (default: `80` or Nyquist)
-*   `--labels-to-exclude eye muscle heart`: Artifact labels to exclude (default: all non-brain types)
-*   `--batch-size 10`: Components per API request (default: `10`)
-*   `--max-concurrency 4`: Max parallel requests (default: `4`)
-*   `--no-auto-exclude`: Disable auto-exclusion (default: auto-exclude enabled)
-*   `--prompt-file /path/to/prompt.txt`: Custom classification prompt (default: built-in prompt)
-*   `--no-report`: Disable PDF report (default: report generation enabled)
-*   `--verbose`: Enable detailed logging (default: standard logging)
-*   `--version`: Show ICVision version
-*   `--help`: Show full list of commands and options
-
-**Examples with options:**
-
-Single .set file usage:
 ```bash
-autoclean-icvision data/subject01_eeg.set \
-    --api-key sk-xxxxxxxxxxxxxxxxxxxx \
-    --confidence-threshold 0.9 \
-    --verbose
-```
-
-Traditional separate files:
-```bash
-autoclean-icvision data/subject01_raw.fif data/subject01_ica.fif \
-    --api-key sk-xxxxxxxxxxxxxxxxxxxx \
-    --model gpt-4.1 \
-    --confidence-threshold 0.8 \
-    --labels-to-exclude eye muscle line_noise channel_noise \
-    --batch-size 8 \
-    --verbose
-```
-
-For ERP studies with low-pass filtered data:
-```bash
-autoclean-icvision data/erp_study.set \
-    --psd-fmax 40 \
-    --confidence-threshold 0.85 \
-    --verbose
-```
-
-Multi-file batch processing:
-```bash
-# Process multiple subjects - all results go to shared directory
-autoclean-icvision data/sub-01_task-rest_eeg.set --verbose
-autoclean-icvision data/sub-02_task-rest_eeg.set --verbose
-autoclean-icvision data/sub-03_task-rest_eeg.set --verbose
-
-# Results organized in autoclean_icvision_results/ with prefixed filenames
-ls autoclean_icvision_results/
-# sub-01_task-rest_eeg_icvis_results.csv
-# sub-01_task-rest_eeg_icvis_classified_ica.fif
-# sub-02_task-rest_eeg_icvis_results.csv
-# sub-02_task-rest_eeg_icvis_classified_ica.fif
-# ...
-```
-
-### Python API
-
-You can also use ICVision programmatically within your Python scripts.
-
-**Single .set file usage (NEW):**
-```python
-from pathlib import Path
-from icvision.core import label_components
-
-# --- Configuration ---
-API_KEY = "your_openai_api_key"  # Or set as environment variable OPENAI_API_KEY
-DATA_PATH = "path/to/your_data.set"  # EEGLAB .set file with ICA
-OUTPUT_DIR = Path("icvision_output")
-
-# --- Run ICVision (ICA auto-detected from .set file) ---
-try:
-    raw_cleaned, ica_updated, results_df = label_components(
-        raw_data=DATA_PATH,              # EEGLAB .set file path
-        # ica_data parameter is optional - auto-detected from .set file
-        api_key=API_KEY,                 # Optional if OPENAI_API_KEY env var is set
-        output_dir=OUTPUT_DIR,
-    )
-```
-
-**Traditional separate files:**
-```python
-from pathlib import Path
-from icvision.core import label_components
-
-# --- Configuration ---
-API_KEY = "your_openai_api_key"  # Or set as environment variable OPENAI_API_KEY
-RAW_DATA_PATH = "path/to/your_raw_data.set"
-ICA_DATA_PATH = "path/to/your_ica_data.fif"
-OUTPUT_DIR = Path("icvision_output")
-
-# --- Run ICVision with all parameters ---
-try:
-    raw_cleaned, ica_updated, results_df = label_components(
-        raw_data=RAW_DATA_PATH,          # Can be MNE object or path string/Path object
-        ica_data=ICA_DATA_PATH,          # Can be MNE object, path, or None for auto-detection
-        api_key=API_KEY,                 # Optional if OPENAI_API_KEY env var is set
-        output_dir=OUTPUT_DIR,
-        model_name="gpt-4.1",            # Default: "gpt-4.1"
-        confidence_threshold=0.80,       # Default: 0.8
-        labels_to_exclude=["eye", "muscle", "heart", "line_noise", "channel_noise"],  # Default: all non-brain
-        generate_report=True,            # Default: True
-        batch_size=5,                    # Default: 10
-        max_concurrency=3,               # Default: 4
-        auto_exclude=True,               # Default: True
-        custom_prompt=None,              # Default: None (uses built-in prompt)
-        psd_fmax=40.0                    # Default: None (uses 80 Hz); useful for ERP studies
-    )
-
-    print("\n--- ICVision Processing Complete ---")
-    print(f"Cleaned raw data channels: {raw_cleaned.info['nchan']}")
-    print(f"Updated ICA components: {ica_updated.n_components_}")
-    print(f"Number of components classified: {len(results_df)}")
-
-    if not results_df.empty:
-        print(f"Number of components marked for exclusion: {results_df['exclude_vision'].sum()}")
-        print("\nClassification Summary:")
-        print(results_df[['component_name', 'label', 'confidence', 'exclude_vision']].head())
-
-    print(f"\nResults saved in: {OUTPUT_DIR.resolve()}")
-
-except Exception as e:
-    print(f"An error occurred: {e}")
-
-```
-
-## 🔄 ICLabel Drop-in Replacement
-
-ICVision can serve as a **drop-in replacement** for MNE-ICALabel with identical API and output format. This means you can upgrade existing ICLabel workflows to use OpenAI Vision API without changing any other code.
-
-### Quick Migration
-
-**Before (using MNE-ICALabel):**
-```python
-from mne_icalabel import label_components
-
-# Classify components with ICLabel
-result = label_components(raw, ica, method='iclabel')
-print(result['labels'])  # ['brain', 'eye blink', 'other', ...]
-print(ica.labels_scores_.shape)  # (n_components, 7)
-```
-
-**After (using ICVision):**
-```python
-from icvision.compat import label_components  # <-- Only line that changes!
-
-# Classify components with ICVision (same API!)
-result = label_components(raw, ica, method='icvision')
-print(result['labels'])  # Same format: ['brain', 'eye blink', 'other', ...]
-print(ica.labels_scores_.shape)  # Same shape: (n_components, 7)
-```
-
-### What You Get
-
-- **🎯 Identical API**: Same function signature, same return format
-- **📊 Same Output**: Returns dict with `'y_pred_proba'` and `'labels'` keys
-- **⚙️ Same ICA Modifications**: Sets `ica.labels_scores_` and `ica.labels_` exactly like ICLabel
-- **🚀 Enhanced Intelligence**: OpenAI Vision API instead of fixed neural network
-- **💡 Detailed Reasoning**: Each classification includes explanation (available in full API)
-
-### Why Use ICVision over ICLabel?
-
-| Feature | ICLabel | ICVision |
-|---------|---------|----------|
-| **Classification Method** | Fixed neural network (2019) | OpenAI Vision API (latest models) |
-| **Accuracy** | Good on typical datasets | Enhanced with modern vision AI |
-| **Reasoning** | No explanations | Detailed reasoning for each decision |
-| **Customization** | Fixed model | Customizable prompts and models |
-| **Updates** | Static model | Benefits from OpenAI improvements |
-| **API Compatibility** | ✅ Original | ✅ Drop-in replacement |
-
-### Integration Example
-
-The compatibility layer works seamlessly with existing MNE workflows:
-
-```python
-def analyze_ica_components(raw, ica, method='icvision'):
-    """Generic function that works with both ICLabel and ICVision"""
-
-    if method == 'icvision':
-        from icvision.compat import label_components
-    else:
-        from mne_icalabel import label_components
-
-    # Same API for both!
-    result = label_components(raw, ica, method=method)
-
-    # Same return format for both
-    print(f"Classified {len(result['labels'])} components")
-
-    # Same ICA object modifications for both
-    brain_components = ica.labels_['brain']
-    artifact_components = [idx for key, indices in ica.labels_.items()
-                          if key != 'brain' for idx in indices]
-
-    print(f"Brain components: {brain_components}")
-    print(f"Artifact components: {artifact_components}")
-
-    return result
-
-# Works with either classifier
-result = analyze_ica_components(raw, ica, method='icvision')
-```
-
-### Two APIs, Same Power
-
-ICVision provides **two complementary interfaces**:
-
-1. **Original ICVision API**: Rich output with detailed results and file generation
-   ```python
-   from icvision.core import label_components
-   raw_cleaned, ica_updated, results_df = label_components(...)
-   ```
-
-2. **ICLabel-Compatible API**: Simple output matching ICLabel exactly
-   ```python
-   from icvision.compat import label_components
-   result = label_components(raw, ica, method='icvision')
-   ```
-
-Choose the API that best fits your workflow - both use the same underlying OpenAI Vision classification.
-
----
-
-## Configuration Details
-
-### Input File Support
-
-**EEGLAB .set files:**
-- **Raw data**: Supports EEGLAB `.set` files for raw EEG data
-- **ICA data**: Now supports automatic ICA detection from `.set` files using `mne.preprocessing.read_ica_eeglab()`
-- **Single file mode**: Use just a `.set` file when it contains both raw data and ICA decomposition
-
-**MNE formats:**
-Other supported formats include:
-- **Raw data**: `.fif`, `.edf`, `.raw`
-- **ICA data**: `.fif` files containing MNE ICA objects
-
-### Default Parameter Values
-
-| Parameter | Default Value | Description |
-|-----------|---------------|-------------|
-| `model_name` | `"gpt-4.1"` | OpenAI model for classification |
-| `confidence_threshold` | `0.8` | Minimum confidence for auto-exclusion |
-| `auto_exclude` | `True` | Automatically exclude artifact components |
-| `labels_to_exclude` | `["eye", "muscle", "heart", "line_noise", "channel_noise", "other_artifact"]` | Labels to exclude (all non-brain) |
-| `output_dir` | `"./autoclean_icvision_results"` | Output directory for results |
-| `generate_report` | `True` | Generate PDF report |
-| `batch_size` | `10` | Components per API request |
-| `max_concurrency` | `4` | Maximum parallel API requests |
-| `api_key` | `None` | Uses `OPENAI_API_KEY` environment variable |
-| `custom_prompt` | `None` | Uses built-in classification prompt |
-
-### Component Labels
-
-The standard set of labels ICVision uses (and expects from the API) are:
-- `brain` - Neural brain activity (retained)
-- `eye` - Eye movement artifacts
-- `muscle` - Muscle artifacts
-- `heart` - Cardiac artifacts
-- `line_noise` - Electrical line noise
-- `channel_noise` - Channel-specific noise
-- `other_artifact` - Other artifacts
-
-These are defined in `src/icvision/config.py`.
-
-### Output Files
-
-ICVision creates organized output files with input filename prefixes to prevent overwrites when processing multiple datasets:
-
-*   `{basename}_icvis_classified_ica.fif`: MNE ICA object with labels and exclusions
-*   `{basename}_icvis_results.csv`: Detailed classification results per component
-*   `{basename}_icvis_cleaned_raw.{format}`: Cleaned EEG data with artifacts removed
-*   `{basename}_icvis_summary.txt`: Summary statistics by label type
-*   `{basename}_icvis_report_all_comps.pdf`: Comprehensive PDF report (if enabled)
-*   `component_IC{N}_vision_analysis.webp`: Individual component plots used for API classification
-
-**Example**: Processing `sub-01_task-rest_eeg.set` creates files like:
-- `sub-01_task-rest_eeg_icvis_results.csv`
-- `sub-01_task-rest_eeg_icvis_classified_ica.fif`
-- `sub-01_task-rest_eeg_icvis_cleaned_raw.set`
-
-**Multi-file Processing**: All results are saved to the same `autoclean_icvision_results/` directory, with basename prefixes ensuring no conflicts:
-```bash
-autoclean_icvision_results/
-├── sub-01_task-rest_eeg_icvis_results.csv
-├── sub-01_task-rest_eeg_icvis_classified_ica.fif
-├── sub-02_task-rest_eeg_icvis_results.csv
-├── sub-02_task-rest_eeg_icvis_classified_ica.fif
-└── pilot_data_icvis_results.csv
-```
-
-### Custom Classification Prompt
-
-The default prompt is optimized for EEG component classification on EGI128 nets. You can customize it by:
-- **CLI**: `--prompt-file /path/to/custom_prompt.txt`
-- **Python API**: `custom_prompt="Your custom prompt here"`
-- **View default**: Check `src/icvision/config.py`
-
-### OpenAI API Costs
-
-ICVision automatically tracks and estimates OpenAI API costs during processing:
-
-**Typical Costs (2025-05-29 pricing)**:
-- **gpt-4.1**: ~$0.0012 per component
-- **gpt-4.1-mini**: ~$0.0002 per component (recommended)
-- **gpt-4.1-nano**: ~$0.0001 per component (budget option)
-
-**Example costs for full ICA analysis**:
-- 10 components: $0.0006-0.012 depending on model
-- 30 components: $0.002-0.036 depending on model
-- 64 components: $0.004-0.077 depending on model
-
-Cost estimates are automatically logged during processing. Use `--verbose` flag to see detailed per-component cost tracking.
-
-### Logging and Verbosity
-
-ICVision provides two logging modes for different use cases:
-
-**Normal Mode** (Default - Clean output for researchers):
-```bash
+# Basic usage - single EEGLAB .set file
 autoclean-icvision data.set
-# Output:
-# 2025-05-29 13:33:43 - INFO - Starting ICVision CLI v0.1.0
-# 2025-05-29 13:33:44 - INFO - OpenAI classification complete. Processed 20/20 components
-# 2025-05-29 13:33:45 - INFO - ICVision workflow completed successfully!
+
+# With separate ICA file
+autoclean-icvision raw_data.set ica_data.fif
+
+# Full options
+autoclean-icvision data.set \
+    --base-url https://vision.autocleaneeg.org/v1 \
+    --api-key dev-local-key \
+    --model gpt-5.1 \
+    --confidence-threshold 0.8 \
+    --output-dir results/ \
+    --verbose
+
+# For ERP studies with low-pass filtered data
+autoclean-icvision erp_data.set --psd-fmax 40
+
+# Batch processing
+for f in data/sub-*.set; do
+    autoclean-icvision "$f" --base-url https://vision.autocleaneeg.org/v1 --api-key dev-local-key
+done
 ```
 
-**Verbose Mode** (Detailed debugging information):
-```bash
-autoclean-icvision data.set --verbose
-# Output:
-# 2025-05-29 13:33:43 - icvision - INFO - Verbose logging enabled - showing module details
-# 2025-05-29 13:33:44 - icvision.core - DEBUG - Loading and validating input data...
-# 2025-05-29 13:33:45 - icvision.api - DEBUG - Response ID: resp_123..., Tokens: 400/50, Cost: $0.001200
-# 2025-05-29 13:33:45 - icvision.plotting - DEBUG - Plotting progress: 10/20 components completed
+### CLI Options
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--base-url` | OpenAI | Custom API endpoint (e.g., `https://vision.autocleaneeg.org/v1`) |
+| `--api-key` | `$OPENAI_API_KEY` | API key |
+| `--model` | `gpt-4.1` | Model name |
+| `--confidence-threshold` | `0.8` | Min confidence for exclusion |
+| `--output-dir` | `./autoclean_icvision_results` | Output directory |
+| `--psd-fmax` | `80` | Max frequency for PSD plots |
+| `--batch-size` | `10` | Components per batch |
+| `--max-concurrency` | `4` | Parallel requests |
+| `--no-auto-exclude` | - | Disable auto-exclusion |
+| `--no-report` | - | Disable PDF report |
+| `--verbose` | - | Detailed logging |
+
+## Python API
+
+```python
+from icvision.core import label_components
+
+# Using CinciBrain Lab proxy
+raw_cleaned, ica_updated, results_df = label_components(
+    raw_data="data.set",
+    base_url="https://vision.autocleaneeg.org/v1",
+    api_key="dev-local-key",
+    model_name="gpt-5.1",
+    confidence_threshold=0.8,
+    output_dir="results/",
+)
+
+# Results
+print(f"Classified {len(results_df)} components")
+print(f"Excluded {results_df['exclude_vision'].sum()} artifacts")
+print(results_df[['component_name', 'label', 'confidence', 'exclude_vision']])
 ```
 
-**Verbose mode provides**:
-- Module-level debugging information
-- Detailed OpenAI API cost tracking per component
-- Progress indicators for long-running operations
-- External library logging (httpx, openai, etc.)
-- Full error stack traces for troubleshooting
+### ICLabel Drop-in Replacement
 
-**Use verbose mode when**:
-- Debugging processing issues
-- Monitoring API costs in detail
-- Contributing to development
-- Troubleshooting unexpected behavior
+```python
+from icvision.compat import label_components
 
-## Development
+# Same API as mne_icalabel
+result = label_components(raw, ica, method='icvision')
+print(result['labels'])  # ['brain', 'eye blink', 'other', ...]
+```
 
-Contributions are welcome! Please see `CONTRIBUTING.md` for guidelines.
+## Component Labels
+
+| Label | Description |
+|-------|-------------|
+| `brain` | Neural activity (retained) |
+| `eye` | Eye movement artifacts |
+| `muscle` | Muscle artifacts |
+| `heart` | Cardiac artifacts |
+| `line_noise` | 50/60Hz line noise |
+| `channel_noise` | Bad channel noise |
+| `other_artifact` | Other artifacts |
+
+## Output Files
+
+Processing `sub-01_eeg.set` creates:
+
+```
+autoclean_icvision_results/
+├── sub-01_eeg_icvis_results.csv          # Classification results
+├── sub-01_eeg_icvis_classified_ica.fif   # Updated ICA object
+├── sub-01_eeg_icvis_cleaned_raw.set      # Cleaned EEG data
+├── sub-01_eeg_icvis_summary.txt          # Summary statistics
+└── sub-01_eeg_icvis_report_all_comps.pdf # PDF report
+```
+
+## Supported Formats
+
+- **EEGLAB**: `.set` files (auto-detects ICA)
+- **MNE**: `.fif`, `.edf`, `.raw`
 
 ## License
 
-This project is licensed under the MIT License - see the `LICENSE` file for details.
-
-## Citation
-
-If you use ICVision in your research, please consider citing it (details to be added upon publication/DOI generation).
-
-## Acknowledgements
-
-*   This project relies heavily on the [MNE-Python](https://mne.tools/) library.
-*   Utilizes the [OpenAI API](https://openai.com/api/).
+MIT License - CinciBrain Lab
