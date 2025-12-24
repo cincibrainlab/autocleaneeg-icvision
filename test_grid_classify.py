@@ -65,7 +65,9 @@ Respond with JSON array (one object per component):
 
 def get_grid_prompt(n_components):
     """Generate prompt for N components."""
-    all_labels = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P"]
+    single_labels = [chr(ord('A') + i) for i in range(26)]
+    double_labels = ['A' + chr(ord('A') + i) for i in range(26)]
+    all_labels = single_labels + double_labels
     labels = all_labels[:n_components]
     labels_str = ", ".join(labels)
     json_lines = [f'  {{"component": "{l}", "label": "category", "confidence": 0.0-1.0, "reason": "brief explanation"}}' for l in labels]
@@ -247,8 +249,10 @@ def create_grid_image(ica_obj, raw_obj, component_indices, output_path, grid_siz
         Path to the saved image
     """
     n_components = len(component_indices)
-    # Support up to 16 components (A-P)
-    all_labels = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P"]
+    # Support up to 52 components (A-Z, then AA-AZ)
+    single_labels = [chr(ord('A') + i) for i in range(26)]
+    double_labels = ['A' + chr(ord('A') + i) for i in range(26)]
+    all_labels = single_labels + double_labels
     labels = all_labels[:n_components]
 
     # Handle strip layout (Option 4) - one row per component
@@ -507,7 +511,9 @@ def main():
             reason = r.get("reason", "")
 
             # Map letter to actual component index
-            letter_labels = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P"]
+            single_labels = [chr(ord('A') + i) for i in range(26)]
+            double_labels = ['A' + chr(ord('A') + i) for i in range(26)]
+            letter_labels = single_labels + double_labels
             letter_to_idx = {letter_labels[i]: component_indices[i] for i in range(len(component_indices)) if i < len(letter_labels)}
             actual_idx = letter_to_idx.get(comp, "?")
 

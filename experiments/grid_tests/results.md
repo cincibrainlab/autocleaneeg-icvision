@@ -569,3 +569,74 @@ Category v3 shows higher confidence across all components, suggesting the model 
 **IC90 (H):** Broad dipolar pattern spanning scalp, clean 1/f spectrum, oscillatory time series. Classification: brain.
 
 **IC103 (I):** Central/left-central dipolar topography, 1/f spectrum, no slow deflections or high-frequency rise. Classification: brain.
+
+---
+
+## Experiment 10: Strip Layout Scaling
+
+Tested strip layout with increasing component counts to find practical limits.
+
+### Results
+
+| Components | Time (s) | Status | API Calls for 127 |
+|------------|----------|--------|-------------------|
+| 9 | 17 | Stable | 15 |
+| 12 | 21 | Stable | 11 |
+| 16 | 25 | Stable | 8 |
+| 20 | 28 | Stable | 7 |
+| 24 | 31 | Stable | 6 |
+| 27 | 95* | Unreliable | 5 |
+| 30 | TIMEOUT | Failed | - |
+
+*Required retries due to 504 errors
+
+### Practical Limit: 24 Components
+
+At 24 components per image:
+- Response time: ~31 seconds (well under 100s Cloudflare timeout)
+- API calls for 127 components: 6 (21x reduction from individual calls)
+- Image still readable with clear features
+
+---
+
+## Figures for Manuscript
+
+### Figure 1: Accuracy-Efficiency Tradeoff
+![Figure 1](fig1_accuracy_efficiency.png)
+
+**Figure 1. Classification accuracy and response time as a function of components per image using the strip layout.** (A) Accuracy decreases from 89% at 9 components to 75% at 16+ components. Green dashed line indicates 80% accuracy threshold. Red shaded area indicates timeout risk zone (>25 components). (B) Response time increases linearly from 17s to 31s for stable configurations. X markers indicate configurations requiring retries (27 components) or failing entirely (30 components). Red dashed line shows the ~100s Cloudflare gateway timeout limit.
+
+---
+
+### Figure 2: Prompt Engineering Comparison
+![Figure 2](fig2_prompt_comparison.png)
+
+**Figure 2. Effect of prompt engineering on classification accuracy.** Blue bars show accuracy on the first 9 components (IC0-8); orange bars show accuracy on a random sample of 9 components. Category-based prompts (v1-v3) progressively improved from 78% to 89% through iterative refinement. The decision tree approach, despite its structured logic, performed worse (67-78%) due to over-rigid rule application that caused misclassification of edge cases. Green dashed line indicates 80% target accuracy.
+
+---
+
+### Figure 3: Classification Distribution
+![Figure 3](fig3_classification_distribution.png)
+
+**Figure 3. Distribution of ICA component classifications (n=24 components, IC0-23).** (A) Bar chart showing counts by category. Brain components (n=14, 58%) dominate, followed by eye (n=6, 25%), muscle (n=4, 17%), channel noise (n=3, 13%), and other artifacts (n=1, 4%). (B) Pie chart showing proportions. This distribution is consistent with typical EEG ICA decompositions where neural sources outnumber artifacts.
+
+---
+
+### Figure 4: Confidence Score Distribution
+![Figure 4](fig4_confidence_distribution.png)
+
+**Figure 4. Confidence score distribution by classification category.** Box plots show median, interquartile range, and individual data points for each category. Eye classifications show highest confidence (median 0.87), followed by muscle (0.83) and channel noise (0.75). Brain classifications show wider variance (0.60-0.80) reflecting the heterogeneity of neural sources. Orange dashed line indicates the 0.70 review threshold; components below this threshold should be flagged for expert review.
+
+---
+
+### Figure 5: API Efficiency
+![Figure 5](fig5_api_efficiency.png)
+
+**Figure 5. API efficiency gains from batch processing.** Bar chart shows total API calls required to process a typical 127-component ICA decomposition at different batch sizes. Individual processing (batch size 1) requires 127 calls; batch size 24 requires only 6 calls—a 21-fold reduction. Green shaded region indicates recommended batch sizes (16-24) balancing efficiency with classification accuracy.
+
+---
+
+### Figure 6: Model Agreement Heatmap
+![Figure 6](fig6_model_agreement.png)
+
+**Figure 6. Classification agreement across model runs for components IC0-8.** Heatmap shows classifications from GPT-5.2 across multiple runs and prompt versions compared to expert (Claude) assessment. Colors indicate classification category: green=brain, blue=eye, red=muscle, purple=channel noise. Red-outlined cells indicate disagreement with the majority classification. IC0 and IC6 show the most variability, while IC1-5, IC7-8 show consistent agreement across all conditions.
