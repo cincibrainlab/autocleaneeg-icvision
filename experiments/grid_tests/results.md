@@ -384,3 +384,89 @@ Direct comparison between Claude (visual analysis) and GPT-5.2 (via API) on same
 | Max confidence | 0.95 (IC1) | 0.95 (IC1) |
 
 Both models show similar confidence distributions, with highest confidence on clear eye (IC1) and lowest on ambiguous components.
+
+---
+
+## Experiment 8: Decision Tree Prompt (Failed)
+
+Attempted to reduce classification variability by replacing category descriptions with a structured decision tree.
+
+### Decision Tree Prompt Structure
+
+```
+STEP 1 - Check TIME SERIES first:
+→ If ~1Hz rhythmic deflections → "heart"
+→ If large slow step-like deflections → likely "eye"
+
+STEP 2 - Check POWER SPECTRUM:
+→ If sharp 50/60Hz spike → "line_noise"
+→ If alpha peak (8-12Hz) present → "brain"
+→ If NO alpha AND flat/rising high-freq → likely "muscle"
+→ If low-freq dominated (<4Hz) → likely "eye"
+
+STEP 3 - Check TOPOGRAPHY to confirm:
+→ Single focal spot + erratic time series → "channel_noise"
+→ Frontal bilateral + slow deflections → "eye"
+→ Edge/temporal + no alpha → "muscle"
+→ Dipolar + alpha peak → "brain"
+```
+
+### Results: IC0-8 with Decision Tree
+
+| IC | Decision Tree | Conf | Previous v3 | Claude | Correct? |
+|----|---------------|------|-------------|--------|----------|
+| IC0 | eye | 0.84 | channel_noise/eye | channel_noise | ? |
+| IC1 | eye | 0.90 | eye | eye | YES |
+| IC2 | brain | 0.92 | brain | brain | YES |
+| IC3 | brain | 0.90 | brain | brain | YES |
+| IC4 | brain | 0.88 | brain | brain | YES |
+| IC5 | brain | 0.85 | brain | brain | YES |
+| IC6 | muscle | 0.72 | brain/muscle | muscle | YES |
+| IC7 | **muscle** | 0.69 | brain | brain | **NO** |
+| IC8 | **eye** | 0.66 | channel_noise | channel_noise | **NO** |
+
+### Results: Random 9 Components (IC12,22,23,26,37,40,44,90,103)
+
+| IC | Decision Tree | Conf | Claude Assessment | Agreement |
+|----|---------------|------|-------------------|-----------|
+| IC12 | channel_noise | 0.70 | channel_noise | YES |
+| IC22 | brain | 0.60 | brain | YES |
+| IC23 | channel_noise | 0.75 | channel_noise | YES |
+| IC26 | channel_noise | 0.65 | channel_noise | YES |
+| IC37 | muscle | 0.70 | muscle | YES |
+| IC40 | brain | 0.55 | brain | YES |
+| IC44 | eye | 0.65 | eye | YES |
+| IC90 | brain | 0.60 | brain | YES |
+| IC103 | brain | 0.60 | brain | YES |
+
+Random components: 9/9 agreement (but these may be easier cases)
+
+### Critical Failures
+
+**IC8 misclassified as eye (should be channel_noise):**
+- Decision tree over-applied "low-freq spectrum = eye" rule
+- Ignored the obvious single-point focal topography
+- This is a clear channel_noise component that any expert would identify
+
+**IC7 misclassified as muscle (should be brain):**
+- Has visible alpha peak in spectrum
+- Decision tree failed to properly weight alpha presence
+- The "edge topography + no alpha" rule was incorrectly applied
+
+### Why Decision Tree Failed
+
+1. **Over-rigid rule application**: The step-by-step structure caused the model to "stop at first match" even when later features contradicted it
+
+2. **Lost nuance**: Category descriptions allow weighing multiple features simultaneously; decision trees force sequential evaluation
+
+3. **Edge case blindness**: IC8 is an obvious channel_noise to human experts, but the decision tree's rule ordering caused misclassification
+
+4. **False confidence**: Decision tree gave higher confidence (0.66-0.92) despite making worse classifications
+
+### Conclusion
+
+**Decision tree prompt rejected.** Reverted to category-based prompt (v3).
+
+The category-based approach with refinements handles nuance better than rigid decision trees. Some run-to-run variability on borderline components (IC0, IC6) is acceptable if obvious cases (IC8) are classified correctly.
+
+**Key insight**: Prompt engineering for classification works better with weighted category descriptions than procedural decision trees. The model needs flexibility to consider all features, not forced sequential evaluation.
