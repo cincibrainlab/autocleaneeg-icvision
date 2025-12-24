@@ -112,9 +112,10 @@ def plot_single_component_subplot(ica_obj, raw_obj, component_idx, axes_dict, la
             ax_topo.set_title(f"{label}: IC{component_idx} Topo", fontsize=9)
         elif label_only:
             ax_topo.set_title("")
-            # Add label in top-left corner
-            ax_topo.text(0.05, 0.95, label, transform=ax_topo.transAxes,
-                        fontsize=14, fontweight='bold', va='top', ha='left',
+            # Add label with IC index in top-left corner (e.g., "A:IC44")
+            label_text = f"{label}:IC{component_idx}"
+            ax_topo.text(0.05, 0.95, label_text, transform=ax_topo.transAxes,
+                        fontsize=10, fontweight='bold', va='top', ha='left',
                         color='white', bbox=dict(boxstyle='round,pad=0.2',
                         facecolor='black', alpha=0.7))
         else:
@@ -125,8 +126,9 @@ def plot_single_component_subplot(ica_obj, raw_obj, component_idx, axes_dict, la
             ax_topo.set_title(f"{label}: IC{component_idx}", fontsize=9)
         elif label_only:
             ax_topo.set_title("")
-            ax_topo.text(0.05, 0.95, label, transform=ax_topo.transAxes,
-                        fontsize=14, fontweight='bold', va='top', ha='left',
+            label_text = f"{label}:IC{component_idx}"
+            ax_topo.text(0.05, 0.95, label_text, transform=ax_topo.transAxes,
+                        fontsize=10, fontweight='bold', va='top', ha='left',
                         color='white', bbox=dict(boxstyle='round,pad=0.2',
                         facecolor='black', alpha=0.7))
         else:
