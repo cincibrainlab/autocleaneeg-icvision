@@ -1,0 +1,57 @@
+<div class="min-h-screen bg-gray-900 text-white flex items-center justify-center">
+  <div class="max-w-md mx-auto text-center px-4">
+    <div class="mb-8">
+      <div class="w-24 h-24 mx-auto bg-green-500 rounded-full flex items-center justify-center mb-4">
+        <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+      </div>
+      <h1 class="text-3xl font-bold mb-2">All Done!</h1>
+      <p class="text-gray-400">Thank you for your ratings.</p>
+    </div>
+
+    <div class="bg-gray-800 rounded-lg p-6 mb-6">
+      <h2 class="text-lg font-medium mb-4">Your Session</h2>
+      <dl class="space-y-3">
+        <div class="flex justify-between">
+          <dt class="text-gray-400">Components Rated</dt>
+          <dd class="font-medium"><%= @stats[:total_rated] %></dd>
+        </div>
+        <div class="flex justify-between">
+          <dt class="text-gray-400">Flagged for Review</dt>
+          <dd class="font-medium"><%= @stats[:flagged] %></dd>
+        </div>
+        <div class="flex justify-between">
+          <dt class="text-gray-400">Experience Level</dt>
+          <dd class="font-medium">
+            <% if @stats[:experience_set] %>
+              <span class="capitalize"><%= current_participant.experience_level %></span>
+            <% else %>
+              <span class="text-yellow-400">Not set</span>
+            <% end %>
+          </dd>
+        </div>
+      </dl>
+    </div>
+
+    <% unless @stats[:experience_set] %>
+      <div class="bg-yellow-900/50 border border-yellow-600 rounded-lg p-4 mb-6">
+        <p class="text-yellow-200 text-sm mb-3">
+          Please set your experience level before closing this page.
+          This helps us weight your ratings appropriately.
+        </p>
+        <div class="flex justify-center space-x-2">
+          <% Participant::EXPERIENCE_LEVELS.each do |level| %>
+            <%= button_to update_experience_path, method: :patch, params: { experience_level: level }, class: "px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded capitalize transition-colors" do %>
+              <%= level %>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <p class="text-gray-500 text-sm">
+      You can close this window now.
+    </p>
+  </div>
+</div>
