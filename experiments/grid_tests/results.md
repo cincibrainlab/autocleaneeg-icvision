@@ -470,3 +470,102 @@ Random components: 9/9 agreement (but these may be easier cases)
 The category-based approach with refinements handles nuance better than rigid decision trees. Some run-to-run variability on borderline components (IC0, IC6) is acceptable if obvious cases (IC8) are classified correctly.
 
 **Key insight**: Prompt engineering for classification works better with weighted category descriptions than procedural decision trees. The model needs flexibility to consider all features, not forced sequential evaluation.
+
+---
+
+## Experiment 9: Random Component Comparison (Decision Tree vs Category v3)
+
+Direct comparison of both prompt approaches on random components (IC12, 22, 23, 26, 37, 40, 44, 90, 103) to assess generalization beyond the first 9 components.
+
+### Random Component Classifications
+
+| IC | Decision Tree | Conf | Category v3 | Conf | Expert | Correct |
+|----|---------------|------|-------------|------|--------|---------|
+| IC12 | channel_noise | 0.70 | brain | 0.83 | brain | **v3** |
+| IC22 | brain | 0.60 | brain | 0.74 | brain | Both |
+| IC23 | channel_noise | 0.75 | channel_noise | 0.86 | channel_noise | Both |
+| IC26 | channel_noise | 0.65 | channel_noise | 0.82 | channel_noise | Both |
+| IC37 | muscle | 0.70 | muscle | 0.78 | muscle | Both |
+| IC40 | brain | 0.55 | eye | 0.77 | eye | **v3** |
+| IC44 | eye | 0.65 | brain | 0.70 | eye | **DT** |
+| IC90 | brain | 0.60 | brain | 0.76 | brain | Both |
+| IC103 | brain | 0.60 | brain | 0.72 | brain | Both |
+
+### Accuracy Summary
+
+| Prompt | Correct | Accuracy |
+|--------|---------|----------|
+| Decision Tree | 7/9 | 78% |
+| Category v3 | 8/9 | 89% |
+
+### Expert Reasoning for Disputed Components
+
+**IC12 - brain (not channel_noise):**
+- Topography shows clear left-right dipolar gradient (not single focal point)
+- Spectrum is 1/f with neural characteristics
+- Decision tree incorrectly flagged as channel_noise due to edge location
+
+**IC40 - eye (not brain):**
+- Time series shows large slow deflection (blink-like)
+- Spectrum is low-frequency dominated with steep 1/f decay
+- Frontal/periocular topography
+- Category v3 correctly identified; decision tree missed the slow deflections
+
+**IC44 - eye (not brain):**
+- Time series has clear slow step-like deflection
+- Spectrum is low-frequency dominated
+- Topography is lateral but slow deflection pattern is diagnostic
+- Decision tree correctly identified; category v3 missed this one
+
+### Confidence Analysis
+
+| Prompt | Mean Conf | Min | Max |
+|--------|-----------|-----|-----|
+| Decision Tree | 0.64 | 0.55 | 0.75 |
+| Category v3 | 0.78 | 0.70 | 0.86 |
+
+Category v3 shows higher confidence across all components, suggesting the model is more certain with the category-based approach.
+
+### Key Observations
+
+1. **Category v3 outperforms decision tree** on random components (89% vs 78%)
+
+2. **Decision tree weaknesses:**
+   - Over-classified brain components as channel_noise (IC12)
+   - Missed eye component with non-frontal topography (IC40)
+   - Lower confidence overall
+
+3. **Category v3 weakness:**
+   - Missed IC44 (eye with lateral topography) - called it brain
+   - May under-weight time series slow deflections when topography is ambiguous
+
+4. **Both prompts struggle with:**
+   - Eye components that have lateral/non-frontal topography
+   - The time series "slow deflection" feature needs more weight
+
+### Implications for Manuscript
+
+1. **Category-based prompts preferred** for ICA classification
+2. **Accuracy on random components** (89%) is promising for real-world use
+3. **Remaining challenge**: Eye components with atypical topography
+4. **Confidence scores** from category v3 are more calibrated
+
+### Component-by-Component Visual Analysis
+
+**IC12 (A):** Dipolar left-right gradient across scalp, 1/f spectrum without alpha peak but also without high-frequency rise. Time series is oscillatory. Classification: brain.
+
+**IC22 (B):** Broad central dipolar distribution, modest mid-frequency bump in spectrum, neural-looking time series. Classification: brain.
+
+**IC23 (C):** Single focal edge hotspot (posterior), erratic time series, flat spectrum. Classic bad channel. Classification: channel_noise.
+
+**IC26 (D):** Tiny isolated focal spot at inferior edge, noisy time series, flat spectrum. Classification: channel_noise.
+
+**IC37 (E):** Edge-focused bilateral spots, spectrum shows elevated high frequencies without alpha, time series is dense/high-frequency. Classification: muscle.
+
+**IC40 (F):** Frontal/periocular topography, LARGE SLOW DEFLECTION visible in time series (~1s mark), strong low-frequency dominance in spectrum. Classification: eye.
+
+**IC44 (G):** Lateral topography but TIME SERIES HAS CLEAR SLOW STEP at ~1.5s mark, low-frequency dominated spectrum. Despite lateral topo, slow deflection is diagnostic. Classification: eye.
+
+**IC90 (H):** Broad dipolar pattern spanning scalp, clean 1/f spectrum, oscillatory time series. Classification: brain.
+
+**IC103 (I):** Central/left-central dipolar topography, 1/f spectrum, no slow deflections or high-frequency rise. Classification: brain.
