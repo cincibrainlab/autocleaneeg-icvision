@@ -106,113 +106,108 @@ def classify_component_image_openai(
         # Response structure (based on OpenAI responses API format):
         # {
         #   "output": [
-        #     {
-        #       "content": [
-        #         {
-        #           "type": "output_text",
-        #           "text": "{JSON response here}",
-        #           "annotations": []
-        #         }
-        #       ]
-        #     }
+        #     {"type": "reasoning", "content": None, ...},  # reasoning item (may be first)
+        #     {"type": "message", "content": [{"type": "output_text", "text": "..."}], ...}
         #   ]
         # }
-        # The JSON content is in response.output[0].content[0].text
-        if (
-            response
-            and hasattr(response, "output")
-            and response.output
-            and len(response.output) > 0
-            and hasattr(response.output[0], "content")
-            and response.output[0].content
-            and len(response.output[0].content) > 0
-        ):
+        # Find the message item in output (may not be first due to reasoning)
+        message_content = None
+        if response and hasattr(response, "output") and response.output:
+            for output_item in response.output:
+                if (
+                    hasattr(output_item, "type")
+                    and output_item.type == "message"
+                    and hasattr(output_item, "content")
+                    and output_item.content
+                    and len(output_item.content) > 0
+                ):
+                    content_item = output_item.content[0]
+                    if hasattr(content_item, "text"):
+                        message_content = content_item.text
+                        break
 
-            # Extract text from the first content item
-            content_item = response.output[0].content[0]
-            if hasattr(content_item, "text"):
-                message_content = content_item.text
-                try:
-                    import json
+        if message_content:
+            try:
+                import json
 
-                    parse_start_time = time.time()
-                    structured_response = json.loads(message_content)
-                    parse_end_time = time.time()
-                    logger.debug("JSON parsing for %s took %.3f seconds", image_path.name, parse_end_time - parse_start_time)
+                parse_start_time = time.time()
+                structured_response = json.loads(message_content)
+                parse_end_time = time.time()
+                logger.debug("JSON parsing for %s took %.3f seconds", image_path.name, parse_end_time - parse_start_time)
 
-                    label = structured_response.get("label", "").lower()
-                    confidence = float(structured_response.get("confidence", 0.0))
-                    reason = structured_response.get("reason", "")
+                label = structured_response.get("label", "").lower()
+                confidence = float(structured_response.get("confidence", 0.0))
+                reason = structured_response.get("reason", "")
 
-                    # Validate label
-                    if label not in COMPONENT_LABELS:
-                        logger.warning(
-                            "OpenAI returned unexpected label '%s' for %s. Falling back to other_artifact.",
-                            label,
-                            image_path.name,
-                        )
-                        return "other_artifact", 1.0, f"Invalid label '{label}' returned. Reason: {reason}", None
+                # Validate label
+                if label not in COMPONENT_LABELS:
+                    logger.warning(
+                        "OpenAI returned unexpected label '%s' for %s. Falling back to other_artifact.",
+                        label,
+                        image_path.name,
+                    )
+                    return "other_artifact", 1.0, f"Invalid label '{label}' returned. Reason: {reason}", None
 
-                    # Validate confidence range
-                    confidence = max(0.0, min(1.0, confidence))
+                # Validate confidence range
+                confidence = max(0.0, min(1.0, confidence))
+
+                logger.debug(
+                    "Structured classification for %s: Label=%s, Conf=%.2f",
+                    image_path.name,
+                    label,
+                    confidence,
+                )
+
+                # Log response metadata and calculate costs (updated for new API structure)
+                cost_info = None
+                usage = getattr(response, "usage", None)
+                if usage:
+                    from .utils import calculate_openai_cost
+
+                    input_tokens = getattr(usage, "input_tokens", 0)
+                    output_tokens = getattr(usage, "output_tokens", 0)
+                    cached_tokens = getattr(getattr(usage, "input_tokens_details", None), "cached_tokens", 0) or 0
+
+                    cost_info = calculate_openai_cost(
+                        input_tokens=input_tokens,
+                        output_tokens=output_tokens,
+                        model_name=model_name,
+                        cached_tokens=cached_tokens,
+                    )
+                    # Add token counts to cost_info for tracking
+                    cost_info["input_tokens"] = input_tokens
+                    cost_info["output_tokens"] = output_tokens
+                    cost_info["cached_tokens"] = cached_tokens
 
                     logger.debug(
-                        "Structured classification for %s: Label=%s, Conf=%.2f",
-                        image_path.name,
-                        label,
-                        confidence,
+                        "Response ID: %s, Tokens: %d in/%d out/%d cached, Cost: $%.6f",
+                        getattr(response, "id", "N/A"),
+                        input_tokens,
+                        output_tokens,
+                        cached_tokens,
+                        cost_info["total_cost"],
                     )
+                else:
+                    logger.debug("Response ID: %s, Usage: N/A", getattr(response, "id", "N/A"))
 
-                    # Log response metadata and calculate costs (updated for new API structure)
-                    cost_info = None
-                    usage = getattr(response, "usage", None)
-                    if usage:
-                        from .utils import calculate_openai_cost
+                function_end_time = time.time()
+                function_elapsed_time = function_end_time - function_start_time
+                logger.info("Classification completed for %s in %.2f seconds (Label: %s, Confidence: %.2f)",
+                           image_path.name, function_elapsed_time, label, confidence)
+                return label, confidence, reason, cost_info
 
-                        input_tokens = getattr(usage, "input_tokens", 0)
-                        output_tokens = getattr(usage, "output_tokens", 0)
-                        cached_tokens = getattr(getattr(usage, "input_tokens_details", None), "cached_tokens", 0) or 0
-
-                        cost_info = calculate_openai_cost(
-                            input_tokens=input_tokens,
-                            output_tokens=output_tokens,
-                            model_name=model_name,
-                            cached_tokens=cached_tokens,
-                        )
-                        # Add token counts to cost_info for tracking
-                        cost_info["input_tokens"] = input_tokens
-                        cost_info["output_tokens"] = output_tokens
-                        cost_info["cached_tokens"] = cached_tokens
-
-                        logger.debug(
-                            "Response ID: %s, Tokens: %d in/%d out/%d cached, Cost: $%.6f",
-                            getattr(response, "id", "N/A"),
-                            input_tokens,
-                            output_tokens,
-                            cached_tokens,
-                            cost_info["total_cost"],
-                        )
-                    else:
-                        logger.debug("Response ID: %s, Usage: N/A", getattr(response, "id", "N/A"))
-
-                    function_end_time = time.time()
-                    function_elapsed_time = function_end_time - function_start_time
-                    logger.info("Classification completed for %s in %.2f seconds (Label: %s, Confidence: %.2f)", 
-                               image_path.name, function_elapsed_time, label, confidence)
-                    return label, confidence, reason, cost_info
-
-                except (json.JSONDecodeError, KeyError, ValueError) as e:
-                    logger.error(
-                        "Failed to parse structured response for %s: %s. Content: %s",
-                        image_path.name,
-                        e,
-                        message_content[:200],
-                    )
-                    function_end_time = time.time()
-                    function_elapsed_time = function_end_time - function_start_time
-                    logger.warning("Classification failed for %s in %.2f seconds (JSON parsing error)", 
-                                  image_path.name, function_elapsed_time)
-                    return "other_artifact", 1.0, f"JSON parsing error: {str(e)}", None
+            except (json.JSONDecodeError, KeyError, ValueError) as e:
+                logger.error(
+                    "Failed to parse structured response for %s: %s. Content: %s",
+                    image_path.name,
+                    e,
+                    message_content[:200],
+                )
+                function_end_time = time.time()
+                function_elapsed_time = function_end_time - function_start_time
+                logger.warning("Classification failed for %s in %.2f seconds (JSON parsing error)",
+                              image_path.name, function_elapsed_time)
+                return "other_artifact", 1.0, f"JSON parsing error: {str(e)}", None
 
         function_end_time = time.time()
         function_elapsed_time = function_end_time - function_start_time

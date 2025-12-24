@@ -53,11 +53,11 @@ Each component shows:
 
 Categories:
 - "brain": Dipolar pattern (can be central, parietal, OR lateral/temporal), 1/f spectrum with alpha (8-12Hz) or beta (13-30Hz) peaks. NOTE: Lateral/edge topography with alpha peak = brain, not muscle
-- "eye": Frontal/periocular dipolar pattern, low-frequency dominated (<4Hz), large slow deflections
+- "eye": Frontal/periocular focus with low-frequency dominated spectrum (<4Hz) AND large slow deflections in time series. Frontal focal + slow deflections = eye, even if topography looks focal
 - "muscle": Edge-focused topography AND flat/rising high-frequency spectrum (no alpha peak). Must have BOTH features
 - "heart": ~1Hz rhythmic deflections in time series, broad scalp distribution
 - "line_noise": Sharp narrow peak at 50/60Hz
-- "channel_noise": Single isolated focal spot (one sensor), no dipolar field
+- "channel_noise": Single isolated focal spot (one sensor) with flat/noisy spectrum AND erratic/random time series. NOT eye if spectrum is low-frequency dominated with slow deflections
 - "other_artifact": Doesn't fit above categories
 
 Respond with JSON array (one object per component):

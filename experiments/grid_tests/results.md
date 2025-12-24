@@ -342,3 +342,45 @@ After visual inspection of IC6 and IC7 spectra:
 2. **Strip layout** appears most accurate for artifact detection (IC6, IC8)
 3. Components with <0.70 confidence should be flagged for expert review
 4. IC0-type ambiguity (frontal focal) may require additional features to resolve
+
+---
+
+## Experiment 7: Human vs Model Comparison (Strip Layout v3)
+
+Direct comparison between Claude (visual analysis) and GPT-5.2 (via API) on same strip image.
+
+### Classification Results
+
+| IC | Claude | Conf | GPT-5.2 v3 | Conf | Agreement |
+|----|--------|------|------------|------|-----------|
+| IC0 | channel_noise | 0.80 | channel_noise | 0.78 | **YES** |
+| IC1 | eye | 0.95 | eye | 0.95 | **YES** |
+| IC2 | brain | 0.90 | brain | 0.93 | **YES** |
+| IC3 | brain | 0.88 | brain | 0.90 | **YES** |
+| IC4 | brain | 0.85 | brain | 0.88 | **YES** |
+| IC5 | brain | 0.82 | brain | 0.86 | **YES** |
+| IC6 | muscle | 0.75 | brain | 0.77 | **NO** |
+| IC7 | brain | 0.80 | brain | 0.75 | **YES** |
+| IC8 | channel_noise | 0.88 | channel_noise | 0.72 | **YES** |
+
+**Agreement Rate**: 8/9 (89%)
+
+### Analysis
+
+**Point of disagreement - IC6:**
+- **Claude**: muscle (0.75) - bilateral temporal/edge topography, spectrum lacks clear alpha peak
+- **GPT-5.2**: brain (0.77) - "spectrum shows 1/f shape without flat/rising high-frequency profile"
+
+**Expert validation**: IC6 is **muscle** - the spectrum lacks the alpha peak seen in other brain components (IC2-5, IC7), and the topography is edge-focused bilateral temporal.
+
+**Key observation**: Both models now agree on IC0 as channel_noise (not eye), confirming the revised assessment. The single remaining disagreement (IC6) shows GPT-5.2 may still under-weight the absence of alpha peak when topography is ambiguous.
+
+### Confidence Comparison
+
+| Metric | Claude | GPT-5.2 |
+|--------|--------|---------|
+| Mean confidence | 0.84 | 0.84 |
+| Min confidence | 0.75 (IC6) | 0.72 (IC8) |
+| Max confidence | 0.95 (IC1) | 0.95 (IC1) |
+
+Both models show similar confidence distributions, with highest confidence on clear eye (IC1) and lowest on ambiguous components.

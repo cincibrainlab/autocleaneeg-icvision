@@ -5,8 +5,58 @@ This module contains the OpenAI prompt, label mappings, and other constants
 used throughout the ICVision package.
 """
 
+import os
+from pathlib import Path
+
 # Default OpenAI model for vision classification
 DEFAULT_MODEL = "gpt-4.1"
+
+# Prompt file locations (searched in order)
+PROMPT_SEARCH_PATHS = [
+    Path.cwd() / "prompts",  # Current working directory
+    Path.home() / ".icvision" / "prompts",  # User home
+    Path(__file__).parent.parent.parent.parent / "prompts",  # Package prompts dir
+]
+
+
+def load_prompt(prompt_name: str = "default") -> str:
+    """Load a prompt from external file.
+
+    Searches for {prompt_name}.txt in:
+    1. ./prompts/ (current working directory)
+    2. ~/.icvision/prompts/ (user home)
+    3. Package prompts/ directory
+
+    Args:
+        prompt_name: Name of prompt file (without .txt extension)
+
+    Returns:
+        Prompt text content
+    """
+    filename = f"{prompt_name}.txt"
+
+    for search_path in PROMPT_SEARCH_PATHS:
+        prompt_file = search_path / filename
+        if prompt_file.exists():
+            return prompt_file.read_text().strip()
+
+    # Fallback to built-in short prompt
+    return DEFAULT_SHORT_PROMPT
+
+
+# Short, efficient prompt that works within proxy timeout limits
+DEFAULT_SHORT_PROMPT = """Classify this EEG ICA component into ONE category and provide your answer in JSON format:
+
+Categories:
+- "brain": Dipolar central/parietal pattern, 1/f spectrum with possible 6-35Hz peaks
+- "eye": Frontal/periocular dipolar pattern, low-frequency dominated
+- "muscle": Positive spectral slope at high frequencies, edge-focused topography
+- "heart": ~1Hz rhythmic deflections in time series
+- "line_noise": Sharp peak at 50/60Hz
+- "channel_noise": Single isolated focal spot, no dipole
+- "other_artifact": Doesn't fit above categories
+
+Respond with JSON: {"label": "category_name", "confidence": 0.0-1.0, "reason": "brief explanation"}"""
 
 # Component label definitions in priority order
 COMPONENT_LABELS = [
@@ -266,141 +316,10 @@ Example JSON response:
 
 """
 
-OPENAI_ICA_PROMPT = """
-{
-  "scoring_system": {
-    "description": "A scoring system for classifying EEG ICA components based on topography, time series, power spectrum, and continuous data segments. Scores are assigned with weights reflecting diagnostic importance. Decisive features override others to prevent misclassifications, with confidence adjusted for strong evidence. Detailed scoring ensures transparency.",
-    "features": {
-      "topography": {
-        "description": "Spatial distribution of component activity across the scalp",
-        "weight": {
-          "brain": 0.3,
-          "eye": 0.4,
-          "muscle": 0.2,
-          "heart": 0.0,
-          "line_noise": 0.0,
-          "channel_noise": 0.5,
-          "other_artifact": 0.2
-        },
-        "scoring_criteria": {
-          "brain": {"description": "Dipolar pattern in CENTRAL, PARIETAL, or TEMPORAL regions (NOT PERIOCULAR or EDGE-FOCUSED)", "score": {"dipolar_central_parietal_temporal": 0.9, "dipolar_mid_frontal": 0.7, "non_dipolar_or_periocular": 0.1, "edge_focused": 0.1}},
-          "eye": {"description": "Clear dipolar pattern ONLY ANTERIOR to PERIOCULAR electrodes (Fp1, Fp2, F7, F8) with NO extension", "score": {"dipolar_periocular_only": 0.95, "bilateral_anterior_electrodes": 0.8, "dipolar_with_extension": 0.1, "non_dipolar": 0.05}},
-          "muscle": {"description": "Localized 'bowtie'/'shallow dipole', diffuse EDGE activity, or focal spots near muscle areas (temporal, frontal, jaw)", "score": {"bowtie_or_shallow_dipole": 0.7, "edge_activity": 0.6, "single_focal_spot_muscle_area": 0.5, "other_patterns": 0.2}},
-          "heart": {"description": "IGNORE topography", "score": {"any_pattern": 0.0}},
-          "line_noise": {"description": "IGNORE topography", "score": {"any_pattern": 0.0}},
-          "channel_noise": {"description": "Single tiny focal spot with NO opposite pole, isolated to one electrode", "score": {"single_focal_spot_no_opposite_pole": 0.95, "other_patterns": 0.05}},
-          "other_artifact": {"description": "Complex multi-polar or irregular patterns", "score": {"complex_multipolar": 0.7, "noisy_dipolar": 0.5, "other_patterns": 0.3}}
-        }
-      },
-      "time_series": {
-        "description": "Component activation over time",
-        "weight": {
-          "brain": 0.3,
-          "eye": 0.3,
-          "muscle": 0.2,
-          "heart": 0.8,
-          "line_noise": 0.0,
-          "channel_noise": 0.2,
-          "other_artifact": 0.2
-        },
-        "scoring_criteria": {
-          "brain": {"description": "Rhythmic, wave-like WITHOUT abrupt shifts", "score": {"rhythmic_wave_like": 0.9, "smooth_no_spikes": 0.7, "abrupt_shifts_or_spikes": 0.1}},
-          "eye": {"description": "Step-like, slow waves, or blink-related", "score": {"step_like_or_blink": 0.9, "slow_waves": 0.7, "other_patterns": 0.1}},
-          "muscle": {"description": "Spiky, high-frequency, erratic", "score": {"spiky_high_frequency": 0.8, "erratic": 0.6, "other_patterns": 0.2}},
-          "heart": {"description": "Rhythmic deflections ~1 second apart", "score": {"rhythmic_1hz": 0.95, "other_patterns": 0.05}},
-          "line_noise": {"description": "IGNORE time series", "score": {"any_pattern": 0.0}},
-          "channel_noise": {"description": "Random or flat", "score": {"random_or_flat": 0.8, "other_patterns": 0.2}},
-          "other_artifact": {"description": "Mixed or contradictory", "score": {"mixed_contradictory": 0.6, "other_patterns": 0.3}}
-        }
-      },
-      "power_spectrum": {
-        "description": "Frequency content showing power variation",
-        "weight": {
-          "brain": 0.3,
-          "eye": 0.2,
-          "muscle": 0.5,
-          "heart": 0.0,
-          "line_noise": 0.9,
-          "channel_noise": 0.2,
-          "other_artifact": 0.2
-        },
-        "scoring_criteria": {
-          "brain": {"description": "1/f-like with peaks at 6-35Hz", "score": {"1f_with_peaks_6_35hz": 0.9, "1f_no_peaks": 0.7, "positive_slope_or_flat": 0.1}},
-          "eye": {"description": "Low frequencies (1-5Hz) with 1/f-like decrease", "score": {"low_freq_1_5hz_1f": 0.8, "other_patterns": 0.2}},
-          "muscle": {"description": "CLEAR POSITIVE SLOPE starting from the available frequency range upwards (typically from ~20-30Hz if present, or from the lowest available frequency if data is high-pass filtered above 30Hz) (decisive)", "score": {"positive_slope_available_freq": 0.95, "high_freq_no_clear_slope": 0.4, "1f_like": 0.05}},
-          "heart": {"description": "IGNORE spectrum", "score": {"any_pattern": 0.0}},
-          "line_noise": {"description": "SHARP PEAK at 50/60Hz (if these frequencies are present in the data; if high-pass filtered above 50/60Hz, line noise detection is not applicable)", "score": {"sharp_peak_50_60hz": 0.95, "notch_or_other": 0.05}},
-          "channel_noise": {"description": "Noisy or artifactual", "score": {"noisy_artifactual": 0.7, "other_patterns": 0.3}},
-          "other_artifact": {"description": "Mixed or contradictory", "score": {"mixed_contradictory": 0.6, "other_patterns": 0.3}}
-        }
-      },
-      "continuous_data_segments": {
-        "description": "Trial-by-trial visualization",
-        "weight": {
-          "brain": 0.1,
-          "eye": 0.1,
-          "muscle": 0.1,
-          "heart": 0.2,
-          "line_noise": 0.1,
-          "channel_noise": 0.1,
-          "other_artifact": 0.4
-        },
-        "scoring_criteria": {
-          "brain": {"description": "Consistent oscillatory", "score": {"consistent_oscillatory": 0.9, "inconsistent_patterns": 0.2}},
-          "eye": {"description": "Movement-related", "score": {"movement_related": 0.8, "other_patterns": 0.2}},
-          "muscle": {"description": "Sporadic high-frequency bursts", "score": {"sporadic_high_freq_bursts": 0.8, "other_patterns": 0.2}},
-          "heart": {"description": "Regular ~1 second bands", "score": {"regular_1hz_bands": 0.95, "other_patterns": 0.05}},
-          "line_noise": {"description": "No specific pattern", "score": {"any_pattern": 0.3}},
-          "channel_noise": {"description": "Localized, random, or flat", "score": {"random_flat": 0.8, "other_patterns": 0.2}},
-          "other_artifact": {"description": "Sporadic or complex", "score": {"sporadic_complex": 0.7, "other_patterns": 0.3}}
-        }
-      }
-    },
-    "calculation_method": {
-      "description": "Calculate final scores by summing weighted feature scores. Apply priority rules to override non-decisive features. Normalize scores and adjust confidence for decisive features.",
-      "steps": [
-        {
-          "step": 1,
-          "description": "Assign scores to each feature for all component types based on observed patterns, ensuring detailed justification."
-        },
-        {
-          "step": 2,
-          "description": "Multiply each feature score by its weight to get weighted scores."
-        },
-        {
-          "step": 3,
-          "description": "Sum weighted scores for each type to get raw final scores."
-        },
-        {
-          "step": 4,
-          "description": "Apply priority rules: If heart's time series or segments score ≥0.95, set heart to 1.0, others to 0.0. If muscle's power spectrum scores ≥0.95 for positive_slope_available_freq, downweight channel_noise topography to 0.1 unless isolated to one electrode. If line_noise's spectrum scores ≥0.95, set line_noise to 1.0, others to 0.0."
-        },
-        {
-          "step": 5,
-          "description": "Normalize raw scores across all types to sum to 1.0, unless a priority rule applies."
-        },
-        {
-          "step": 6,
-          "description": "Select the type with the highest normalized score. Set confidence to the normalized score, but adjust to max(0.9, normalized_score * 1.5) if a decisive feature (heart’s ~1Hz, muscle’s positive slope, line_noise’s 50/60Hz) scores ≥0.95 with weight ≥0.5. Provide detailed reasoning with all feature scores and comparisons."
-        }
-      ]
-    }
-  }
-  RETURN FORMAT: You must respond with ONLY a valid JSON object in the following exact format:
-{
-    "label": "one_of_the_valid_labels",
-    "confidence": 0.95,
-    "reason": "detailed_reasoning_for_the_classification"
-}
 
-The "label" must be exactly one of: brain, eye, muscle, heart, line_noise, channel_noise, other_artifact
-The "confidence" must be a number between 0.0 and 1.0
-The "reason" should provide detailed reasoning for your classification decision.
+# Load prompt from external file or use built-in default
+OPENAI_ICA_PROMPT = load_prompt("default")
 
-Example JSON response:
-{"label": "eye", "confidence": 0.95, "reason": "Strong frontal topography with left-right dipolar pattern (horizontal eye movement) or frontal positivity with spike-like patterns (vertical eye movement/blinks). Low-frequency dominated spectrum and characteristic time series confirm eye activity."}
-}
-"""
 
 # Default configuration parameters
 DEFAULT_CONFIG = {
