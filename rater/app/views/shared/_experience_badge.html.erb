@@ -1,11 +1,44 @@
 <% if participant.experience_set? %>
   <!-- Collapsed badge showing current level -->
-  <div class="flex items-center space-x-2 px-3 py-1.5 bg-gray-700 rounded-full">
+  <div class="flex items-center space-x-2 px-3 py-1.5 bg-gray-700 rounded-full cursor-pointer hover:bg-gray-600 transition-colors" data-controller="experience" data-action="click->experience#toggle">
     <span class="w-2 h-2 rounded-full <%= experience_color(participant.experience_level) %>"></span>
     <span class="text-sm capitalize"><%= participant.experience_level %></span>
+    <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+    </svg>
+
+    <!-- Dropdown to change level -->
+    <div
+      class="absolute right-0 top-full mt-2 w-80 bg-gray-800 rounded-lg shadow-xl border border-gray-700 hidden z-50"
+      data-experience-target="dropdown"
+    >
+      <div class="p-4">
+        <h3 class="text-sm font-semibold text-white mb-3">Change Experience Level</h3>
+        <div class="space-y-2">
+          <% Participant::EXPERIENCE_LEVELS.each do |level| %>
+            <%= button_to update_experience_path, method: :patch, params: { experience_level: level }, class: "w-full text-left px-3 py-2 rounded hover:bg-gray-700 transition-colors flex items-start space-x-3 #{participant.experience_level == level ? 'bg-gray-700' : ''}", data: { turbo_frame: "_top" } do %>
+              <span class="inline-block w-3 h-3 rounded-full mt-0.5 flex-shrink-0 <%= experience_color(level) %>"></span>
+              <div>
+                <span class="block font-medium capitalize"><%= level %></span>
+                <span class="block text-xs text-gray-400">
+                  <% case level %>
+                  <% when "novice" %>
+                    Learning ICA classification, limited hands-on experience
+                  <% when "trained" %>
+                    Formal training completed, regular practice with ICA
+                  <% when "expert" %>
+                    Published research or 3+ years clinical/research experience
+                  <% end %>
+                </span>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    </div>
   </div>
 <% else %>
-  <!-- Pulsing badge prompting to set experience -->
+  <!-- Expanded selection panel for first-time users -->
   <div class="relative" data-controller="experience">
     <button
       type="button"
@@ -17,17 +50,38 @@
 
     <!-- Dropdown -->
     <div
-      class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg border border-gray-700 hidden"
+      class="absolute right-0 mt-2 w-80 bg-gray-800 rounded-lg shadow-xl border border-gray-700 hidden z-50"
       data-experience-target="dropdown"
     >
-      <div class="p-2">
-        <p class="text-xs text-gray-400 mb-2 px-2">How experienced are you with ICA classification?</p>
-        <% Participant::EXPERIENCE_LEVELS.each do |level| %>
-          <%= button_to update_experience_path, method: :patch, params: { experience_level: level }, class: "w-full text-left px-3 py-2 rounded hover:bg-gray-700 capitalize transition-colors", data: { turbo_frame: "_top" } do %>
-            <span class="inline-block w-2 h-2 rounded-full mr-2 <%= experience_color(level) %>"></span>
-            <%= level %>
+      <div class="p-4">
+        <h3 class="text-sm font-semibold text-white mb-1">What is your experience with ICA classification?</h3>
+        <p class="text-xs text-gray-400 mb-4">This helps us weight ratings appropriately for inter-rater reliability analysis.</p>
+
+        <div class="space-y-2">
+          <%= button_to update_experience_path, method: :patch, params: { experience_level: "novice" }, class: "w-full text-left px-3 py-3 rounded-lg hover:bg-gray-700 transition-colors flex items-start space-x-3 border border-gray-700", data: { turbo_frame: "_top" } do %>
+            <span class="inline-block w-3 h-3 rounded-full mt-0.5 flex-shrink-0 bg-green-400"></span>
+            <div>
+              <span class="block font-medium text-white">Novice</span>
+              <span class="block text-xs text-gray-400">Learning ICA classification. Limited hands-on experience with component identification.</span>
+            </div>
           <% end %>
-        <% end %>
+
+          <%= button_to update_experience_path, method: :patch, params: { experience_level: "trained" }, class: "w-full text-left px-3 py-3 rounded-lg hover:bg-gray-700 transition-colors flex items-start space-x-3 border border-gray-700", data: { turbo_frame: "_top" } do %>
+            <span class="inline-block w-3 h-3 rounded-full mt-0.5 flex-shrink-0 bg-blue-400"></span>
+            <div>
+              <span class="block font-medium text-white">Trained</span>
+              <span class="block text-xs text-gray-400">Completed formal ICA training (workshop, course, or mentorship). Regular practice classifying components.</span>
+            </div>
+          <% end %>
+
+          <%= button_to update_experience_path, method: :patch, params: { experience_level: "expert" }, class: "w-full text-left px-3 py-3 rounded-lg hover:bg-gray-700 transition-colors flex items-start space-x-3 border border-gray-700", data: { turbo_frame: "_top" } do %>
+            <span class="inline-block w-3 h-3 rounded-full mt-0.5 flex-shrink-0 bg-purple-400"></span>
+            <div>
+              <span class="block font-medium text-white">Expert</span>
+              <span class="block text-xs text-gray-400">Published ICA research, developed classification protocols, or 3+ years of clinical/research experience.</span>
+            </div>
+          <% end %>
+        </div>
       </div>
     </div>
   </div>

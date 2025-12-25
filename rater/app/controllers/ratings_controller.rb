@@ -6,6 +6,18 @@ class RatingsController < ApplicationController
     redirect_to rate_path
   end
 
+  def resume
+    participant = Participant.find_by(token: params[:token])
+
+    if participant
+      session[:participant_uuid] = participant.uuid
+      @current_participant = participant
+      redirect_to rate_path, notice: "Welcome back! Resuming your session."
+    else
+      redirect_to root_path, alert: "Invalid session link."
+    end
+  end
+
   def show
     if @component.nil?
       redirect_to complete_path
@@ -17,6 +29,8 @@ class RatingsController < ApplicationController
       total: Component.count,
       percentage: Component.count.positive? ? (current_participant.ratings.count * 100.0 / Component.count).round : 0
     }
+
+    @resume_url = resume_session_url(current_participant.token)
   end
 
   def create
@@ -64,6 +78,7 @@ class RatingsController < ApplicationController
       flagged: current_participant.ratings.flagged.count,
       experience_set: current_participant.experience_set?
     }
+    @resume_url = resume_session_url(current_participant.token)
   end
 
   def progress
@@ -93,8 +108,7 @@ class RatingsController < ApplicationController
   helper_method :current_participant
 
   def set_current_component
-    rated_ids = current_participant.ratings.pluck(:component_id)
-    @component = Component.where.not(id: rated_ids).order(:id).first
+    @component = current_participant.next_component
   end
 
   def rating_params

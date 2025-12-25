@@ -2,6 +2,9 @@ Rails.application.routes.draw do
   # Main rating flow
   root "ratings#index"
 
+  # Token-based resume link
+  get "r/:token", to: "ratings#resume", as: :resume_session
+
   # Rating endpoints
   post "ratings", to: "ratings#create"
   get "rate", to: "ratings#show"  # Shows current component to rate
