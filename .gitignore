@@ -239,6 +239,7 @@ secrets/
 .netrc
 credentials*
 *credentials*
+!rater/config/credentials.yml.enc
 *.token
 *token*
 !*token*.py
