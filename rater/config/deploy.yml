@@ -1,38 +1,38 @@
 # Kamal 2.8+ deployment configuration for ICVision Rater
 # Requires: kamal-proxy v0.9.0+, Docker with container driver
+# Secrets: OP_SERVICE_ACCOUNT_TOKEN must be set for 1Password integration
 service: rater
 
-# Container image name (use registry/user/app-name for external registries)
-image: rater
+# Container image name
+image: cincibrainlab/icvision-rater
 
-# Deploy to these servers
+# Deploy to hel2 server
 servers:
   web:
-    - 192.168.0.1
+    - hel2
   # job:
   #   hosts:
-  #     - 192.168.0.1
+  #     - hel2
   #   cmd: bin/jobs
 
-# Proxy configuration (kamal-proxy replaces Traefik in Kamal 2.x)
-# Thruster runs on port 80, matching kamal-proxy default
+# Proxy configuration (kamal-proxy on port 8080 for tunnel)
 proxy:
-  # SSL via Let's Encrypt (uncomment for production with real domain)
-  # ssl: true
-  # host: rater.example.com
+  host: rater.cincineuro.com
+  # SSL handled by tunnel, not kamal-proxy
+  ssl: false
   healthcheck:
     path: /up
     interval: 3
     timeout: 3
+  run:
+    http_port: 8080
 
-# Container registry (Kamal 2.8+ supports local registry for faster deploys)
+# Container registry (GitHub Container Registry)
 registry:
-  server: localhost:5555
-  # For external registries:
-  # server: ghcr.io
-  # username: your-user
-  # password:
-  #   - KAMAL_REGISTRY_PASSWORD
+  server: ghcr.io
+  username: cincibrainlab
+  password:
+    - KAMAL_REGISTRY_PASSWORD
 
 # Environment variables (secrets from .kamal/secrets)
 env:
@@ -80,7 +80,7 @@ builder:
 accessories:
   postgres:
     image: postgres:17
-    host: 192.168.0.1
+    host: hel2
     port: "127.0.0.1:5432:5432"
     env:
       clear:
