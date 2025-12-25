@@ -9,7 +9,7 @@ class Participant < ApplicationRecord
 
   before_validation :generate_uuid, on: :create
   before_validation :generate_token, on: :create
-  after_create :generate_component_order
+  after_create :assign_component_order!
 
   serialize :component_order, coder: JSON
 
@@ -51,5 +51,10 @@ class Participant < ApplicationRecord
 
   def generate_component_order
     self.component_order = Component.pluck(:id).shuffle
+  end
+
+  def assign_component_order!
+    generate_component_order
+    update_column(:component_order, component_order.to_json)
   end
 end

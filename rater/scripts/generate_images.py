@@ -30,12 +30,27 @@ logger = logging.getLogger(__name__)
 
 
 def load_data(raw_path: str, ica_path: str = None) -> tuple:
-    """Load raw data and ICA object."""
+    """Load raw data (or epochs) and ICA object."""
     raw_path = Path(raw_path)
+    data = None
+    ica = None
 
-    # Load raw data
+    # Load data
     if raw_path.suffix == ".set":
-        raw = mne.io.read_raw_eeglab(raw_path, preload=True, verbose=False)
+        # Try raw first, then epochs
+        try:
+            data = mne.io.read_raw_eeglab(raw_path, preload=True, verbose=False)
+            logger.info(f"Loaded raw data: {len(data.ch_names)} channels, {data.n_times / data.info['sfreq']:.1f}s")
+        except TypeError as e:
+            if "trials" in str(e):
+                # This is epoched data, load as epochs and concatenate to pseudo-raw
+                epochs = mne.io.read_epochs_eeglab(raw_path, verbose=False)
+                logger.info(f"Loaded epoched data: {len(epochs)} epochs, {len(epochs.ch_names)} channels")
+                # Convert epochs to raw by concatenating
+                data = epochs
+            else:
+                raise
+
         # Try to load ICA from .set file if no separate ICA provided
         if ica_path is None:
             try:
@@ -44,7 +59,8 @@ def load_data(raw_path: str, ica_path: str = None) -> tuple:
             except Exception as e:
                 raise ValueError(f"Could not extract ICA from .set file: {e}")
     else:
-        raw = mne.io.read_raw_fif(raw_path, preload=True, verbose=False)
+        data = mne.io.read_raw_fif(raw_path, preload=True, verbose=False)
+        logger.info(f"Loaded raw data: {len(data.ch_names)} channels, {data.n_times / data.info['sfreq']:.1f}s")
 
     # Load separate ICA file if provided
     if ica_path is not None:
@@ -55,12 +71,10 @@ def load_data(raw_path: str, ica_path: str = None) -> tuple:
             raise ValueError(f"Unsupported ICA file format: {ica_path.suffix}")
         logger.info(f"Loaded ICA from {ica_path}: {ica.n_components_} components")
 
-    logger.info(f"Loaded raw data: {len(raw.ch_names)} channels, {raw.n_times / raw.info['sfreq']:.1f}s")
-
-    return raw, ica
+    return data, ica
 
 
-def plot_single_component_strip(ica_obj, raw_obj, component_idx, output_path):
+def plot_single_component_strip(ica_obj, data_obj, component_idx, output_path):
     """
     Plot a single component as a horizontal strip with 4 panels.
 
@@ -69,10 +83,21 @@ def plot_single_component_strip(ica_obj, raw_obj, component_idx, output_path):
 
     Panels: Topography | Time Series (2.5s) | ERP Image | Power Spectrum (1-55Hz)
     """
-    # Get component data
-    sources = ica_obj.get_sources(raw_obj)
+    # Get component data - handle both Raw and Epochs
+    sources = ica_obj.get_sources(data_obj)
     sfreq = sources.info["sfreq"]
-    component_data = sources.get_data(picks=[component_idx])[0]
+
+    # Handle Epochs vs Raw data
+    if hasattr(sources, 'get_data') and callable(sources.get_data):
+        source_data = sources.get_data(picks=[component_idx])
+        if source_data.ndim == 3:
+            # Epochs: shape is (n_epochs, n_components, n_times) -> concatenate epochs
+            component_data = source_data[:, 0, :].flatten()
+        else:
+            # Raw: shape is (n_components, n_times)
+            component_data = source_data[0]
+    else:
+        component_data = sources.get_data(picks=[component_idx])[0]
 
     # Create figure with strip layout
     fig = plt.figure(figsize=(16, 2.5), dpi=150)
