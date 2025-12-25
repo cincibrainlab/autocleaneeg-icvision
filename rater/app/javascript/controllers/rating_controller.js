@@ -21,6 +21,8 @@ export default class extends Controller {
   connect() {
     this.boundKeyHandler = this.handleKeydown.bind(this)
     document.addEventListener("keydown", this.boundKeyHandler)
+    this.isSubmitting = false
+    this.isUndoing = false
   }
 
   disconnect() {
@@ -33,6 +35,13 @@ export default class extends Controller {
       return
     }
 
+    // Prevent actions while submitting or undoing
+    if (this.isSubmitting || this.isUndoing) {
+      event.preventDefault()
+      return
+    }
+
+    // Normalize key to lowercase for consistent handling
     const key = event.key.toLowerCase()
 
     // Number keys 1-7 for labels
@@ -43,33 +52,39 @@ export default class extends Controller {
       return
     }
 
-    // Letter shortcuts
+    // Letter shortcuts (case-insensitive due to toLowerCase above)
     if (LETTER_MAP[key]) {
       event.preventDefault()
       this.submitLabel(LETTER_MAP[key])
       return
     }
 
-    // Special keys
-    switch (key) {
-      case "?":
-        event.preventDefault()
-        this.flag()
-        break
-      case "arrowleft":
-      case "backspace":
-        event.preventDefault()
-        this.undo()
-        break
+    // Flag shortcut: 'f' key OR '?' (Shift+/)
+    if (key === "f" || event.key === "?") {
+      event.preventDefault()
+      this.flag()
+      return
+    }
+
+    // Undo shortcuts: ArrowLeft or Backspace
+    if (key === "arrowleft" || key === "backspace") {
+      event.preventDefault()
+      this.undo()
+      return
     }
   }
 
   submit(event) {
+    if (this.isSubmitting) return
     const label = event.params.label
     this.submitLabel(label)
   }
 
   submitLabel(label) {
+    // Prevent double submissions
+    if (this.isSubmitting) return
+    this.isSubmitting = true
+
     const form = document.getElementById("rating-form")
     const labelInput = document.getElementById("rating-label")
     const timeInput = document.getElementById("response-time")
@@ -77,11 +92,17 @@ export default class extends Controller {
     labelInput.value = label
     timeInput.value = Date.now() - this.startTimeValue
 
+    // Disable buttons during submission
+    this.disableButtons()
+
     form.requestSubmit()
   }
 
   flag() {
-    // For now, submit with flagged=true and accept the model's label if available
+    // Prevent double submissions
+    if (this.isSubmitting) return
+    this.isSubmitting = true
+
     const form = document.getElementById("rating-form")
     const labelInput = document.getElementById("rating-label")
     const flagInput = document.getElementById("rating-flagged")
@@ -92,19 +113,55 @@ export default class extends Controller {
     flagInput.value = "true"
     timeInput.value = Date.now() - this.startTimeValue
 
+    // Disable buttons during submission
+    this.disableButtons()
+
     form.requestSubmit()
   }
 
   undo() {
-    // Submit a DELETE request to undo the last rating
-    fetch("/ratings/0", {
-      method: "DELETE",
+    // Prevent multiple undo requests
+    if (this.isUndoing) return
+    this.isUndoing = true
+
+    // Visual feedback - disable undo button
+    const undoBtn = document.querySelector('[data-action*="rating#undo"]')
+    if (undoBtn) {
+      undoBtn.disabled = true
+      undoBtn.classList.add("opacity-50", "cursor-not-allowed")
+    }
+
+    fetch("/ratings/undo", {
+      method: "POST",
       headers: {
         "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]').content,
-        "Accept": "text/vnd.turbo-stream.html"
+        "Accept": "text/html"
       }
-    }).then(() => {
-      window.location.reload()
+    }).then((response) => {
+      if (response.ok) {
+        window.location.reload()
+      } else {
+        // Re-enable on error
+        this.isUndoing = false
+        if (undoBtn) {
+          undoBtn.disabled = false
+          undoBtn.classList.remove("opacity-50", "cursor-not-allowed")
+        }
+      }
+    }).catch(() => {
+      this.isUndoing = false
+      if (undoBtn) {
+        undoBtn.disabled = false
+        undoBtn.classList.remove("opacity-50", "cursor-not-allowed")
+      }
+    })
+  }
+
+  disableButtons() {
+    const buttons = document.querySelectorAll('.rating-btn, [data-action*="rating#"]')
+    buttons.forEach(btn => {
+      btn.disabled = true
+      btn.classList.add("opacity-50", "cursor-not-allowed")
     })
   }
 }
