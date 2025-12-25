@@ -55,6 +55,7 @@ class Participant < ApplicationRecord
 
   def assign_component_order!
     generate_component_order
-    update_column(:component_order, component_order.to_json)
+    # Use update! to go through the serializer, not update_column
+    update!(component_order: component_order)
   end
 end
