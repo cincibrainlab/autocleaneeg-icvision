@@ -66,8 +66,9 @@ export default class extends Controller {
       return
     }
 
-    // Undo shortcuts: ArrowLeft or Backspace
-    if (key === "arrowleft" || key === "backspace") {
+    // Undo shortcuts: ArrowLeft, Left, or Backspace
+    // Note: Some browsers/frameworks emit "Left" instead of "ArrowLeft"
+    if (key === "arrowleft" || key === "left" || key === "backspace") {
       event.preventDefault()
       this.undo()
       return
@@ -124,11 +125,15 @@ export default class extends Controller {
     if (this.isUndoing) return
     this.isUndoing = true
 
-    // Visual feedback - disable undo button
+    // Visual feedback - disable ALL buttons and show loading state
+    this.disableButtons()
+
     const undoBtn = document.querySelector('[data-action*="rating#undo"]')
     if (undoBtn) {
-      undoBtn.disabled = true
-      undoBtn.classList.add("opacity-50", "cursor-not-allowed")
+      // Update button text to show loading
+      const originalText = undoBtn.innerHTML
+      undoBtn.innerHTML = '<span>↺</span><span>Undoing...</span>'
+      undoBtn.dataset.originalText = originalText
     }
 
     fetch("/ratings/undo", {
@@ -139,21 +144,30 @@ export default class extends Controller {
       }
     }).then((response) => {
       if (response.ok) {
-        window.location.reload()
+        // Small delay to ensure visual feedback is seen, then reload
+        setTimeout(() => window.location.reload(), 100)
       } else {
-        // Re-enable on error
-        this.isUndoing = false
-        if (undoBtn) {
-          undoBtn.disabled = false
-          undoBtn.classList.remove("opacity-50", "cursor-not-allowed")
-        }
+        this.resetAfterUndo(undoBtn)
       }
     }).catch(() => {
-      this.isUndoing = false
-      if (undoBtn) {
-        undoBtn.disabled = false
-        undoBtn.classList.remove("opacity-50", "cursor-not-allowed")
-      }
+      this.resetAfterUndo(undoBtn)
+    })
+  }
+
+  resetAfterUndo(undoBtn) {
+    // Re-enable on error
+    this.isUndoing = false
+    this.enableButtons()
+    if (undoBtn && undoBtn.dataset.originalText) {
+      undoBtn.innerHTML = undoBtn.dataset.originalText
+    }
+  }
+
+  enableButtons() {
+    const buttons = document.querySelectorAll('.rating-btn, [data-action*="rating#"]')
+    buttons.forEach(btn => {
+      btn.disabled = false
+      btn.classList.remove("opacity-50", "cursor-not-allowed")
     })
   }
 
