@@ -1,10 +1,11 @@
-# Name of your application. Used to uniquely configure containers.
+# Kamal 2.8+ deployment configuration for ICVision Rater
+# Requires: kamal-proxy v0.9.0+, Docker with container driver
 service: rater
 
-# Name of the container image (use your-user/app-name on external registries).
+# Container image name (use registry/user/app-name for external registries)
 image: rater
 
-# Deploy to these servers.
+# Deploy to these servers
 servers:
   web:
     - 192.168.0.1
@@ -13,82 +14,65 @@ servers:
   #     - 192.168.0.1
   #   cmd: bin/jobs
 
-# Enable SSL auto certification via Let's Encrypt and allow for multiple apps on a single web server.
-# If used with Cloudflare, set encryption mode in SSL/TLS setting to "Full" to enable CF-to-app encryption.
-#
-# Using an SSL proxy like this requires turning on config.assume_ssl and config.force_ssl in production.rb!
-#
-# Don't use this when deploying to multiple web servers (then you have to terminate SSL at your load balancer).
-#
-# proxy:
-#   ssl: true
-#   host: app.example.com
+# Proxy configuration (kamal-proxy replaces Traefik in Kamal 2.x)
+# Thruster runs on port 80, matching kamal-proxy default
+proxy:
+  # SSL via Let's Encrypt (uncomment for production with real domain)
+  # ssl: true
+  # host: rater.example.com
+  healthcheck:
+    path: /up
+    interval: 3
+    timeout: 3
 
-# Where you keep your container images.
+# Container registry (Kamal 2.8+ supports local registry for faster deploys)
 registry:
-  # Alternatives: hub.docker.com / registry.digitalocean.com / ghcr.io / ...
   server: localhost:5555
-
-  # Needed for authenticated registries.
+  # For external registries:
+  # server: ghcr.io
   # username: your-user
-
-  # Always use an access token rather than real password when possible.
   # password:
   #   - KAMAL_REGISTRY_PASSWORD
 
-# Inject ENV variables into containers (secrets come from .kamal/secrets).
+# Environment variables (secrets from .kamal/secrets)
 env:
   secret:
     - RAILS_MASTER_KEY
     - POSTGRES_PASSWORD
   clear:
-    # Run the Solid Queue Supervisor inside the web server's Puma process to do jobs.
-    # When you start using multiple servers, you should split out job processing to a dedicated machine.
+    # Solid Queue in Puma process (split to dedicated server when scaling)
     SOLID_QUEUE_IN_PUMA: true
-
-    # Set number of processes dedicated to Solid Queue (default: 1)
-    # JOB_CONCURRENCY: 3
-
-    # Set number of cores available to the application on each server (default: 1).
-    # WEB_CONCURRENCY: 2
-
     # PostgreSQL connection via Docker network
     DB_HOST: rater-postgres
     POSTGRES_USER: rater
     POSTGRES_DB: rater_production
-
-    # Log everything from Rails
+    # WEB_CONCURRENCY: 2
     # RAILS_LOG_LEVEL: debug
 
-# Aliases are triggered with "bin/kamal <alias>". You can overwrite arguments on invocation:
-# "bin/kamal logs -r job" will tail logs from the first server in the job section.
+# Deployment timeouts (new in Kamal 2.x)
+deploy_timeout: 30
+drain_timeout: 10
+readiness_delay: 3
+
+# Useful aliases
 aliases:
   console: app exec --interactive --reuse "bin/rails console"
   shell: app exec --interactive --reuse "bash"
   logs: app logs -f
   dbc: app exec --interactive --reuse "bin/rails dbconsole --include-password"
 
-# Bridge fingerprinted assets, like JS and CSS, between versions to avoid
-# hitting 404 on in-flight requests. Combines all files from new and old
-# version inside the asset_path.
+# Asset bridging for zero-downtime deploys
 asset_path: /rails/public/assets
 
-
-# Configure the image builder.
+# Image builder configuration
 builder:
   arch: amd64
-
-  # # Build image via remote server (useful for faster amd64 builds on arm64 computers)
+  # For arm64 Mac building amd64 images:
   # remote: ssh://docker@docker-builder-server
-  #
-  # # Pass arguments and secrets to the Docker build process
   # args:
   #   RUBY_VERSION: 3.4.7
-  # secrets:
-  #   - GITHUB_TOKEN
-  #   - RAILS_MASTER_KEY
 
-# Use a different ssh user than root
+# SSH configuration
 # ssh:
 #   user: app
 
