@@ -17,7 +17,7 @@ servers:
 
 # Proxy configuration (kamal-proxy on port 8080 for tunnel)
 proxy:
-  host: rater.cincineuro.com
+  host: icrater.cincibrainlab.com
   # SSL handled by tunnel, not kamal-proxy
   ssl: false
   healthcheck:
