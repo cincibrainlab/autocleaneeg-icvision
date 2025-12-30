@@ -29,9 +29,11 @@ Usage:
 import argparse
 import json
 import logging
+import multiprocessing
 import re
 import sys
 import warnings
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 
 import matplotlib
@@ -48,55 +50,47 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 
-def find_rater_root() -> Path | None:
+def _generate_single_component_image(args):
     """
-    Find the rater app root directory by checking common locations.
+    Worker function to generate a single component image.
     
-    Searches in this order:
-    1. Current working directory (if it's the rater root)
-    2. Parent directories of CWD (up to 5 levels)
-    3. Parent directories of script location (up to 5 levels)
+    This function is at module level for cross-platform pickling (Windows/Linux).
+    Uses tuple unpacking for ProcessPoolExecutor compatibility.
     
+    Args:
+        args: Tuple of (ica_obj, component_idx, output_path, component_data, sfreq)
+        
     Returns:
-        Path to rater root if found, None otherwise
+        Tuple of (component_idx, success, error_message)
     """
+    ica_obj, component_idx, output_path, component_data, sfreq = args
+    
+    try:
+        plot_single_component_strip(ica_obj, component_idx, output_path, component_data, sfreq)
+        return (component_idx, True, None)
+    except Exception as e:
+        return (component_idx, False, str(e))
+
+
+def find_rater_root() -> Path | None:
+    """Find the rater Rails app root by checking CWD and script location parents."""
     def is_rater_root(path: Path) -> bool:
-        """Check if a directory is the rater Rails app root."""
-        # Must have Gemfile and public/ directory
         return (path / "Gemfile").exists() and (path / "public").is_dir()
     
-    # Check from current working directory
-    cwd = Path.cwd().resolve()
-    for i in range(6):  # Check up to 5 parent levels
-        check_path = cwd
-        for _ in range(i):
-            check_path = check_path.parent
-        if is_rater_root(check_path):
-            return check_path
-    
-    # Check from script location
-    script_dir = Path(__file__).resolve().parent
-    for i in range(6):
-        check_path = script_dir
-        for _ in range(i):
-            check_path = check_path.parent
-        if is_rater_root(check_path):
-            return check_path
-    
+    # Check from CWD and script location, up to 5 parent levels each
+    for start in [Path.cwd().resolve(), Path(__file__).resolve().parent]:
+        path = start
+        for _ in range(6):
+            if is_rater_root(path):
+                return path
+            path = path.parent
     return None
 
 
 def get_default_output_dir() -> Path | None:
-    """
-    Determine the default output directory based on current location.
-    
-    Returns:
-        Path to public/components/ if rater root is found, None otherwise
-    """
+    """Return public/components/ path if rater root found, else None."""
     rater_root = find_rater_root()
-    if rater_root:
-        return rater_root / "public" / "components"
-    return None
+    return rater_root / "public" / "components" if rater_root else None
 
 
 def find_paired_files(input_dir: Path) -> list[tuple[Path, Path | None, str]]:
@@ -195,19 +189,9 @@ def load_data(raw_path: Path, ica_path: Path | None = None) -> tuple:
             
             logger.info(f"Loaded embedded ICA from {raw_path.name}: {ica.n_components_} components")
         
-        except Exception as e:
+        except Exception:
             # Case 3: No ICA in file - compute Infomax ICA
-            logger.warning("")
-            logger.warning("=" * 60)
-            logger.warning(f"NO ICA FOUND IN FILE: {raw_path.name}")
-            logger.warning("=" * 60)
-            logger.warning("This file does not contain ICA decomposition.")
-            logger.warning("Computing Infomax ICA on the fly...")
-            logger.warning("This may take a few minutes depending on data size.")
-            logger.warning("=" * 60)
-            logger.warning("")
-            
-            # Compute ICA using Infomax
+            logger.warning(f"\nNO ICA IN FILE: {raw_path.name} - computing Infomax ICA...")
             ica = compute_ica(data)
             was_computed = True
             logger.info(f"Computed ICA: {ica.n_components_} components")
@@ -227,10 +211,14 @@ def compute_ica(data) -> mne.preprocessing.ICA:
     Returns:
         Fitted ICA object
     """
-    # Check if data is high-pass filtered (warn if not)
+    # Check if data is high-pass filtered, apply 1 Hz filter if not
     highpass = data.info.get('highpass', 0)
-    lowpass = data.info.get('lowpass', 0)
-    logger.info(f"Highpass: {highpass}, Lowpass: {lowpass}")
+    if highpass < 1.0:
+        logger.info(f"Data highpass is {highpass} Hz - applying 1 Hz high-pass filter for ICA")
+        data = data.copy().filter(l_freq=1.0, h_freq=None, verbose=False)
+        logger.info("High-pass filter applied (1 Hz)")
+    else:
+        logger.info(f"Data already high-pass filtered at {highpass} Hz")
 
     
 
@@ -249,7 +237,7 @@ def compute_ica(data) -> mne.preprocessing.ICA:
     return ica
 
 
-def plot_single_component_strip(ica_obj, data_obj, component_idx, output_path):
+def plot_single_component_strip(ica_obj, component_idx, output_path, component_data, sfreq):
     """
     Plot a single component as a horizontal strip with 4 panels.
 
@@ -260,29 +248,14 @@ def plot_single_component_strip(ica_obj, data_obj, component_idx, output_path):
     
     Args:
         ica_obj: MNE ICA object
-        data_obj: MNE Raw or Epochs object
         component_idx: Index of the component to plot
         output_path: Path to save the output image
+        component_data: Pre-computed component time series (1D numpy array)
+        sfreq: Sampling frequency in Hz
         
     Returns:
         Path to the saved image
     """
-    # Get component data - handle both Raw and Epochs
-    sources = ica_obj.get_sources(data_obj)
-    sfreq = sources.info["sfreq"]
-
-    # Handle Epochs vs Raw data
-    if hasattr(sources, 'get_data') and callable(sources.get_data):
-        source_data = sources.get_data(picks=[component_idx])
-        if source_data.ndim == 3:
-            # Epochs: shape is (n_epochs, n_components, n_times) -> concatenate epochs
-            component_data = source_data[:, 0, :].flatten()
-        else:
-            # Raw: shape is (n_components, n_times)
-            component_data = source_data[0]
-    else:
-        component_data = sources.get_data(picks=[component_idx])[0]
-
     # Create figure with strip layout
     fig = plt.figure(figsize=(16, 2.5), dpi=150)
     gs = GridSpec(1, 4, figure=fig, wspace=0.08, left=0.02, right=0.98, top=0.92, bottom=0.08)
@@ -291,101 +264,58 @@ def plot_single_component_strip(ica_obj, data_obj, component_idx, output_path):
     ax_ts = fig.add_subplot(gs[0, 1])
     ax_erp = fig.add_subplot(gs[0, 2])
     ax_psd = fig.add_subplot(gs[0, 3])
-
     label = f"IC{component_idx}"
+    
+    # Clear all axes labels/ticks upfront
+    for ax in [ax_topo, ax_ts, ax_erp, ax_psd]:
+        ax.set(xticks=[], yticks=[], xlabel="", ylabel="", title="")
 
     # 1. Topography
     try:
-        ica_obj.plot_components(
-            picks=component_idx,
-            axes=ax_topo,
-            ch_type="eeg",
-            show=False,
-            colorbar=False,
-            cmap="jet",
-            outlines="head",
-            sensors=True,
-            contours=6,
-        )
+        ica_obj.plot_components(picks=component_idx, axes=ax_topo, ch_type="eeg",
+            show=False, colorbar=False, cmap="jet", outlines="head", sensors=True, contours=6)
         ax_topo.set_title("")
-        # Add label in top-left corner
-        ax_topo.text(0.05, 0.95, label, transform=ax_topo.transAxes,
-                    fontsize=11, fontweight='bold', va='top', ha='left',
-                    color='white', bbox=dict(boxstyle='round,pad=0.2',
-                    facecolor='black', alpha=0.7))
+        ax_topo.text(0.05, 0.95, label, transform=ax_topo.transAxes, fontsize=11, 
+                     fontweight='bold', va='top', ha='left', color='white',
+                     bbox=dict(boxstyle='round,pad=0.2', facecolor='black', alpha=0.7))
     except Exception as e:
         ax_topo.text(0.5, 0.5, label, ha="center", va="center", fontsize=12, fontweight='bold')
         logger.warning(f"Could not plot topography for IC{component_idx}: {e}")
 
-    ax_topo.set_xlabel("")
-    ax_topo.set_ylabel("")
-    ax_topo.set_xticks([])
-    ax_topo.set_yticks([])
-
-    # 2. Time series (first 2.5s) - exact same as test_grid_classify.py
+    # 2. Time series (first 2.5s)
     try:
-        duration = 2.5
-        max_samples = min(int(duration * sfreq), len(component_data))
+        max_samples = min(int(2.5 * sfreq), len(component_data))
         times_ms = (np.arange(max_samples) / sfreq) * 1000
         ax_ts.plot(times_ms, component_data[:max_samples], linewidth=0.5, color="dodgerblue")
         ax_ts.set_xlim(times_ms[0], times_ms[-1])
-        ax_ts.set_title("")
-        ax_ts.set_xlabel("")
-        ax_ts.set_ylabel("")
-        ax_ts.set_xticks([])
-        ax_ts.set_yticks([])
     except Exception as e:
         logger.warning(f"Could not plot time series for IC{component_idx}: {e}")
 
-    # 3. ERP image (continuous data) - exact same as test_grid_classify.py
+    # 3. ERP image
     try:
         comp_centered = component_data - np.mean(component_data)
-        segment_duration = 1.5
-        max_segments = 100
-        segment_len = int(segment_duration * sfreq)
-        if segment_len == 0:
-            segment_len = 1
-
-        samples_to_use = min(len(comp_centered), max_segments * segment_len)
-        n_segments = samples_to_use // segment_len
+        segment_len = max(1, int(1.5 * sfreq))
+        n_segments = min(len(comp_centered) // segment_len, 100)
 
         if n_segments > 0:
             erp_data = comp_centered[:n_segments * segment_len].reshape(n_segments, segment_len)
             if n_segments >= 3:
                 erp_data = uniform_filter1d(erp_data, size=3, axis=0, mode="nearest")
-
             max_val = np.max(np.abs(erp_data))
             clim = (2/3) * max_val if max_val > 1e-9 else 1.0
-
             ax_erp.imshow(erp_data, aspect="auto", cmap="jet", vmin=-clim, vmax=clim)
             ax_erp.invert_yaxis()
-            ax_erp.set_title("")
-            ax_erp.set_xlabel("")
-            ax_erp.set_ylabel("")
-            ax_erp.set_xticks([])
-            ax_erp.set_yticks([])
     except Exception as e:
         logger.warning(f"Could not plot ERP image for IC{component_idx}: {e}")
 
-    # 4. PSD (cut off at 55Hz to avoid notch filter dip at 60Hz) - exact same as test_grid_classify.py
+    # 4. PSD (1-55Hz)
     try:
         fmin, fmax = 1.0, min(55.0, sfreq / 2.0 - 0.5)
-        n_fft = min(int(sfreq * 2), len(component_data))
-        n_fft = max(n_fft, 256) if len(component_data) >= 256 else len(component_data)
-
-        psds, freqs = psd_array_welch(
-            component_data, sfreq=sfreq, fmin=fmin, fmax=fmax,
-            n_fft=n_fft, n_overlap=n_fft // 2, verbose=False
-        )
-        psds_db = 10 * np.log10(np.maximum(psds, 1e-20))
-
-        ax_psd.plot(freqs, psds_db, color="red", linewidth=0.8)
+        n_fft = max(256, min(int(sfreq * 2), len(component_data))) if len(component_data) >= 256 else len(component_data)
+        psds, freqs = psd_array_welch(component_data, sfreq=sfreq, fmin=fmin, fmax=fmax,
+                                       n_fft=n_fft, n_overlap=n_fft // 2, verbose=False)
+        ax_psd.plot(freqs, 10 * np.log10(np.maximum(psds, 1e-20)), color="red", linewidth=0.8)
         ax_psd.set_xlim(freqs[0], freqs[-1])
-        ax_psd.set_title("")
-        ax_psd.set_xlabel("")
-        ax_psd.set_ylabel("")
-        ax_psd.set_xticks([])
-        ax_psd.set_yticks([])
     except Exception as e:
         logger.warning(f"Could not plot PSD for IC{component_idx}: {e}")
 
@@ -401,7 +331,8 @@ def process_single_file(
     output_dir: Path, 
     dataset_name: str, 
     image_format: str = "png",
-    skip_mismatched: bool = False
+    skip_mismatched: bool = False,
+    n_workers: int = 1
 ) -> tuple[list[dict], bool, bool, bool]:
     """
     Process a single .set file and generate component images.
@@ -413,6 +344,7 @@ def process_single_file(
         dataset_name: Dataset identifier for organizing output
         image_format: Output image format ("png" or "webp")
         skip_mismatched: If True, skip files with ICA matrix mismatch
+        n_workers: Number of parallel workers for image generation
         
     Returns:
         Tuple of (metadata_list, was_skipped, had_mismatch, was_computed):
@@ -430,57 +362,67 @@ def process_single_file(
     
     # Handle ICA matrix mismatch (likely from component rejection)
     if has_mismatch:
-        logger.warning("")
-        logger.warning("=" * 60)
-        logger.warning(f"ICA MATRIX MISMATCH DETECTED: {dataset_name}")
-        logger.warning("=" * 60)
-        logger.warning("This file likely has rejected ICA components.")
-        logger.warning("Topographies may NOT match time series data!")
-        logger.warning("For accurate human rating, use pre-rejection data.")
-        logger.warning("=" * 60)
-        
+        logger.warning(f"\nICA MISMATCH: {dataset_name} - likely has rejected components")
+        logger.warning("Topographies may NOT match time series! Use pre-rejection data for accuracy.")
         if skip_mismatched:
-            logger.warning(f"SKIPPING {dataset_name} (--skip-mismatched enabled)")
+            logger.warning(f"SKIPPING (--skip-mismatched)")
             return [], True, True, False
-        else:
-            logger.warning("Proceeding anyway... (use --skip-mismatched to skip these files)")
-            logger.warning("")
+        logger.warning("Proceeding anyway...")
     
     # Create subdirectory for this file's components
     file_output_dir = output_dir / dataset_name
     file_output_dir.mkdir(parents=True, exist_ok=True)
     
+    # Pre-compute ALL component sources at once (major optimization)
+    # This avoids calling get_sources() for each component individually
+    logger.info("Extracting ICA sources...")
+    sources = ica.get_sources(data)
+    sfreq = sources.info["sfreq"]
+    
+    # Get all source data in one call
+    all_source_data = sources.get_data()
+    if all_source_data.ndim == 3:
+        # Epochs: shape (n_epochs, n_components, n_times) -> concatenate epochs
+        all_source_data = all_source_data.transpose(1, 0, 2).reshape(all_source_data.shape[1], -1)
+    
     # Generate images for each component
     metadata = []
     n_components = ica.n_components_
+    subject_id = re.split(r'[_-]', dataset_name)[0]
     
-    logger.info(f"Processing {dataset_name}: {n_components} components")
+    def make_metadata(idx):
+        return {"ic_index": idx, "image_path": f"/components/{dataset_name}/ic_{idx:03d}.{image_format}",
+                "dataset": dataset_name, "subject_id": subject_id, "model_label": None, "model_confidence": None}
     
-    for idx in range(n_components):
-        output_path = file_output_dir / f"ic_{idx:03d}.{image_format}"
+    if n_workers > 1:
+        logger.info(f"Generating {n_components} images using {n_workers} workers...")
+        task_args = [(ica, idx, file_output_dir / f"ic_{idx:03d}.{image_format}", all_source_data[idx], sfreq)
+                     for idx in range(n_components)]
         
-        try:
-            plot_single_component_strip(ica, data, idx, output_path)
-            
-            # Extract subject_id from dataset name (first part before underscore or hyphen)
-            subject_id = re.split(r'[_-]', dataset_name)[0]
-            
-            info = {
-                "ic_index": idx,
-                "image_path": f"/components/{dataset_name}/ic_{idx:03d}.{image_format}",
-                "dataset": dataset_name,
-                "subject_id": subject_id,
-                "model_label": None,
-                "model_confidence": None,
-            }
-            metadata.append(info)
-            
-            # Log progress every 10 components
-            if (idx + 1) % 10 == 0 or idx == n_components - 1:
-                logger.info(f"  {dataset_name}: Processed {idx + 1}/{n_components} components")
-                
-        except Exception as e:
-            logger.error(f"Failed to generate IC{idx} for {dataset_name}: {e}")
+        completed = 0
+        with ProcessPoolExecutor(max_workers=n_workers) as executor:
+            futures = {executor.submit(_generate_single_component_image, args): args[1] for args in task_args}
+            for future in as_completed(futures):
+                comp_idx, success, error = future.result()
+                completed += 1
+                if success:
+                    metadata.append(make_metadata(comp_idx))
+                else:
+                    logger.error(f"Failed IC{comp_idx} for {dataset_name}: {error}")
+                if completed % 10 == 0 or completed == n_components:
+                    logger.info(f"  {dataset_name}: {completed}/{n_components} done")
+        metadata.sort(key=lambda x: x["ic_index"])
+    else:
+        logger.info(f"Generating {n_components} component images...")
+        for idx in range(n_components):
+            try:
+                plot_single_component_strip(ica, idx, file_output_dir / f"ic_{idx:03d}.{image_format}",
+                                           all_source_data[idx], sfreq)
+                metadata.append(make_metadata(idx))
+                if (idx + 1) % 10 == 0 or idx == n_components - 1:
+                    logger.info(f"  {dataset_name}: {idx + 1}/{n_components} done")
+            except Exception as e:
+                logger.error(f"Failed IC{idx} for {dataset_name}: {e}")
     
     # Save metadata JSON for this file
     metadata_path = file_output_dir / "components.json"
@@ -528,7 +470,26 @@ Example:
         action="store_true",
         help="Skip files with ICA matrix mismatch (likely post-rejection data)"
     )
+    parser.add_argument(
+        "--workers", "-w",
+        type=str,
+        default="1",
+        help="Number of parallel workers (default: 1, use 'auto' for CPU count)"
+    )
     args = parser.parse_args()
+    
+    # Parse workers argument
+    if args.workers.lower() == "auto":
+        n_workers = multiprocessing.cpu_count()
+    else:
+        try:
+            n_workers = int(args.workers)
+        except ValueError:
+            logger.error(f"Invalid workers value: {args.workers}. Use a number or 'auto'.")
+            sys.exit(1)
+    
+    if n_workers < 1:
+        n_workers = 1
 
     input_dir = Path(args.input).resolve()
     
@@ -536,20 +497,9 @@ Example:
     if args.output is None:
         output_dir = get_default_output_dir()
         if output_dir is None:
-            logger.error("Could not auto-detect output directory.")
-            logger.error("Please run from within the rater/ directory, or specify --output")
-            logger.error("")
-            logger.error("Example:")
-            logger.error("  cd rater/scripts")
-            logger.error("  python generate_images_batch.py --input .")
-            logger.error("")
-            logger.error("Or specify output explicitly:")
-            logger.error("  python generate_images_batch.py --input . --output /path/to/output/")
+            logger.error("Could not auto-detect output. Run from rater/ dir or use --output.")
             sys.exit(1)
-        
-        rater_root = find_rater_root()
-        logger.info(f"Detected rater app at: {rater_root}")
-        logger.info(f"Output directory: {output_dir}")
+        logger.info(f"Auto-detected output: {output_dir}")
     else:
         output_dir = Path(args.output).resolve()
     
@@ -567,6 +517,8 @@ Example:
     
     logger.info(f"Input:  {input_dir}")
     logger.info(f"Output: {output_dir}")
+    if n_workers > 1:
+        logger.info(f"Workers: {n_workers} (parallel processing enabled)")
     
     # Find all .set files (with or without paired ICA files)
     files = find_paired_files(input_dir)
@@ -596,7 +548,8 @@ Example:
         try:
             metadata, was_skipped, had_mismatch, was_computed = process_single_file(
                 raw_path, ica_path, output_dir, dataset_name, args.format,
-                skip_mismatched=args.skip_mismatched
+                skip_mismatched=args.skip_mismatched,
+                n_workers=n_workers
             )
             if had_mismatch:
                 mismatched_files.append(dataset_name)
@@ -644,18 +597,9 @@ Example:
             logger.info(f"  - {name}")
         logger.info("=" * 60)
     
-    # List mismatched files if any were found (and not skipped)
     if mismatched_files and not args.skip_mismatched:
-        logger.warning("")
-        logger.warning("=" * 60)
-        logger.warning("FILES WITH ICA MATRIX MISMATCH (may have invalid data):")
-        logger.warning("=" * 60)
-        for name in mismatched_files:
-            logger.warning(f"  - {name}")
-        logger.warning("")
-        logger.warning("These files likely have rejected ICA components.")
-        logger.warning("Re-run with --skip-mismatched to exclude them.")
-        logger.warning("=" * 60)
+        logger.warning(f"\nMISMATCHED FILES: {', '.join(mismatched_files)}")
+        logger.warning("Use --skip-mismatched to exclude these.")
 
 
 if __name__ == "__main__":
