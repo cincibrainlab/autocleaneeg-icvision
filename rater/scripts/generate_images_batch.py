@@ -2,14 +2,14 @@
 """
 Batch generate component images for the human rater web app.
 
-This script processes a folder of EEG files, automatically pairing raw .set files
-with their corresponding ICA .fif files based on naming patterns.
+This script processes ALL .set files in a folder, handling multiple naming conventions:
 
-File Pairing Pattern:
-    Raw:  {subject_id}_rest_ica_clean_raw.set
-    ICA:  {subject_id}_rest-ica.fif
+1. Paired files (separate ICA):
+    Raw:  {prefix}_ica_clean_raw.set  +  ICA:  {prefix}-ica.fif
+    Example: 0079_rest_ica_clean_raw.set + 0079_rest-ica.fif
 
-The script extracts the common prefix (e.g., "0079_rest") and pairs files accordingly.
+2. Standalone files (embedded ICA):
+    Any .set file with ICA data embedded (e.g., D0179_chirp-ST_postcomp.set)
 
 Smart Path Detection:
     - If run from within the rater/ directory tree, auto-detects public/components/
@@ -96,65 +96,66 @@ def get_default_output_dir() -> Path | None:
     return None
 
 
-def find_paired_files(input_dir: Path) -> list[tuple[Path, Path, str]]:
+def find_set_files(input_dir: Path) -> list[tuple[Path, Path | None, str]]:
     """
-    Find paired raw and ICA files in the input directory.
+    Find all .set files in the input directory and pair with ICA files if available.
     
-    Looks for files matching these patterns:
-        Raw:  {prefix}_ica_clean_raw.set
-        ICA:  {prefix}-ica.fif
+    Handles multiple naming conventions:
+        1. {prefix}_ica_clean_raw.set + {prefix}-ica.fif (paired files)
+        2. Any other .set file with embedded ICA (standalone)
     
     Args:
-        input_dir: Directory containing raw and ICA files
+        input_dir: Directory containing EEG files
         
     Returns:
-        List of tuples: (raw_path, ica_path, subject_id)
+        List of tuples: (set_path, ica_path_or_None, dataset_name)
     """
-    pairs = []
+    files = []
     
-    # Find all .set files matching the pattern *_ica_clean_raw.set
-    set_files = list(input_dir.glob("*_ica_clean_raw.set"))
+    # Find ALL .set files in the directory
+    set_files = list(input_dir.glob("*.set"))
     
     if not set_files:
-        logger.warning(f"No *_ica_clean_raw.set files found in {input_dir}")
-        return pairs
+        logger.warning(f"No .set files found in {input_dir}")
+        return files
     
     logger.info(f"Found {len(set_files)} .set files in {input_dir}")
     
     for set_file in set_files:
-        # Extract the prefix (everything before _ica_clean_raw.set)
-        # Example: 0079_rest_ica_clean_raw.set -> prefix = 0079_rest
         filename = set_file.stem  # Remove .set extension
+        ica_file = None
+        dataset_name = filename  # Default: use full filename as dataset name
+        
+        # Check if this matches the paired file pattern: {prefix}_ica_clean_raw.set
         match = re.match(r"(.+)_ica_clean_raw$", filename)
         
-        if not match:
-            logger.warning(f"File {set_file.name} doesn't match expected pattern, skipping")
-            continue
+        if match:
+            # This is a paired file - look for {prefix}-ica.fif
+            prefix = match.group(1)
+            potential_ica = input_dir / f"{prefix}-ica.fif"
             
-        prefix = match.group(1)
-        
-        # Look for the corresponding ICA file: {prefix}-ica.fif
-        ica_file = input_dir / f"{prefix}-ica.fif"
-        
-        if ica_file.exists():
-            # Extract subject ID (first part before underscore)
-            subject_id = prefix.split("_")[0]
-            pairs.append((set_file, ica_file, prefix))
-            logger.info(f"Paired: {set_file.name} <-> {ica_file.name}")
+            if potential_ica.exists():
+                ica_file = potential_ica
+                dataset_name = prefix  # Use prefix as dataset name
+                logger.info(f"Paired: {set_file.name} <-> {ica_file.name}")
+            else:
+                logger.info(f"No paired ICA for {set_file.name}, will try embedded ICA")
         else:
-            logger.warning(f"No matching ICA file found for {set_file.name}")
-            logger.warning(f"  Expected: {ica_file.name}")
+            # Not the paired pattern - will try to load embedded ICA
+            logger.info(f"Standalone: {set_file.name} (will use embedded ICA)")
+        
+        files.append((set_file, ica_file, dataset_name))
     
-    return pairs
+    return files
 
 
-def load_data(raw_path: Path, ica_path: Path) -> tuple:
+def load_data(raw_path: Path, ica_path: Path | None = None) -> tuple:
     """
     Load raw data (or epochs) and ICA object.
     
     Args:
         raw_path: Path to raw EEG data (.set file)
-        ica_path: Path to ICA file (.fif file)
+        ica_path: Path to ICA file (.fif), or None to load embedded ICA from .set
         
     Returns:
         Tuple of (data, ica) objects
@@ -174,9 +175,18 @@ def load_data(raw_path: Path, ica_path: Path) -> tuple:
         else:
             raise
 
-    # Load ICA from .fif file
-    ica = mne.preprocessing.read_ica(ica_path, verbose=False)
-    logger.info(f"Loaded ICA from {ica_path.name}: {ica.n_components_} components")
+    # Load ICA - either from separate .fif file or embedded in .set file
+    if ica_path is not None:
+        # Load from separate .fif file
+        ica = mne.preprocessing.read_ica(ica_path, verbose=False)
+        logger.info(f"Loaded ICA from {ica_path.name}: {ica.n_components_} components")
+    else:
+        # Try to load embedded ICA from .set file
+        try:
+            ica = mne.preprocessing.read_ica_eeglab(raw_path)
+            logger.info(f"Loaded embedded ICA from {raw_path.name}: {ica.n_components_} components")
+        except Exception as e:
+            raise ValueError(f"Could not extract ICA from .set file: {e}")
 
     return data, ica
 
@@ -327,37 +337,37 @@ def plot_single_component_strip(ica_obj, data_obj, component_idx, output_path):
     return output_path
 
 
-def process_single_file(raw_path: Path, ica_path: Path, output_dir: Path, 
-                        prefix: str, image_format: str = "png") -> list[dict]:
+def process_single_file(raw_path: Path, ica_path: Path | None, output_dir: Path, 
+                        dataset_name: str, image_format: str = "png") -> list[dict]:
     """
-    Process a single raw/ICA pair and generate component images.
+    Process a single .set file and generate component images.
     
     Args:
-        raw_path: Path to raw EEG data
-        ica_path: Path to ICA file
+        raw_path: Path to raw EEG data (.set file)
+        ica_path: Path to ICA file (.fif), or None to use embedded ICA
         output_dir: Base output directory
-        prefix: File prefix (e.g., "0079_rest")
+        dataset_name: Dataset identifier for organizing output
         image_format: Output image format ("png" or "webp")
         
     Returns:
         List of metadata dictionaries for each component
     """
     # Create subdirectory for this file's components
-    file_output_dir = output_dir / prefix
+    file_output_dir = output_dir / dataset_name
     file_output_dir.mkdir(parents=True, exist_ok=True)
     
     # Load data
     try:
         data, ica = load_data(raw_path, ica_path)
     except Exception as e:
-        logger.error(f"Failed to load {prefix}: {e}")
+        logger.error(f"Failed to load {dataset_name}: {e}")
         return []
     
     # Generate images for each component
     metadata = []
     n_components = ica.n_components_
     
-    logger.info(f"Processing {prefix}: {n_components} components")
+    logger.info(f"Processing {dataset_name}: {n_components} components")
     
     for idx in range(n_components):
         output_path = file_output_dir / f"ic_{idx:03d}.{image_format}"
@@ -365,11 +375,14 @@ def process_single_file(raw_path: Path, ica_path: Path, output_dir: Path,
         try:
             plot_single_component_strip(ica, data, idx, output_path)
             
+            # Extract subject_id from dataset name (first part before underscore or hyphen)
+            subject_id = re.split(r'[_-]', dataset_name)[0]
+            
             info = {
                 "ic_index": idx,
-                "image_path": f"/components/{prefix}/ic_{idx:03d}.{image_format}",
-                "dataset": prefix,
-                "subject_id": prefix.split("_")[0],
+                "image_path": f"/components/{dataset_name}/ic_{idx:03d}.{image_format}",
+                "dataset": dataset_name,
+                "subject_id": subject_id,
                 "model_label": None,
                 "model_confidence": None,
             }
@@ -377,17 +390,17 @@ def process_single_file(raw_path: Path, ica_path: Path, output_dir: Path,
             
             # Log progress every 10 components
             if (idx + 1) % 10 == 0 or idx == n_components - 1:
-                logger.info(f"  {prefix}: Processed {idx + 1}/{n_components} components")
+                logger.info(f"  {dataset_name}: Processed {idx + 1}/{n_components} components")
                 
         except Exception as e:
-            logger.error(f"Failed to generate IC{idx} for {prefix}: {e}")
+            logger.error(f"Failed to generate IC{idx} for {dataset_name}: {e}")
     
     # Save metadata JSON for this file
     metadata_path = file_output_dir / "components.json"
     with open(metadata_path, "w", encoding="utf-8") as f:
         json.dump(metadata, f, indent=2)
     
-    logger.info(f"Saved {len(metadata)} component images for {prefix}")
+    logger.info(f"Saved {len(metadata)} component images for {dataset_name}")
     
     return metadata
 
@@ -463,30 +476,30 @@ Example:
     logger.info(f"Input:  {input_dir}")
     logger.info(f"Output: {output_dir}")
     
-    # Find all paired files
-    pairs = find_paired_files(input_dir)
+    # Find all .set files (with or without paired ICA files)
+    files = find_set_files(input_dir)
     
-    if not pairs:
-        logger.error("No valid file pairs found. Check the input directory and file naming.")
+    if not files:
+        logger.error("No .set files found in the input directory.")
         sys.exit(1)
     
-    logger.info(f"Found {len(pairs)} file pair(s) to process")
+    logger.info(f"Found {len(files)} file(s) to process")
     
-    # Process each pair
+    # Process each file
     all_metadata = []
     successful = 0
     failed = 0
     
-    for raw_path, ica_path, prefix in pairs:
+    for raw_path, ica_path, dataset_name in files:
         logger.info(f"\n{'='*60}")
-        logger.info(f"Processing: {prefix}")
+        logger.info(f"Processing: {dataset_name}")
         logger.info(f"  Raw: {raw_path.name}")
-        logger.info(f"  ICA: {ica_path.name}")
+        logger.info(f"  ICA: {ica_path.name if ica_path else 'embedded in .set'}")
         logger.info(f"{'='*60}")
         
         try:
             metadata = process_single_file(
-                raw_path, ica_path, output_dir, prefix, args.format
+                raw_path, ica_path, output_dir, dataset_name, args.format
             )
             if metadata:
                 all_metadata.extend(metadata)
@@ -494,7 +507,7 @@ Example:
             else:
                 failed += 1
         except Exception as e:
-            logger.error(f"Failed to process {prefix}: {e}")
+            logger.error(f"Failed to process {dataset_name}: {e}")
             failed += 1
     
     # Save combined metadata for all files
@@ -506,8 +519,8 @@ Example:
     logger.info(f"\n{'='*60}")
     logger.info("BATCH PROCESSING COMPLETE")
     logger.info(f"{'='*60}")
-    logger.info(f"Successful: {successful}/{len(pairs)} files")
-    logger.info(f"Failed: {failed}/{len(pairs)} files")
+    logger.info(f"Successful: {successful}/{len(files)} files")
+    logger.info(f"Failed: {failed}/{len(files)} files")
     logger.info(f"Total components: {len(all_metadata)}")
     logger.info(f"Output directory: {output_dir}")
     logger.info(f"Combined metadata: {combined_metadata_path}")

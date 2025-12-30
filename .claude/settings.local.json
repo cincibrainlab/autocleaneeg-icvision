@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep:*)",
+      "Bash(rg:*)",
+      "WebFetch(domain:mne.tools)",
+      "Bash(python3:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(git add:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:eeglabio.readthedocs.io)",
+      "Bash(make lint)",
+      "Bash(make format)",
+      "Bash(python:*)"
+    ],
+    "deny": []
+  }
+}
