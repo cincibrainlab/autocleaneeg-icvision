@@ -2,14 +2,20 @@
 """
 Batch generate component images for the human rater web app.
 
-This script processes ALL .set files in a folder, handling multiple naming conventions:
+This script processes ALL .set files in a folder, handling three cases:
 
 1. Paired files (separate ICA):
     Raw:  {prefix}_ica_clean_raw.set  +  ICA:  {prefix}-ica.fif
     Example: 0079_rest_ica_clean_raw.set + 0079_rest-ica.fif
 
-2. Standalone files (embedded ICA):
-    Any .set file with ICA data embedded (e.g., D0179_chirp-ST_postcomp.set)
+2. Embedded ICA:
+    Any .set file with ICA data embedded (e.g., D0179_chirp_afterica.set)
+    WARNING: Files with rejected components will have ICA matrix mismatch!
+    Use --skip-mismatched to exclude these files.
+
+3. Clean data (no ICA):
+    .set file without ICA → computes Infomax ICA on the fly
+    Example: D0179_chirp_clean.set (cleaned but not yet ICA'd)
 
 Smart Path Detection:
     - If run from within the rater/ directory tree, auto-detects public/components/
@@ -19,6 +25,9 @@ Usage:
     # From rater/scripts/ directory (auto-detects output)
     python generate_images_batch.py --input .
     
+    # Skip files with post-rejection ICA mismatch
+    python generate_images_batch.py --input . --skip-mismatched
+    
     # From anywhere with explicit output
     python generate_images_batch.py --input /path/to/data/ --output /path/to/output/
 """
@@ -26,9 +35,9 @@ Usage:
 import argparse
 import json
 import logging
-import os
 import re
 import sys
+import warnings
 from pathlib import Path
 
 import matplotlib
@@ -153,15 +162,24 @@ def load_data(raw_path: Path, ica_path: Path | None = None) -> tuple:
     """
     Load raw data (or epochs) and ICA object.
     
+    Handles three cases:
+    1. Paired .fif ICA file provided → load from .fif
+    2. Embedded ICA in .set file → load embedded (check for mismatch)
+    3. No ICA available → compute Infomax ICA on the fly
+    
     Args:
         raw_path: Path to raw EEG data (.set file)
-        ica_path: Path to ICA file (.fif), or None to load embedded ICA from .set
+        ica_path: Path to ICA file (.fif), or None to try embedded/compute
         
     Returns:
-        Tuple of (data, ica) objects
+        Tuple of (data, ica, has_mismatch, was_computed) where:
+        - has_mismatch: True if embedded ICA has matrix inconsistency
+        - was_computed: True if ICA was computed (not loaded)
     """
     data = None
     ica = None
+    has_mismatch = False
+    was_computed = False
 
     # Load raw data from .set file
     try:
@@ -175,20 +193,79 @@ def load_data(raw_path: Path, ica_path: Path | None = None) -> tuple:
         else:
             raise
 
-    # Load ICA - either from separate .fif file or embedded in .set file
+    # Case 1: Load ICA from separate .fif file
     if ica_path is not None:
-        # Load from separate .fif file
         ica = mne.preprocessing.read_ica(ica_path, verbose=False)
         logger.info(f"Loaded ICA from {ica_path.name}: {ica.n_components_} components")
     else:
-        # Try to load embedded ICA from .set file
+        # Case 2: Try to load embedded ICA from .set file
         try:
-            ica = mne.preprocessing.read_ica_eeglab(raw_path)
+            with warnings.catch_warnings(record=True) as caught_warnings:
+                warnings.simplefilter("always")
+                ica = mne.preprocessing.read_ica_eeglab(raw_path)
+                
+                # Check for the mismatch warning
+                for w in caught_warnings:
+                    if "Mismatch between icawinv and icaweights" in str(w.message):
+                        has_mismatch = True
+                        break
+            
             logger.info(f"Loaded embedded ICA from {raw_path.name}: {ica.n_components_} components")
+        
         except Exception as e:
-            raise ValueError(f"Could not extract ICA from .set file: {e}")
+            # Case 3: No ICA in file - compute Infomax ICA
+            logger.warning("")
+            logger.warning("=" * 60)
+            logger.warning(f"NO ICA FOUND IN FILE: {raw_path.name}")
+            logger.warning("=" * 60)
+            logger.warning("This file does not contain ICA decomposition.")
+            logger.warning("Computing Infomax ICA on the fly...")
+            logger.warning("This may take a few minutes depending on data size.")
+            logger.warning("=" * 60)
+            logger.warning("")
+            
+            # Compute ICA using Infomax
+            ica = compute_ica(data)
+            was_computed = True
+            logger.info(f"Computed ICA: {ica.n_components_} components")
 
-    return data, ica
+    return data, ica, has_mismatch, was_computed
+
+
+def compute_ica(data, n_components: int | None = None, random_state: int = 42) -> mne.preprocessing.ICA:
+    """
+    Compute Infomax ICA on the data.
+    
+    Args:
+        data: MNE Raw or Epochs object
+        n_components: Number of components (None = use rank of data)
+        random_state: Random seed for reproducibility
+        
+    Returns:
+        Fitted ICA object
+    """
+    # Determine number of components based on data rank
+    if n_components is None:
+        # Use a reasonable default - slightly less than number of channels
+        n_channels = len(data.ch_names)
+        n_components = min(n_channels - 1, 100)  # Cap at 100 components
+    
+    logger.info(f"Computing Infomax ICA with {n_components} components...")
+    
+    # Create and fit ICA
+    ica = mne.preprocessing.ICA(
+        n_components=n_components,
+        method='infomax',
+        fit_params=dict(extended=True),  # Extended Infomax for sub-Gaussian sources
+        random_state=random_state,
+        max_iter='auto',
+        verbose=False
+    )
+    
+    # Fit ICA to data
+    ica.fit(data, verbose=False)
+    
+    return ica
 
 
 def plot_single_component_strip(ica_obj, data_obj, component_idx, output_path):
@@ -337,8 +414,14 @@ def plot_single_component_strip(ica_obj, data_obj, component_idx, output_path):
     return output_path
 
 
-def process_single_file(raw_path: Path, ica_path: Path | None, output_dir: Path, 
-                        dataset_name: str, image_format: str = "png") -> list[dict]:
+def process_single_file(
+    raw_path: Path, 
+    ica_path: Path | None, 
+    output_dir: Path, 
+    dataset_name: str, 
+    image_format: str = "png",
+    skip_mismatched: bool = False
+) -> tuple[list[dict], bool, bool, bool]:
     """
     Process a single .set file and generate component images.
     
@@ -348,20 +431,43 @@ def process_single_file(raw_path: Path, ica_path: Path | None, output_dir: Path,
         output_dir: Base output directory
         dataset_name: Dataset identifier for organizing output
         image_format: Output image format ("png" or "webp")
+        skip_mismatched: If True, skip files with ICA matrix mismatch
         
     Returns:
-        List of metadata dictionaries for each component
+        Tuple of (metadata_list, was_skipped, had_mismatch, was_computed):
+        - metadata_list: List of component metadata dicts
+        - was_skipped: True if file was skipped due to mismatch
+        - had_mismatch: True if ICA matrix mismatch was detected
+        - was_computed: True if ICA was computed on the fly
     """
+    # Load data first to check for mismatches
+    try:
+        data, ica, has_mismatch, was_computed = load_data(raw_path, ica_path)
+    except Exception as e:
+        logger.error(f"Failed to load {dataset_name}: {e}")
+        return [], False, False, False
+    
+    # Handle ICA matrix mismatch (likely from component rejection)
+    if has_mismatch:
+        logger.warning("")
+        logger.warning("=" * 60)
+        logger.warning(f"ICA MATRIX MISMATCH DETECTED: {dataset_name}")
+        logger.warning("=" * 60)
+        logger.warning("This file likely has rejected ICA components.")
+        logger.warning("Topographies may NOT match time series data!")
+        logger.warning("For accurate human rating, use pre-rejection data.")
+        logger.warning("=" * 60)
+        
+        if skip_mismatched:
+            logger.warning(f"SKIPPING {dataset_name} (--skip-mismatched enabled)")
+            return [], True, True, False
+        else:
+            logger.warning("Proceeding anyway... (use --skip-mismatched to skip these files)")
+            logger.warning("")
+    
     # Create subdirectory for this file's components
     file_output_dir = output_dir / dataset_name
     file_output_dir.mkdir(parents=True, exist_ok=True)
-    
-    # Load data
-    try:
-        data, ica = load_data(raw_path, ica_path)
-    except Exception as e:
-        logger.error(f"Failed to load {dataset_name}: {e}")
-        return []
     
     # Generate images for each component
     metadata = []
@@ -402,7 +508,7 @@ def process_single_file(raw_path: Path, ica_path: Path | None, output_dir: Path,
     
     logger.info(f"Saved {len(metadata)} component images for {dataset_name}")
     
-    return metadata
+    return metadata, False, has_mismatch, was_computed
 
 
 def main():
@@ -435,6 +541,11 @@ Example:
         default="png", 
         choices=["png", "webp"], 
         help="Image format (default: png)"
+    )
+    parser.add_argument(
+        "--skip-mismatched",
+        action="store_true",
+        help="Skip files with ICA matrix mismatch (likely post-rejection data)"
     )
     args = parser.parse_args()
 
@@ -489,19 +600,32 @@ Example:
     all_metadata = []
     successful = 0
     failed = 0
+    skipped = 0
+    computed = 0
+    mismatched_files = []
+    computed_files = []
     
     for raw_path, ica_path, dataset_name in files:
         logger.info(f"\n{'='*60}")
         logger.info(f"Processing: {dataset_name}")
         logger.info(f"  Raw: {raw_path.name}")
-        logger.info(f"  ICA: {ica_path.name if ica_path else 'embedded in .set'}")
+        logger.info(f"  ICA: {ica_path.name if ica_path else 'embedded or computed'}")
         logger.info(f"{'='*60}")
         
         try:
-            metadata = process_single_file(
-                raw_path, ica_path, output_dir, dataset_name, args.format
+            metadata, was_skipped, had_mismatch, was_computed = process_single_file(
+                raw_path, ica_path, output_dir, dataset_name, args.format,
+                skip_mismatched=args.skip_mismatched
             )
-            if metadata:
+            if had_mismatch:
+                mismatched_files.append(dataset_name)
+            if was_computed:
+                computed_files.append(dataset_name)
+                computed += 1
+            
+            if was_skipped:
+                skipped += 1
+            elif metadata:
                 all_metadata.extend(metadata)
                 successful += 1
             else:
@@ -521,9 +645,36 @@ Example:
     logger.info(f"{'='*60}")
     logger.info(f"Successful: {successful}/{len(files)} files")
     logger.info(f"Failed: {failed}/{len(files)} files")
+    if skipped > 0:
+        logger.info(f"Skipped (ICA mismatch): {skipped}/{len(files)} files")
+    if computed > 0:
+        logger.info(f"ICA computed on-the-fly: {computed}/{len(files)} files")
     logger.info(f"Total components: {len(all_metadata)}")
     logger.info(f"Output directory: {output_dir}")
     logger.info(f"Combined metadata: {combined_metadata_path}")
+    
+    # List files where ICA was computed
+    if computed_files:
+        logger.info("")
+        logger.info("=" * 60)
+        logger.info("FILES WHERE ICA WAS COMPUTED (no existing ICA found):")
+        logger.info("=" * 60)
+        for name in computed_files:
+            logger.info(f"  - {name}")
+        logger.info("=" * 60)
+    
+    # List mismatched files if any were found (and not skipped)
+    if mismatched_files and not args.skip_mismatched:
+        logger.warning("")
+        logger.warning("=" * 60)
+        logger.warning("FILES WITH ICA MATRIX MISMATCH (may have invalid data):")
+        logger.warning("=" * 60)
+        for name in mismatched_files:
+            logger.warning(f"  - {name}")
+        logger.warning("")
+        logger.warning("These files likely have rejected ICA components.")
+        logger.warning("Re-run with --skip-mismatched to exclude them.")
+        logger.warning("=" * 60)
 
 
 if __name__ == "__main__":
