@@ -2,34 +2,28 @@
 """
 Batch generate component images for the human rater web app.
 
-This script processes ALL .set files in a folder, handling three cases:
+File Discovery (ICA-first approach):
+    Looks for -ica.fif files first, then finds matching .set files.
+    This ensures we only process data with valid ICA decompositions.
 
-1. Paired files (separate ICA):
-    Raw:  {prefix}_ica_clean_raw.set  +  ICA:  {prefix}-ica.fif
-    Example: 0079_rest_ica_clean_raw.set + 0079_rest-ica.fif
+1. Paired files (preferred):
+    ICA:  {prefix}-ica.fif  →  looks for  {prefix}_pre_ica_raw.set or {prefix}*.set
+    Example: 0079_rest-ica.fif + 0079_rest_pre_ica_raw.set
 
-2. Embedded ICA:
-    Any .set file with ICA data embedded (e.g., D0179_chirp_afterica.set)
+2. Standalone .set files (fallback):
+    If no -ica.fif files found, processes .set files with embedded ICA
     WARNING: Files with rejected components will have ICA matrix mismatch!
-    Use --skip-mismatched to exclude these files.
 
 3. Clean data (no ICA):
     .set file without ICA → computes Infomax ICA on the fly
-    Example: D0179_chirp_clean.set (cleaned but not yet ICA'd)
 
 Smart Path Detection:
     - If run from within the rater/ directory tree, auto-detects public/components/
     - Otherwise, requires --output to be specified
 
 Usage:
-    # From rater/scripts/ directory (auto-detects output)
-    python generate_images_batch.py --input .
-    
-    # Skip files with post-rejection ICA mismatch
-    python generate_images_batch.py --input . --skip-mismatched
-    
-    # From anywhere with explicit output
-    python generate_images_batch.py --input /path/to/data/ --output /path/to/output/
+    python generate_images_batch.py --input /path/to/data/
+    python generate_images_batch.py --input . --output /path/to/output/
 """
 
 import argparse
@@ -105,55 +99,44 @@ def get_default_output_dir() -> Path | None:
     return None
 
 
-def find_set_files(input_dir: Path) -> list[tuple[Path, Path | None, str]]:
+def find_paired_files(input_dir: Path) -> list[tuple[Path, Path | None, str]]:
     """
-    Find all .set files in the input directory and pair with ICA files if available.
+    Find -ica.fif files first, then locate matching .set files.
+    Falls back to standalone .set files if no ICA files exist.
     
-    Handles multiple naming conventions:
-        1. {prefix}_ica_clean_raw.set + {prefix}-ica.fif (paired files)
-        2. Any other .set file with embedded ICA (standalone)
-    
-    Args:
-        input_dir: Directory containing EEG files
-        
-    Returns:
-        List of tuples: (set_path, ica_path_or_None, dataset_name)
+    Pattern: {prefix}-ica.fif → {prefix}_pre_ica_raw.set (or {prefix}*.set)
     """
     files = []
+    ica_files = list(input_dir.glob("*-ica.fif"))
     
-    # Find ALL .set files in the directory
-    set_files = list(input_dir.glob("*.set"))
-    
-    if not set_files:
-        logger.warning(f"No .set files found in {input_dir}")
+    if not ica_files:
+        # Fallback: process standalone .set files
+        for f in input_dir.glob("*.set"):
+            files.append((f, None, f.stem))
+        logger.info(f"Found {len(files)} standalone .set files (no -ica.fif)")
         return files
     
-    logger.info(f"Found {len(set_files)} .set files in {input_dir}")
+    logger.info(f"Found {len(ica_files)} ICA files")
     
-    for set_file in set_files:
-        filename = set_file.stem  # Remove .set extension
-        ica_file = None
-        dataset_name = filename  # Default: use full filename as dataset name
+    for ica_file in ica_files:
+        prefix = ica_file.stem.replace("-ica", "")
         
-        # Check if this matches the paired file pattern: {prefix}_ica_clean_raw.set
-        match = re.match(r"(.+)_ica_clean_raw$", filename)
+        # Try specific patterns first, then glob fallback
+        set_file = None
+        for suffix in ["_pre_ica_raw.set", "_ica_clean_raw.set"]:
+            if (input_dir / f"{prefix}{suffix}").exists():
+                set_file = input_dir / f"{prefix}{suffix}"
+                break
         
-        if match:
-            # This is a paired file - look for {prefix}-ica.fif
-            prefix = match.group(1)
-            potential_ica = input_dir / f"{prefix}-ica.fif"
-            
-            if potential_ica.exists():
-                ica_file = potential_ica
-                dataset_name = prefix  # Use prefix as dataset name
-                logger.info(f"Paired: {set_file.name} <-> {ica_file.name}")
-            else:
-                logger.info(f"No paired ICA for {set_file.name}, will try embedded ICA")
+        if not set_file:
+            matches = [f for f in input_dir.glob(f"{prefix}*.set")]
+            set_file = next((f for f in matches if "pre" in f.stem.lower()), matches[0] if matches else None)
+        
+        if set_file:
+            logger.info(f"Paired: {ica_file.name} <-> {set_file.name}")
+            files.append((set_file, ica_file, prefix))
         else:
-            # Not the paired pattern - will try to load embedded ICA
-            logger.info(f"Standalone: {set_file.name} (will use embedded ICA)")
-        
-        files.append((set_file, ica_file, dataset_name))
+            logger.warning(f"No .set file for {ica_file.name}")
     
     return files
 
@@ -232,7 +215,7 @@ def load_data(raw_path: Path, ica_path: Path | None = None) -> tuple:
     return data, ica, has_mismatch, was_computed
 
 
-def compute_ica(data, n_components: int | None = None, random_state: int = 42) -> mne.preprocessing.ICA:
+def compute_ica(data) -> mne.preprocessing.ICA:
     """
     Compute Infomax ICA on the data.
     
@@ -240,8 +223,6 @@ def compute_ica(data, n_components: int | None = None, random_state: int = 42) -
     
     Args:
         data: MNE Raw or Epochs object
-        n_components: Number of components (None = auto-detect from rank)
-        random_state: Random seed for reproducibility
         
     Returns:
         Fitted ICA object
@@ -251,12 +232,12 @@ def compute_ica(data, n_components: int | None = None, random_state: int = 42) -
     lowpass = data.info.get('lowpass', 0)
     logger.info(f"Highpass: {highpass}, Lowpass: {lowpass}")
 
+    
+
     # Create and fit ICA
     ica = mne.preprocessing.ICA(
         method='infomax',
         fit_params=dict(extended=True),  # Extended Infomax for sub-Gaussian sources
-        random_state=random_state,
-        max_iter='auto',
         verbose=False
     )
     
@@ -588,7 +569,7 @@ Example:
     logger.info(f"Output: {output_dir}")
     
     # Find all .set files (with or without paired ICA files)
-    files = find_set_files(input_dir)
+    files = find_paired_files(input_dir)
     
     if not files:
         logger.error("No .set files found in the input directory.")
