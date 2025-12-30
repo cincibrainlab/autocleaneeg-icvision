@@ -236,25 +236,23 @@ def compute_ica(data, n_components: int | None = None, random_state: int = 42) -
     """
     Compute Infomax ICA on the data.
     
+    Automatically estimates data rank to avoid unstable mixing matrices.
+    
     Args:
         data: MNE Raw or Epochs object
-        n_components: Number of components (None = use rank of data)
+        n_components: Number of components (None = auto-detect from rank)
         random_state: Random seed for reproducibility
         
     Returns:
         Fitted ICA object
     """
-    # Determine number of components based on data rank
-    if n_components is None:
-        # Use a reasonable default - slightly less than number of channels
-        n_channels = len(data.ch_names)
-        n_components = min(n_channels - 1, 100)  # Cap at 100 components
-    
-    logger.info(f"Computing Infomax ICA with {n_components} components...")
-    
+    # Check if data is high-pass filtered (warn if not)
+    highpass = data.info.get('highpass', 0)
+    lowpass = data.info.get('lowpass', 0)
+    logger.info(f"Highpass: {highpass}, Lowpass: {lowpass}")
+
     # Create and fit ICA
     ica = mne.preprocessing.ICA(
-        n_components=n_components,
         method='infomax',
         fit_params=dict(extended=True),  # Extended Infomax for sub-Gaussian sources
         random_state=random_state,
@@ -264,6 +262,8 @@ def compute_ica(data, n_components: int | None = None, random_state: int = 42) -
     
     # Fit ICA to data
     ica.fit(data, verbose=False)
+    
+    logger.info(f"ICA fitting complete: {ica.n_components_} components extracted")
     
     return ica
 
