@@ -460,3 +460,5 @@ backups/
 !.coveragerc
 !.editorconfig
 /rater/public/components
+/rater/scripts/control
+/rater/scripts/output
