@@ -437,9 +437,9 @@ Example:
     )
     parser.add_argument(
         "--format", "-f",
-        default="png", 
+        default="webp", 
         choices=["png", "webp"], 
-        help="Image format (default: png)"
+        help="Image format (default: webp)"
     )
     parser.add_argument(
         "--skip-mismatched",
