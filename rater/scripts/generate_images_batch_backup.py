@@ -24,9 +24,11 @@ Usage:
 import argparse
 import json
 import logging
+import multiprocessing
 import re
 import sys
 import warnings
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 
 from filelock import FileLock
@@ -43,6 +45,28 @@ from scipy.ndimage import uniform_filter1d
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
+
+def _generate_single_component_image(args):
+    """
+    Worker function to generate a single component image.
+    
+    This function is at module level for cross-platform pickling (Windows/Linux).
+    Uses tuple unpacking for ProcessPoolExecutor compatibility.
+    
+    Args:
+        args: Tuple of (ica_obj, component_idx, output_path, component_data, sfreq)
+        
+    Returns:
+        Tuple of (component_idx, success, error_message)
+    """
+    ica_obj, component_idx, output_path, component_data, sfreq = args
+    
+    try:
+        plot_single_component_strip(ica_obj, component_idx, output_path, component_data, sfreq)
+        return (component_idx, True, None)
+    except Exception as e:
+        return (component_idx, False, str(e))
 
 
 def find_paired_files(input_dir: Path) -> list[tuple[Path, Path | None, str]]:
@@ -172,6 +196,8 @@ def compute_ica(data) -> mne.preprocessing.ICA:
     else:
         logger.info(f"Data already high-pass filtered at {highpass} Hz")
 
+    
+
     # Create and fit ICA
     ica = mne.preprocessing.ICA(
         method='infomax',
@@ -279,10 +305,10 @@ def process_single_file(
     raw_path: Path, 
     ica_path: Path | None, 
     output_dir: Path, 
-    basename: str, 
-    image_format: str = "webp",
+    dataset_name: str, 
+    image_format: str = "png",
     skip_mismatched: bool = False,
-    skip_existing: bool = True
+    n_workers: int = 1
 ) -> tuple[list[dict], bool, bool, bool]:
     """
     Process a single .set file and generate component images.
@@ -290,11 +316,11 @@ def process_single_file(
     Args:
         raw_path: Path to raw EEG data (.set file)
         ica_path: Path to ICA file (.fif), or None to use embedded ICA
-        output_dir: Base output directory (flat structure, no subfolders)
-        basename: Clean basename for output files (suffixes already removed)
+        output_dir: Base output directory
+        dataset_name: Dataset identifier for organizing output
         image_format: Output image format ("png" or "webp")
         skip_mismatched: If True, skip files with ICA matrix mismatch
-        skip_existing: If True, skip components that already have images
+        n_workers: Number of parallel workers for image generation
         
     Returns:
         Tuple of (metadata_list, was_skipped, had_mismatch, was_computed):
@@ -307,20 +333,21 @@ def process_single_file(
     try:
         data, ica, has_mismatch, was_computed = load_data(raw_path, ica_path)
     except Exception as e:
-        logger.error(f"Failed to load {basename}: {e}")
+        logger.error(f"Failed to load {dataset_name}: {e}")
         return [], False, False, False
     
     # Handle ICA matrix mismatch (likely from component rejection)
     if has_mismatch:
-        logger.warning(f"\nICA MISMATCH: {basename} - likely has rejected components")
+        logger.warning(f"\nICA MISMATCH: {dataset_name} - likely has rejected components")
         logger.warning("Topographies may NOT match time series! Use pre-rejection data for accuracy.")
         if skip_mismatched:
             logger.warning(f"SKIPPING (--skip-mismatched)")
             return [], True, True, False
         logger.warning("Proceeding anyway...")
     
-    # Output directly to output_dir (flat structure)
-    output_dir.mkdir(parents=True, exist_ok=True)
+    # Create subdirectory for this file's components
+    file_output_dir = output_dir / dataset_name
+    file_output_dir.mkdir(parents=True, exist_ok=True)
     
     # Pre-compute ALL component sources at once (major optimization)
     # This avoids calling get_sources() for each component individually
@@ -334,40 +361,51 @@ def process_single_file(
         # Epochs: shape (n_epochs, n_components, n_times) -> concatenate epochs
         all_source_data = all_source_data.transpose(1, 0, 2).reshape(all_source_data.shape[1], -1)
     
-    # Generate images for each component (flat structure: basename_icXXX.ext)
+    # Generate images for each component
     metadata = []
     n_components = ica.n_components_
-    subject_id = re.split(r'[_-]', basename)[0]
+    subject_id = re.split(r'[_-]', dataset_name)[0]
     
     def make_metadata(idx):
-        filename = f"{basename}_ic{idx:03d}.{image_format}"
-        return {"ic_index": idx, "image_path": f"/components/{filename}",
-                "dataset": basename, "subject_id": subject_id, "model_label": None, "model_confidence": None}
+        return {"ic_index": idx, "image_path": f"/components/{dataset_name}/ic_{idx:03d}.{image_format}",
+                "dataset": dataset_name, "subject_id": subject_id, "model_label": None, "model_confidence": None}
     
-    logger.info(f"Generating {n_components} component images...")
-    skipped_count = 0
-    for idx in range(n_components):
-        filename = f"{basename}_ic{idx:03d}.{image_format}"
-        output_path = output_dir / filename
+    if n_workers > 1:
+        logger.info(f"Generating {n_components} images using {n_workers} workers...")
+        task_args = [(ica, idx, file_output_dir / f"ic_{idx:03d}.{image_format}", all_source_data[idx], sfreq)
+                     for idx in range(n_components)]
         
-        # Skip image generation if it already exists
-        if skip_existing and output_path.exists():
-            metadata.append(make_metadata(idx))  # Still track metadata
-            skipped_count += 1
-            continue
-        
-        try:
-            plot_single_component_strip(ica, idx, output_path, all_source_data[idx], sfreq)
-            metadata.append(make_metadata(idx))
-            if (idx + 1) % 10 == 0 or idx == n_components - 1:
-                logger.info(f"  {basename}: {idx + 1}/{n_components} done")
-        except Exception as e:
-            logger.error(f"Failed IC{idx} for {basename}: {e}")
+        completed = 0
+        with ProcessPoolExecutor(max_workers=n_workers) as executor:
+            futures = {executor.submit(_generate_single_component_image, args): args[1] for args in task_args}
+            for future in as_completed(futures):
+                comp_idx, success, error = future.result()
+                completed += 1
+                if success:
+                    metadata.append(make_metadata(comp_idx))
+                else:
+                    logger.error(f"Failed IC{comp_idx} for {dataset_name}: {error}")
+                if completed % 10 == 0 or completed == n_components:
+                    logger.info(f"  {dataset_name}: {completed}/{n_components} done")
+        metadata.sort(key=lambda x: x["ic_index"])
+    else:
+        logger.info(f"Generating {n_components} component images...")
+        for idx in range(n_components):
+            try:
+                plot_single_component_strip(ica, idx, file_output_dir / f"ic_{idx:03d}.{image_format}",
+                                           all_source_data[idx], sfreq)
+                metadata.append(make_metadata(idx))
+                if (idx + 1) % 10 == 0 or idx == n_components - 1:
+                    logger.info(f"  {dataset_name}: {idx + 1}/{n_components} done")
+            except Exception as e:
+                logger.error(f"Failed IC{idx} for {dataset_name}: {e}")
     
-    if skipped_count > 0:
-        logger.info(f"  Skipped {skipped_count} existing images")
+    # Save metadata JSON for this file
+    metadata_path = file_output_dir / "components.json"
+    with open(metadata_path, "w", encoding="utf-8") as f:
+        json.dump(metadata, f, indent=2)
     
-    logger.info(f"Generated {len(metadata)} component images for {basename}")
+    logger.info(f"Saved {len(metadata)} component images for {dataset_name}")
     
     return metadata, False, has_mismatch, was_computed
 
@@ -409,17 +447,25 @@ Example:
         help="Skip files with ICA matrix mismatch (likely post-rejection data)"
     )
     parser.add_argument(
-        "--regenerate",
-        action="store_true",
-        help="Regenerate all images even if they already exist (default: skip existing)"
-    )
-    parser.add_argument(
-        "--suffix-remove",
+        "--workers", "-w",
         type=str,
-        default="",
-        help="Comma-separated suffixes to remove from basename (e.g., '_postbadchannels,_ica_clean_raw')"
+        default="1",
+        help="Number of parallel workers (default: 1, use 'auto' for CPU count)"
     )
     args = parser.parse_args()
+    
+    # Parse workers argument
+    if args.workers.lower() == "auto":
+        n_workers = multiprocessing.cpu_count()
+    else:
+        try:
+            n_workers = int(args.workers)
+        except ValueError:
+            logger.error(f"Invalid workers value: {args.workers}. Use a number or 'auto'.")
+            sys.exit(1)
+    
+    if n_workers < 1:
+        n_workers = 1
 
     input_dir = Path(args.input).resolve()
     output_dir = Path(args.output).resolve()
@@ -436,13 +482,10 @@ Example:
     # Create output directory
     output_dir.mkdir(parents=True, exist_ok=True)
     
-    # Parse suffixes to remove from basenames
-    suffixes_to_remove = [s.strip() for s in args.suffix_remove.split(",") if s.strip()]
-    
     logger.info(f"Input:  {input_dir}")
     logger.info(f"Output: {output_dir}")
-    if suffixes_to_remove:
-        logger.info(f"Removing suffixes: {suffixes_to_remove}")
+    if n_workers > 1:
+        logger.info(f"Workers: {n_workers} (parallel processing enabled)")
     
     # Find all .set files (with or without paired ICA files)
     files = find_paired_files(input_dir)
@@ -453,13 +496,18 @@ Example:
     
     logger.info(f"Found {len(files)} file(s) to process")
     
-    # Setup for incremental metadata writes (with file locking for concurrency)
+    # Load existing metadata if present (append mode with file locking for concurrency)
     combined_metadata_path = output_dir / "all_components.json"
     lock_path = output_dir / "all_components.json.lock"
     metadata_lock = FileLock(lock_path)
     
-    if combined_metadata_path.exists():
-        logger.info(f"Appending to existing all_components.json")
+    with metadata_lock:
+        if combined_metadata_path.exists():
+            with open(combined_metadata_path, "r", encoding="utf-8") as f:
+                all_metadata = json.load(f)
+            logger.info(f"Loaded {len(all_metadata)} existing components from all_components.json")
+        else:
+            all_metadata = []
     
     # Process each file
     successful = 0
@@ -470,27 +518,20 @@ Example:
     computed_files = []
     
     for raw_path, ica_path, dataset_name in files:
-        # Clean the basename by removing specified suffixes
-        basename = dataset_name
-        for suffix in suffixes_to_remove:
-            if basename.endswith(suffix):
-                basename = basename[:-len(suffix)]
-        
         logger.info(f"\n{'='*60}")
         logger.info(f"Processing: {dataset_name}")
-        logger.info(f"  Basename: {basename}")
         logger.info(f"  Raw: {raw_path.name}")
         logger.info(f"  ICA: {ica_path.name if ica_path else 'embedded or computed'}")
         logger.info(f"{'='*60}")
         
         try:
             metadata, was_skipped, had_mismatch, was_computed = process_single_file(
-                raw_path, ica_path, output_dir, basename, args.format,
+                raw_path, ica_path, output_dir, dataset_name, args.format,
                 skip_mismatched=args.skip_mismatched,
-                skip_existing=not args.regenerate
+                n_workers=n_workers
             )
             if had_mismatch:
-                mismatched_files.append(basename)
+                mismatched_files.append(dataset_name)
             if was_computed:
                 computed_files.append(dataset_name)
                 computed += 1
@@ -498,20 +539,12 @@ Example:
             if was_skipped:
                 skipped += 1
             elif metadata:
-                # Thread-safe incremental write: lock, re-read, merge (dedupe), write
+                # Thread-safe incremental write: lock, re-read, merge, write
                 with metadata_lock:
                     if combined_metadata_path.exists():
                         with open(combined_metadata_path, "r", encoding="utf-8") as f:
                             all_metadata = json.load(f)
-                    else:
-                        all_metadata = []
-                    # Deduplicate by (dataset, ic_index) - new entries override existing
-                    existing_keys = {(m["dataset"], m["ic_index"]) for m in all_metadata}
-                    for m in metadata:
-                        key = (m["dataset"], m["ic_index"])
-                        if key not in existing_keys:
-                            all_metadata.append(m)
-                            existing_keys.add(key)
+                    all_metadata.extend(metadata)
                     with open(combined_metadata_path, "w", encoding="utf-8") as f:
                         json.dump(all_metadata, f, indent=2)
                 successful += 1
@@ -531,13 +564,7 @@ Example:
         logger.info(f"Skipped (ICA mismatch): {skipped}/{len(files)} files")
     if computed > 0:
         logger.info(f"ICA computed on-the-fly: {computed}/{len(files)} files")
-    # Get final component count from file
-    if combined_metadata_path.exists():
-        with open(combined_metadata_path, "r", encoding="utf-8") as f:
-            total_components = len(json.load(f))
-    else:
-        total_components = 0
-    logger.info(f"Total components: {total_components}")
+    logger.info(f"Total components: {len(all_metadata)}")
     logger.info(f"Output directory: {output_dir}")
     logger.info(f"Combined metadata: {combined_metadata_path}")
     
