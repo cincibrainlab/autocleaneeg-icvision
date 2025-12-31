@@ -31,6 +31,8 @@ import warnings
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 
+from filelock import FileLock
+
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -494,8 +496,20 @@ Example:
     
     logger.info(f"Found {len(files)} file(s) to process")
     
+    # Load existing metadata if present (append mode with file locking for concurrency)
+    combined_metadata_path = output_dir / "all_components.json"
+    lock_path = output_dir / "all_components.json.lock"
+    metadata_lock = FileLock(lock_path)
+    
+    with metadata_lock:
+        if combined_metadata_path.exists():
+            with open(combined_metadata_path, "r", encoding="utf-8") as f:
+                all_metadata = json.load(f)
+            logger.info(f"Loaded {len(all_metadata)} existing components from all_components.json")
+        else:
+            all_metadata = []
+    
     # Process each file
-    all_metadata = []
     successful = 0
     failed = 0
     skipped = 0
@@ -525,18 +539,20 @@ Example:
             if was_skipped:
                 skipped += 1
             elif metadata:
-                all_metadata.extend(metadata)
+                # Thread-safe incremental write: lock, re-read, merge, write
+                with metadata_lock:
+                    if combined_metadata_path.exists():
+                        with open(combined_metadata_path, "r", encoding="utf-8") as f:
+                            all_metadata = json.load(f)
+                    all_metadata.extend(metadata)
+                    with open(combined_metadata_path, "w", encoding="utf-8") as f:
+                        json.dump(all_metadata, f, indent=2)
                 successful += 1
             else:
                 failed += 1
         except Exception as e:
             logger.error(f"Failed to process {dataset_name}: {e}")
             failed += 1
-    
-    # Save combined metadata for all files
-    combined_metadata_path = output_dir / "all_components.json"
-    with open(combined_metadata_path, "w", encoding="utf-8") as f:
-        json.dump(all_metadata, f, indent=2)
     
     # Print summary
     logger.info(f"\n{'='*60}")
