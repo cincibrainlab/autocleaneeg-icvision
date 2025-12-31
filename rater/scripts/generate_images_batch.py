@@ -17,13 +17,8 @@ File Discovery (ICA-first approach):
 3. Clean data (no ICA):
     .set file without ICA → computes Infomax ICA on the fly
 
-Smart Path Detection:
-    - If run from within the rater/ directory tree, auto-detects public/components/
-    - Otherwise, requires --output to be specified
-
 Usage:
-    python generate_images_batch.py --input /path/to/data/
-    python generate_images_batch.py --input . --output /path/to/output/
+    python generate_images_batch.py --input /path/to/data/ --output /path/to/output/
 """
 
 import argparse
@@ -70,27 +65,6 @@ def _generate_single_component_image(args):
         return (component_idx, True, None)
     except Exception as e:
         return (component_idx, False, str(e))
-
-
-def find_rater_root() -> Path | None:
-    """Find the rater Rails app root by checking CWD and script location parents."""
-    def is_rater_root(path: Path) -> bool:
-        return (path / "Gemfile").exists() and (path / "public").is_dir()
-    
-    # Check from CWD and script location, up to 5 parent levels each
-    for start in [Path.cwd().resolve(), Path(__file__).resolve().parent]:
-        path = start
-        for _ in range(6):
-            if is_rater_root(path):
-                return path
-            path = path.parent
-    return None
-
-
-def get_default_output_dir() -> Path | None:
-    """Return public/components/ path if rater root found, else None."""
-    rater_root = find_rater_root()
-    return rater_root / "public" / "components" if rater_root else None
 
 
 def find_paired_files(input_dir: Path) -> list[tuple[Path, Path | None, str]]:
@@ -456,8 +430,8 @@ Example:
     )
     parser.add_argument(
         "--output", "-o", 
-        default=None,
-        help="Output directory (auto-detects public/components/ if in rater directory)"
+        required=True,
+        help="Output directory for generated component images"
     )
     parser.add_argument(
         "--format", "-f",
@@ -492,16 +466,7 @@ Example:
         n_workers = 1
 
     input_dir = Path(args.input).resolve()
-    
-    # Smart output directory detection
-    if args.output is None:
-        output_dir = get_default_output_dir()
-        if output_dir is None:
-            logger.error("Could not auto-detect output. Run from rater/ dir or use --output.")
-            sys.exit(1)
-        logger.info(f"Auto-detected output: {output_dir}")
-    else:
-        output_dir = Path(args.output).resolve()
+    output_dir = Path(args.output).resolve()
     
     # Validate input directory
     if not input_dir.exists():
