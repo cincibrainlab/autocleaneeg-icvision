@@ -279,6 +279,7 @@ def process_single_file(
     raw_path: Path, 
     ica_path: Path | None, 
     output_dir: Path, 
+    dataset: str,
     basename: str, 
     image_format: str = "webp",
     skip_mismatched: bool = False,
@@ -291,6 +292,7 @@ def process_single_file(
         raw_path: Path to raw EEG data (.set file)
         ica_path: Path to ICA file (.fif), or None to use embedded ICA
         output_dir: Base output directory (flat structure, no subfolders)
+        dataset: Dataset name (e.g., 'chirp', 'rest') - prefixed to all files
         basename: Clean basename for output files (suffixes already removed)
         image_format: Output image format ("png" or "webp")
         skip_mismatched: If True, skip files with ICA matrix mismatch
@@ -334,20 +336,21 @@ def process_single_file(
         # Epochs: shape (n_epochs, n_components, n_times) -> concatenate epochs
         all_source_data = all_source_data.transpose(1, 0, 2).reshape(all_source_data.shape[1], -1)
     
-    # Generate images for each component (flat structure: basename_icXXX.ext)
+    # Generate images for each component (flat structure: DATASET_basename_XXX.ext)
     metadata = []
     n_components = ica.n_components_
     subject_id = re.split(r'[_-]', basename)[0]
     
     def make_metadata(idx):
-        filename = f"{basename}_ic{idx:03d}.{image_format}"
+        filename = f"{dataset}_{basename}_{idx:03d}.{image_format}"
         return {"ic_index": idx, "image_path": f"/components/{filename}",
-                "dataset": basename, "subject_id": subject_id, "model_label": None, "model_confidence": None}
+                "dataset": dataset, "filename": basename, "subject_id": subject_id, 
+                "model_label": None, "model_confidence": None}
     
     logger.info(f"Generating {n_components} component images...")
     skipped_count = 0
     for idx in range(n_components):
-        filename = f"{basename}_ic{idx:03d}.{image_format}"
+        filename = f"{dataset}_{basename}_{idx:03d}.{image_format}"
         output_path = output_dir / filename
         
         # Skip image generation if it already exists
@@ -419,6 +422,12 @@ Example:
         default="",
         help="Comma-separated suffixes to remove from basename (e.g., '_postbadchannels,_ica_clean_raw')"
     )
+    parser.add_argument(
+        "--dataset",
+        type=str,
+        required=True,
+        help="Dataset name to prefix all output files (e.g., 'chirp', 'rest')"
+    )
     args = parser.parse_args()
 
     input_dir = Path(args.input).resolve()
@@ -441,6 +450,7 @@ Example:
     
     logger.info(f"Input:  {input_dir}")
     logger.info(f"Output: {output_dir}")
+    logger.info(f"Dataset: {args.dataset}")
     if suffixes_to_remove:
         logger.info(f"Removing suffixes: {suffixes_to_remove}")
     
@@ -485,7 +495,7 @@ Example:
         
         try:
             metadata, was_skipped, had_mismatch, was_computed = process_single_file(
-                raw_path, ica_path, output_dir, basename, args.format,
+                raw_path, ica_path, output_dir, args.dataset, basename, args.format,
                 skip_mismatched=args.skip_mismatched,
                 skip_existing=not args.regenerate
             )
