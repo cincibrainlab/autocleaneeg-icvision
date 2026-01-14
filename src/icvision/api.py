@@ -34,6 +34,7 @@ def classify_component_image_openai(
     api_key: str,
     model_name: str,
     custom_prompt: Optional[str] = None,
+    base_url: Optional[str] = None,
 ) -> Tuple[str, float, str, Optional[Dict[str, Any]]]:
     """
     Sends a single component image to OpenAI Vision API for classification.
@@ -46,6 +47,7 @@ def classify_component_image_openai(
         api_key: OpenAI API key.
         model_name: OpenAI model to use (e.g., "gpt-4.1").
         custom_prompt: Optional custom prompt to use instead of default.
+        base_url: Optional custom API base URL for OpenAI-compatible endpoints.
 
     Returns:
         Tuple: (label, confidence, reason, cost_info).
@@ -70,8 +72,8 @@ def classify_component_image_openai(
         encode_end_time = time.time()
         logger.debug("Base64 encoding for %s took %.3f seconds", image_path.name, encode_end_time - encode_start_time)
 
-        client = openai.OpenAI(api_key=api_key)
-        logger.debug("Sending %s to OpenAI (model: %s)...", image_path.name, model_name)
+        client = openai.OpenAI(api_key=api_key, base_url=base_url)
+        logger.debug("Sending %s to API (model: %s, base_url: %s)...", image_path.name, model_name, base_url or "default")
 
         # Use OpenAI's new responses API for computer vision
         # Text prompt and image are sent as separate input entries
@@ -266,15 +268,15 @@ def classify_component_image_openai(
 
 
 def _classify_single_component_wrapper(
-    args_tuple: Tuple[int, Optional[Path], str, str, Optional[str]],
+    args_tuple: Tuple[int, Optional[Path], str, str, Optional[str], Optional[str]],
 ) -> Tuple[int, str, float, str, Optional[Dict[str, Any]]]:
     """Helper for parallel execution of classify_component_image_openai."""
-    comp_idx, image_path, api_key, model_name, custom_prompt = args_tuple
+    comp_idx, image_path, api_key, model_name, custom_prompt, base_url = args_tuple
     if image_path is None:
         return comp_idx, "other_artifact", 1.0, "Plotting failed for this component", None
 
     # Call the classification function and prepend component index to its result tuple
-    classification_result = classify_component_image_openai(image_path, api_key, model_name, custom_prompt)
+    classification_result = classify_component_image_openai(image_path, api_key, model_name, custom_prompt, base_url)
     return (comp_idx,) + classification_result
 
 
@@ -292,6 +294,7 @@ def classify_components_batch(
     output_dir: Optional[Path] = None,
     psd_fmax: Optional[float] = None,
     component_indices: Optional[List[int]] = None,
+    base_url: Optional[str] = None,
 ) -> Tuple[pd.DataFrame, dict]:
     """
     Classifies ICA components in batches using OpenAI Vision API with parallel processing.
@@ -311,6 +314,7 @@ def classify_components_batch(
         psd_fmax: Maximum frequency for PSD plot (default: None, uses 80 Hz or Nyquist).
         component_indices: Optional list of component indices to classify. If None,
             all components are processed.
+        base_url: Optional custom API base URL for OpenAI-compatible endpoints.
 
     Returns:
         Tuple of (pd.DataFrame with classification results, dict with cost tracking information).
@@ -369,7 +373,7 @@ def classify_components_batch(
         component_plot_args = []
         for i in component_indices:
             image_path = plotting_results.get(i, None)
-            component_plot_args.append((i, image_path, api_key, model_name, custom_prompt))
+            component_plot_args.append((i, image_path, api_key, model_name, custom_prompt, base_url))
 
         processed_count = 0
         # Process in batches for concurrency management

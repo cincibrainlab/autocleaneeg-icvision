@@ -139,6 +139,7 @@ def label_components(
     psd_fmax: Optional[float] = None,
     component_indices: Optional[List[int]] = None,
     model_name: str = "gpt-4.1",
+    base_url: Optional[str] = None,
 ) -> Dict[str, Union[np.ndarray, List[str]]]:
     """
     Drop-in replacement for mne_icalabel.label_components.
@@ -157,6 +158,7 @@ def label_components(
             all components are processed.
         model_name: OpenAI model to use (e.g., 'gpt-4.1', 'gpt-4.1-mini', 'gpt-4.1-nano').
             Default: 'gpt-4.1'
+        base_url: Optional custom API base URL for OpenAI-compatible endpoints.
 
     Returns:
         Dictionary with ICLabel-compatible structure:
@@ -195,6 +197,7 @@ def label_components(
             psd_fmax=psd_fmax,  # Pass through PSD frequency limit
             component_indices=component_indices,
             model_name=model_name,  # Pass through model selection
+            base_url=base_url,  # Pass through custom API endpoint
         )
 
         # Extract classification results

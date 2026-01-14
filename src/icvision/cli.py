@@ -137,6 +137,13 @@ Examples:
         help="Path to a custom text file containing the classification prompt. "
         "If not provided, uses the default internal prompt.",
     )
+    api_group.add_argument(
+        "--base-url",
+        type=str,
+        default=None,
+        help="Custom API base URL for OpenAI-compatible endpoints. "
+        "If not provided, uses OPENAI_BASE_URL env variable or OpenAI default.",
+    )
 
     # Classification parameters
     class_group = parser.add_argument_group("Classification Parameters")
@@ -282,6 +289,7 @@ Examples:
             model_name=args.model,
             custom_prompt=custom_prompt_text,
             psd_fmax=args.psd_fmax,
+            base_url=args.base_url,
         )
 
         # Determine output path
