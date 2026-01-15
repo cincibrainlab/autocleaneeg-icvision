@@ -1,0 +1,350 @@
+---
+title: "RFC-001: Strip Layout Integration for ICVision"
+subtitle: "Drop-in Replacement Proposal for autocleaneeg-pipeline"
+date: "2026-01-15"
+author: "ICVision Development Team"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    mermaid:
+      theme: default
+---
+
+## Abstract
+
+This document describes the current single-image implementation of ICVision and proposes a plan to integrate the strip layout as a drop-in replacement. The strip layout combines multiple ICA components into a single image for batch classification, reducing API calls from N to N/9 while maintaining full compatibility with the autocleaneeg-pipeline output format.
+
+## Status
+
+| Field | Value |
+|-------|-------|
+| Status | Proposed |
+| Created | 2026-01-15 |
+| Target | v0.3.0 |
+| Dependencies | test_grid_classify.py (experimental) |
+
+## Current Single-Image Implementation
+
+### Architecture Overview
+
+The current ICVision implementation processes each ICA component individually. For each component, it generates a single WebP image containing four diagnostic plots, sends that image to the vision API, and receives a classification response. This approach is simple and reliable but requires one API call per component.
+
+```{mermaid}
+flowchart TD
+    A[label_components] --> B[classify_components_batch]
+    B --> C[plot_components_batch]
+    C --> D{For each component}
+    D --> E[plot_component_for_classification]
+    E --> F[Save individual WebP]
+    F --> G[classify_component_image_openai]
+    G --> H[API call per component]
+    H --> I{More components?}
+    I -->|yes| D
+    I -->|no| J[Aggregate results to DataFrame]
+    J --> K[Update ICA object]
+    K --> L[Save outputs]
+```
+
+### Output Files
+
+The single-image implementation produces the following outputs, all of which must be preserved for pipeline compatibility:
+
+| Output File | Pattern | Description |
+|-------------|---------|-------------|
+| Results CSV | `{basename}_icvis_results.csv` | Per-component classifications |
+| Cleaned Raw | `{basename}_icvis_cleaned_raw.fif` | Artifact-removed EEG data |
+| Updated ICA | `{basename}_icvis_classified_ica.fif` | ICA with labels and exclusions |
+| PDF Report | `{basename}_icvis_report.pdf` | Visual classification report |
+| Summary | `{basename}_icvis_summary.txt` | Cost and classification summary |
+
+### DataFrame Schema
+
+The results DataFrame contains these columns, which downstream pipeline stages depend on:
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `component_index` | int | ICA component number |
+| `component_name` | str | Human-readable name (IC0, IC1, ...) |
+| `label` | str | Classification (brain, eye, muscle, ...) |
+| `mne_label` | str | MNE-compatible label (eog, ecg, ...) |
+| `confidence` | float | Model confidence (0.0-1.0) |
+| `reason` | str | Classification rationale |
+| `exclude_vision` | bool | Whether to exclude this component |
+
+## Strip Layout Implementation (Experimental)
+
+### Current State
+
+The strip layout exists in `test_grid_classify.py` as an experimental feature. It arranges up to 9 components in horizontal rows within a single image, enabling batch classification with one API call.
+
+```{mermaid}
+flowchart TD
+    A[main] --> B[Load Raw + ICA]
+    B --> C[create_grid_image<br/>layout='strip']
+    C --> D[Create figure<br/>16 x 2n inches]
+    D --> E[GridSpec: n rows x 4 cols]
+    E --> F{For each component}
+    F --> G[plot_single_component_subplot]
+    G --> H{More components?}
+    H -->|yes| F
+    H -->|no| I[Save single WebP]
+    I --> J[classify_grid]
+    J --> K[Single API call]
+    K --> L[Parse batch JSON response]
+```
+
+### Strip Image Structure
+
+Each row in the strip image contains the same four diagnostic plots as the single-image approach, maintaining visual parity:
+
+```{mermaid}
+flowchart LR
+    subgraph "Strip Layout (9 components = 1 image)"
+        direction TB
+        subgraph "A: IC0"
+            A1[Topo] --- A2[TimeSeries] --- A3[ERP] --- A4[PSD]
+        end
+        subgraph "B: IC1"
+            B1[Topo] --- B2[TimeSeries] --- B3[ERP] --- B4[PSD]
+        end
+        subgraph "..."
+            X1[...] --- X2[...] --- X3[...] --- X4[...]
+        end
+        subgraph "I: IC8"
+            I1[Topo] --- I2[TimeSeries] --- I3[ERP] --- I4[PSD]
+        end
+    end
+```
+
+## Feature Comparison Table
+
+The following table maps every feature of the current single-image implementation to its strip layout equivalent, identifying gaps that must be addressed for drop-in compatibility:
+
+| Feature | Single-Image (Current) | Strip Layout (Proposed) | Status |
+|---------|------------------------|-------------------------|--------|
+| **Input Handling** | | | |
+| Load Raw from .fif | `load_raw_data()` | Reuse existing | Done |
+| Load Raw from .set | `load_raw_data()` | Reuse existing | Done |
+| Load ICA from .fif | `load_ica_data()` | Reuse existing | Done |
+| Auto-detect ICA in .set | `check_eeglab_ica_availability()` | Reuse existing | Done |
+| API key validation | `validate_api_key()` | Reuse existing | Done |
+| Custom base_url | `--base-url` parameter | Reuse existing | Done |
+| **Plotting** | | | |
+| Topography map | `ica.plot_components()` | `plot_single_component_subplot()` | Done |
+| Time series (2.5s) | Custom matplotlib | Custom matplotlib | Done |
+| ERP image | `mne.viz.plot_epochs_image` style | Custom implementation | Done |
+| Power spectrum | `psd_array_welch()` | `psd_array_welch()` | Done |
+| Image format | WebP | WebP | Done |
+| DPI setting | 150 | 150 | Done |
+| **Classification** | | | |
+| API endpoint | Responses API | Responses API | Done |
+| Model selection | `--model` parameter | `--model` parameter | Done |
+| Custom prompt | `--prompt-file` | Needs adaptation | **TODO** |
+| Confidence extraction | JSON parsing | JSON parsing | Done |
+| Label validation | Against COMPONENT_LABELS | Needs integration | **TODO** |
+| **Output Generation** | | | |
+| Results CSV | `save_results()` | Needs integration | **TODO** |
+| Cleaned Raw .fif | `save_cleaned_raw_data()` | Needs integration | **TODO** |
+| Cleaned Raw .set | Format preservation | Needs integration | **TODO** |
+| Updated ICA .fif | `save_ica_data()` | Needs integration | **TODO** |
+| PDF Report | `generate_classification_report()` | Needs integration | **TODO** |
+| Summary text | `format_summary_stats()` | Needs integration | **TODO** |
+| **ICA Object Updates** | | | |
+| Set `ica.labels_` | `_update_ica_with_classifications()` | Needs integration | **TODO** |
+| Set `ica.exclude` | Auto-exclude logic | Needs integration | **TODO** |
+| MNE label mapping | `ICVISION_TO_MNE_LABEL_MAP` | Needs integration | **TODO** |
+| **Pipeline Integration** | | | |
+| CLI interface | `autoclean-icvision` command | Needs `--layout` flag | **TODO** |
+| Python API | `label_components()` | Needs `layout` parameter | **TODO** |
+| ICLabel compat | `icvision.compat` module | Needs integration | **TODO** |
+| Cost tracking | Token counting + pricing | Needs adaptation | **TODO** |
+
+## Implementation Plan
+
+### Phase 1: Core Integration
+
+Refactor the strip layout code from `test_grid_classify.py` into the main `icvision` package. This involves:
+
+1. Move `create_grid_image()` to `plotting.py` with layout parameter
+2. Move `plot_single_component_subplot()` to `plotting.py`
+3. Add `classify_components_strip()` to `api.py` for batch classification
+4. Ensure precomputed sources optimization applies to strip layout
+
+::: {.callout-warning}
+## Decision Required: Strip Size Configuration
+
+The experimental implementation uses a fixed strip size of 9 components. Should this be:
+
+- **Fixed at 9** — Simpler implementation, tested configuration
+- **Configurable via `--strip-size`** — More flexible but adds complexity
+- **Auto-tuned based on component count** — e.g., use 12 for >100 components
+
+What is your preference?
+:::
+
+### Phase 2: Output Compatibility
+
+Ensure strip classification results integrate with existing output functions:
+
+1. Adapt JSON response parsing to produce identical DataFrame schema
+2. Verify `save_results()` works with strip-generated DataFrames
+3. Verify `_update_ica_with_classifications()` accepts strip results
+4. Test all output file generation paths
+
+::: {.callout-important}
+## Clarification Needed: PDF Report Content
+
+The current PDF report shows individual component images with their classifications. For strip mode:
+
+- **Option A**: Generate individual images for the report (slower, but familiar format)
+- **Option B**: Include strip images in the report (faster, but different visual layout)
+- **Option C**: Skip PDF generation in strip mode (fastest, rely on CSV only)
+
+Which approach aligns with your pipeline requirements?
+:::
+
+### Phase 3: CLI and API Surface
+
+Add layout selection to public interfaces:
+
+1. Add `--layout` flag to CLI (values: `single`, `strip`)
+2. Add `layout` parameter to `label_components()`
+3. Add `layout` parameter to `icvision.compat.label_components()`
+4. Default to `single` for backward compatibility
+
+::: {.callout-note}
+## Design Decision: Default Behavior
+
+For backward compatibility, the default layout should be `single`. However, if strip mode proves significantly more accurate or cost-effective, should we:
+
+- Keep `single` as default indefinitely?
+- Plan a future version where `strip` becomes default?
+- Make the default configurable via environment variable?
+:::
+
+### Phase 4: Batch Windowing
+
+Implement sliding window for large component counts:
+
+1. For N > 9 components, process in batches of 9
+2. Aggregate results across batches into single DataFrame
+3. Handle edge cases (N not divisible by 9)
+
+```{mermaid}
+flowchart TD
+    A[127 components] --> B{N > 9?}
+    B -->|yes| C[Split into batches of 9]
+    C --> D[Batch 1: IC0-IC8]
+    C --> E[Batch 2: IC9-IC17]
+    C --> F[...]
+    C --> G[Batch 15: IC126]
+    D --> H[Strip classify]
+    E --> H
+    F --> H
+    G --> H
+    H --> I[Merge DataFrames]
+    I --> J[Single results_df]
+    B -->|no| K[Single strip image]
+    K --> H
+```
+
+::: {.callout-caution}
+## Risk: Partial Batch Failures
+
+If one strip image fails classification (API error, timeout, malformed response), what should happen?
+
+- **Fail entire run** — Simple but loses all progress
+- **Retry failed batch** — Add retry logic with exponential backoff
+- **Fall back to single-image** — Classify failed components individually
+- **Skip and continue** — Mark failed components as "unknown" and proceed
+
+This affects reliability in production pipelines.
+:::
+
+## API Changes
+
+### Proposed label_components Signature
+
+```python
+def label_components(
+    raw_data: Union[str, Path, mne.io.Raw],
+    ica_data: Optional[Union[str, Path, mne.preprocessing.ICA]] = None,
+    api_key: Optional[str] = None,
+    confidence_threshold: float = 0.8,
+    auto_exclude: bool = True,
+    labels_to_exclude: Optional[List[str]] = None,
+    output_dir: Optional[Union[str, Path]] = None,
+    generate_report: bool = True,
+    batch_size: int = 10,
+    max_concurrency: int = 4,
+    model_name: str = "gpt-4.1",
+    custom_prompt: Optional[str] = None,
+    component_indices: Optional[List[int]] = None,
+    psd_fmax: Optional[float] = None,
+    base_url: Optional[str] = None,
+    layout: str = "single",  # NEW: "single" or "strip"
+    strip_size: int = 9,     # NEW: components per strip image
+) -> Tuple[mne.io.Raw, mne.preprocessing.ICA, pd.DataFrame]:
+```
+
+### Proposed CLI Addition
+
+```bash
+autoclean-icvision raw.set \
+  --layout strip \
+  --strip-size 9 \
+  --model gpt-5.2 \
+  --base-url https://openai.cincibrainlab.com/v1
+```
+
+::: {.callout-tip}
+## Suggestion: Environment Variable Override
+
+For pipeline automation, consider supporting `ICVISION_LAYOUT` environment variable so operators can switch modes without modifying scripts:
+
+```bash
+export ICVISION_LAYOUT=strip
+autoclean-icvision raw.set  # Uses strip mode
+```
+:::
+
+## Performance Projections
+
+| Metric | Single-Image | Strip (9) | Improvement |
+|--------|--------------|-----------|-------------|
+| API calls (127 comp) | 127 | 15 | 88% reduction |
+| Latency per component | ~3.5s | ~0.4s | 89% reduction |
+| Total time (127 comp) | ~445s | ~53s | 88% reduction |
+| Token caching | Per component | Per strip | Higher hit rate |
+
+::: {.callout-warning}
+## Validation Required: Accuracy Comparison
+
+The performance gains assume strip classification maintains accuracy parity with single-image mode. The experimental results in `experiments/grid_tests/results.md` show promising results, but we need:
+
+1. Larger sample size validation (>10 subjects)
+2. Per-category accuracy breakdown (brain, eye, muscle, etc.)
+3. Expert review of disagreement cases
+
+Do you have additional test data for validation?
+:::
+
+## Open Questions Summary
+
+::: {.callout-important}
+## Questions Requiring Your Input
+
+1. **Strip size**: Fixed at 9, or configurable?
+2. **PDF report**: Individual images, strip images, or skip?
+3. **Default behavior**: Keep `single` forever, or plan transition?
+4. **Error handling**: Fail, retry, fallback, or skip?
+5. **Validation data**: Available test subjects for accuracy comparison?
+:::
+
+## References
+
+1. Current implementation: `src/icvision/core.py`
+2. Experimental strip: `test_grid_classify.py`
+3. Experiment results: `experiments/grid_tests/results.md`
