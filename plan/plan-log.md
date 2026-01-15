@@ -22,3 +22,24 @@
 **Status**: Awaiting design decision responses before implementation.
 
 **GitHub Issue**: [#9](https://github.com/cincibrainlab/autocleaneeg-icvision/issues/9) - Feature: Strip Layout Integration for Batch ICA Classification
+
+---
+
+## 2026-01-15: Phase 1 Detailed Execution Plan
+
+**Document**: `multi-tracing-production.qmd` (updated)
+
+**Decision resolved**: Strip size fixed at 9 components per image.
+
+**Remainder handling**: Final batch contains 1-8 components when total is not divisible by 9. Same 4-column layout with fewer rows; prompt specifies exact component count.
+
+**Phase 1 steps defined**:
+1. Step 1.1: Extract `plot_single_component_subplot()` to `plotting.py`
+2. Step 1.2: Extract `create_strip_image()` to `plotting.py`
+3. Step 1.3: Add `classify_strip_image()` to `api.py`
+4. Step 1.4: Create batch orchestration with windowing logic
+5. Step 1.5: Integration dispatch in `classify_components_batch()`
+
+**Pitfalls identified**: Precomputed sources optimization, axis indexing, figure memory management, JSON parsing edge cases, component count validation, DataFrame schema parity.
+
+**Status**: Ready to begin Phase 1 implementation.

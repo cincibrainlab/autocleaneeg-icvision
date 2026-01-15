@@ -172,17 +172,162 @@ Refactor the strip layout code from `test_grid_classify.py` into the main `icvis
 3. Add `classify_components_strip()` to `api.py` for batch classification
 4. Ensure precomputed sources optimization applies to strip layout
 
-::: {.callout-warning}
-## Decision Required: Strip Size Configuration
+::: {.callout-note}
+## Decision: Strip Size Fixed at 9
 
-The experimental implementation uses a fixed strip size of 9 components. Should this be:
+**Resolved**: Strip size will be fixed at 9 components per image. This simplifies implementation and matches the tested configuration from `test_grid_classify.py`.
 
-- **Fixed at 9** — Simpler implementation, tested configuration
-- **Configurable via `--strip-size`** — More flexible but adds complexity
-- **Auto-tuned based on component count** — e.g., use 12 for >100 components
+**Remainder Handling**: When total components are not divisible by 9, the final batch contains fewer components. For example, with 127 components:
 
-What is your preference?
+- Batches 1-14: 9 components each (126 total)
+- Batch 15: 1 component (IC126)
+
+The final partial strip is rendered with the same 4-column layout but fewer rows. The API prompt explicitly states the number of components in each strip, so the model correctly identifies all components regardless of strip size.
 :::
+
+### Phase 1: Detailed Execution Plan
+
+The following steps describe the exact implementation approach for integrating strip layout into the main package.
+
+#### Step 1.1: Extract Plotting Functions
+
+**Action**: Copy `plot_single_component_subplot()` from `test_grid_classify.py` to `src/icvision/plotting.py`.
+
+**Current location**: `test_grid_classify.py` lines ~50-150
+
+**Target signature**:
+```python
+def plot_single_component_subplot(
+    fig: plt.Figure,
+    axes: List[plt.Axes],
+    ica_obj: mne.preprocessing.ICA,
+    raw_obj: mne.io.Raw,
+    comp_idx: int,
+    precomputed_sources: Optional[mne.io.Raw] = None,
+    psd_fmax: float = 80.0,
+) -> None:
+```
+
+**Pitfalls**:
+
+- The experimental code may not use precomputed sources consistently. Must verify the optimization is applied.
+- Axis indexing differs between single-image (4 axes) and strip (4 × n axes). Ensure correct subplot targeting.
+- Color scales for topography maps must remain consistent across components in the same strip.
+
+#### Step 1.2: Extract Grid Image Creation
+
+**Action**: Copy `create_grid_image()` from `test_grid_classify.py` to `src/icvision/plotting.py`.
+
+**Target signature**:
+```python
+def create_strip_image(
+    ica_obj: mne.preprocessing.ICA,
+    raw_obj: mne.io.Raw,
+    component_indices: List[int],
+    output_path: Path,
+    precomputed_sources: Optional[mne.io.Raw] = None,
+    psd_fmax: float = 80.0,
+    dpi: int = 150,
+) -> Path:
+```
+
+**Pitfalls**:
+
+- Figure sizing: current implementation uses `16 x (2 * n_components)` inches. With 9 components, this is 16×18 inches at 150 DPI = 2400×2700 pixels. Verify this stays within API image size limits.
+- Memory usage: large figures consume significant RAM. Must call `plt.close(fig)` after saving.
+- GridSpec configuration must match the 4-column layout exactly.
+
+#### Step 1.3: Add Strip Classification Function
+
+**Action**: Create `classify_strip_image()` in `src/icvision/api.py`.
+
+**Target signature**:
+```python
+def classify_strip_image(
+    image_path: Path,
+    component_indices: List[int],
+    api_key: str,
+    model_name: str = "gpt-4.1",
+    custom_prompt: Optional[str] = None,
+    base_url: Optional[str] = None,
+) -> List[Dict[str, Any]]:
+```
+
+**Pitfalls**:
+
+- **Prompt engineering**: The prompt must clearly specify component ordering (top-to-bottom) and expected JSON array format. Ambiguity leads to misaligned labels.
+- **JSON parsing**: Response may include markdown code fences (```json). Must strip these before parsing.
+- **Component count mismatch**: Model may return fewer or more classifications than components in the strip. Must validate array length matches `len(component_indices)`.
+
+#### Step 1.4: Create Batch Orchestration
+
+**Action**: Create `classify_components_strip_batch()` in `src/icvision/api.py` to handle windowing.
+
+```python
+def classify_components_strip_batch(
+    ica_obj: mne.preprocessing.ICA,
+    raw_obj: mne.io.Raw,
+    api_key: str,
+    model_name: str = "gpt-4.1",
+    output_dir: Path,
+    component_indices: Optional[List[int]] = None,
+    psd_fmax: Optional[float] = None,
+    base_url: Optional[str] = None,
+) -> Tuple[pd.DataFrame, Dict[str, Any]]:
+```
+
+**Windowing logic**:
+```python
+STRIP_SIZE = 9
+all_indices = component_indices or list(range(ica_obj.n_components_))
+batches = [all_indices[i:i+STRIP_SIZE] for i in range(0, len(all_indices), STRIP_SIZE)]
+
+# batches for 127 components:
+# [[0-8], [9-17], [18-26], ..., [117-125], [126]]
+```
+
+**Pitfalls**:
+
+- **Partial batches**: The final batch may have 1-8 components. The strip image and prompt must handle this gracefully.
+- **Progress tracking**: With 15 batches for 127 components, users need progress feedback. Add logging at each batch completion.
+- **Cost aggregation**: Must sum token usage across all batches for accurate cost reporting.
+
+#### Step 1.5: Integration Point
+
+**Action**: Modify `classify_components_batch()` in `src/icvision/api.py` to dispatch based on layout parameter.
+
+```python
+def classify_components_batch(
+    ...,
+    layout: str = "single",  # NEW
+) -> Tuple[pd.DataFrame, Dict[str, Any]]:
+    if layout == "strip":
+        return classify_components_strip_batch(...)
+    else:
+        return _classify_components_single_batch(...)  # existing logic
+```
+
+**Pitfalls**:
+
+- **Parameter passthrough**: All existing parameters (confidence_threshold, auto_exclude, labels_to_exclude) must flow through to the strip path.
+- **DataFrame schema parity**: Strip results must produce identical column names and types as single-image results.
+
+```{mermaid}
+flowchart TD
+    subgraph "Phase 1 Execution Flow"
+        A[Start] --> B[Step 1.1: Extract plot_single_component_subplot]
+        B --> C[Step 1.2: Extract create_strip_image]
+        C --> D[Step 1.3: Add classify_strip_image]
+        D --> E[Step 1.4: Create batch orchestration]
+        E --> F[Step 1.5: Integration dispatch]
+        F --> G[Unit tests for each step]
+        G --> H[Integration test: 127 components]
+        H --> I{Tests pass?}
+        I -->|yes| J[Phase 1 Complete]
+        I -->|no| K[Debug and iterate]
+        K --> G
+    end
+```
 
 ### Phase 2: Output Compatibility
 
@@ -336,7 +481,7 @@ Do you have additional test data for validation?
 ::: {.callout-important}
 ## Questions Requiring Your Input
 
-1. **Strip size**: Fixed at 9, or configurable?
+1. ~~**Strip size**: Fixed at 9, or configurable?~~ **RESOLVED: Fixed at 9**
 2. **PDF report**: Individual images, strip images, or skip?
 3. **Default behavior**: Keep `single` forever, or plan transition?
 4. **Error handling**: Fail, retry, fallback, or skip?

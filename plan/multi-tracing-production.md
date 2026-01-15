@@ -12,6 +12,7 @@ you also have access to my gh cli that is authenticated
 
 
 Follow thse instructions:
+
 how is the current 9 image strip implemented
 use a flow chart to help me understand the code
 
@@ -23,7 +24,10 @@ now, i want you to use the callout feature to specifically query me on areas of 
 
 please add a gh issue on this feature update
 
-
+write out phase 1 with exact execution plans that you plan to do and any pitfalls during this approach
+- keep it fixed at 9
+- but do you have a plan when the total compents are not a multiple of 9
+add your response to the call out
 
 
 
