@@ -20,3 +20,5 @@
 5. Validation dataset availability for accuracy comparison
 
 **Status**: Awaiting design decision responses before implementation.
+
+**GitHub Issue**: [#9](https://github.com/cincibrainlab/autocleaneeg-icvision/issues/9) - Feature: Strip Layout Integration for Batch ICA Classification
