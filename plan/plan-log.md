@@ -300,3 +300,28 @@ def _apply_artifact_rejection(raw, ica):
 **Backward compatibility**: Users can still specify higher frequencies via `--psd-fmax` CLI flag or `psd_fmax` parameter.
 
 **Status**: Complete. PSD plots now avoid notch filter artifacts by default.
+
+---
+
+## 2026-01-16: Visual Examples Added to RFC Documentation
+
+**Document**: `multi-tracing-production.qmd` (updated)
+
+**Summary**: Added visual examples section showing strip layout with 45Hz PSD cutoff.
+
+**Changes made**:
+
+1. **`plan/images/strip_example_45hz.png`** - Added example strip image demonstrating:
+   - 9 ICA components in 4-column layout (topo, time series, ERP, PSD)
+   - PSD plots showing 1-45Hz range (avoiding notch filter region)
+
+2. **`multi-tracing-production.qmd`** - Added "Visual Examples" section:
+   - Embedded strip image with caption
+   - Key observations callout explaining each column
+   - Before vs After callout tip explaining the 45Hz change rationale
+
+3. **`.gitignore`** - Added exception for `plan/**/*.png` to allow documentation images
+
+**Commit**: `2540a16`
+
+**Status**: RFC documentation now includes visual examples of the PSD frequency change.
