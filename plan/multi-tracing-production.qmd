@@ -20,12 +20,13 @@ This document describes the current single-image implementation of ICVision and 
 
 | Field | Value |
 |-------|-------|
-| Status | **Phase 1 Complete** |
+| Status | **Phase 2 Complete** |
 | Created | 2026-01-15 |
 | Updated | 2026-01-15 |
 | Target | v0.3.0 |
 | Dependencies | test_grid_classify.py (experimental) |
 | Model | gpt-5.2 (via custom endpoint) |
+| Tests | 10/10 passing (`test_strip_compatibility.py`) |
 
 ## Current Single-Image Implementation
 
@@ -390,6 +391,35 @@ Ensure strip classification results integrate with existing output functions:
 - PDF report generation needs decision on strip vs individual image layout
 - Custom prompt file support (`--prompt-file`) not yet adapted for strip mode
 :::
+
+### Phase 2: Completion Status
+
+Phase 2 (Output Compatibility) is complete. TDD approach was used: tests written first, then code fixed to pass.
+
+| Task | Status | Details |
+|------|--------|---------|
+| DataFrame schema parity | ✅ Complete | Fixed column names: `component_index`, `component_name`, `label`, `exclude_vision` |
+| `save_results()` integration | ✅ Complete | Strip DataFrame accepted without modification |
+| `_update_ica_with_classifications()` | ✅ Complete | ICA labels and exclusions correctly set from strip results |
+| DataFrame index | ✅ Complete | Index set to `component_index` for downstream compatibility |
+| MNE label mapping | ✅ Complete | `mne_label` column correctly maps icvision labels |
+| Remainder handling | ✅ Complete | Partial batches (1-8 components) produce valid DataFrame rows |
+
+**Code change** (`api.py:600-613`):
+
+Schema was corrected from:
+```python
+# OLD (incompatible)
+{"component": ..., "ic_type": ..., "exclude": ...}
+```
+
+to:
+```python
+# NEW (compatible)
+{"component_index": ..., "component_name": f"IC{idx}", "label": ..., "exclude_vision": ...}
+```
+
+**Test suite** (`tests/test_strip_compatibility.py`): 10 tests, all passing.
 
 ::: {.callout-important}
 ## Clarification Needed: PDF Report Content

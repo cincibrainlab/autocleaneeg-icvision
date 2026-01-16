@@ -599,17 +599,19 @@ def classify_components_strip_batch(
 
         df_data.append(
             {
-                "component": comp_idx,
-                "ic_type": label,
+                "component_index": comp_idx,
+                "component_name": f"IC{comp_idx}",
+                "label": label,
                 "confidence": confidence,
                 "reason": reason,
                 "mne_label": ICVISION_TO_MNE_LABEL_MAP.get(label, "other"),
-                "exclude": should_exclude,
+                "exclude_vision": should_exclude,
             }
         )
 
     results_df = pd.DataFrame(df_data)
-    results_df = results_df.sort_values("component").reset_index(drop=True)
+    results_df = results_df.sort_values("component_index").reset_index(drop=True)
+    results_df = results_df.set_index("component_index", drop=False)
 
     elapsed = time.time() - start_time
     metadata = {
