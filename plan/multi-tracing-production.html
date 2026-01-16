@@ -130,7 +130,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#implementation-plan-for-pipeline-integration" id="toc-implementation-plan-for-pipeline-integration" class="nav-link" data-scroll-target="#implementation-plan-for-pipeline-integration"><span class="header-section-number">10.6</span> Implementation Plan for Pipeline Integration</a></li>
   <li><a href="#backward-compatibility" id="toc-backward-compatibility" class="nav-link" data-scroll-target="#backward-compatibility"><span class="header-section-number">10.7</span> Backward Compatibility</a></li>
   </ul></li>
-  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">11</span> References</a></li>
+  <li><a href="#bug-fixes-during-strip-integration" id="toc-bug-fixes-during-strip-integration" class="nav-link" data-scroll-target="#bug-fixes-during-strip-integration"><span class="header-section-number">11</span> Bug Fixes During Strip Integration</a>
+  <ul class="collapse">
+  <li><a href="#pdf-report-panel-rendering-fixed" id="toc-pdf-report-panel-rendering-fixed" class="nav-link" data-scroll-target="#pdf-report-panel-rendering-fixed"><span class="header-section-number">11.1</span> PDF Report Panel Rendering (Fixed)</a></li>
+  <li><a href="#psd-frequency-limit-changed" id="toc-psd-frequency-limit-changed" class="nav-link" data-scroll-target="#psd-frequency-limit-changed"><span class="header-section-number">11.2</span> PSD Frequency Limit (Changed)</a></li>
+  </ul></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">12</span> References</a></li>
   </ul>
 </nav>
 </div>
@@ -184,7 +189,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td>Status</td>
-<td><strong>Phase 4 Complete</strong></td>
+<td><strong>Phase 4 Complete + Bug Fixes</strong></td>
 </tr>
 <tr class="even">
 <td>Created</td>
@@ -208,7 +213,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="odd">
 <td>Tests</td>
-<td>29/29 passing (3 test files)</td>
+<td>58/61 passing (3 pre-existing failures)</td>
+</tr>
+<tr class="even">
+<td>Bug Fixes</td>
+<td>PDF report panels, PSD cutoff (45Hz)</td>
 </tr>
 </tbody>
 </table>
@@ -685,7 +694,7 @@ Decision: Strip Size Fixed at 9
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    raw_obj: mne.io.Raw,</span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    comp_idx: <span class="bu">int</span>,</span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    precomputed_sources: Optional[mne.io.Raw] <span class="op">=</span> <span class="va">None</span>,</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    psd_fmax: <span class="bu">float</span> <span class="op">=</span> <span class="fl">80.0</span>,</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    psd_fmax: <span class="bu">float</span> <span class="op">=</span> <span class="fl">45.0</span>,</span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> <span class="va">None</span>:</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><strong>Pitfalls</strong>:</p>
 <ul>
@@ -704,7 +713,7 @@ Decision: Strip Size Fixed at 9
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    component_indices: List[<span class="bu">int</span>],</span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    output_path: Path,</span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    precomputed_sources: Optional[mne.io.Raw] <span class="op">=</span> <span class="va">None</span>,</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    psd_fmax: <span class="bu">float</span> <span class="op">=</span> <span class="fl">80.0</span>,</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    psd_fmax: <span class="bu">float</span> <span class="op">=</span> <span class="fl">45.0</span>,</span>
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    dpi: <span class="bu">int</span> <span class="op">=</span> <span class="dv">150</span>,</span>
 <span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> Path:</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><strong>Pitfalls</strong>:</p>
@@ -1624,8 +1633,72 @@ Questions Requiring Your Input
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>label_components(raw, ica, <span class="op">**</span>kwargs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
-<section id="references" class="level2" data-number="11">
-<h2 data-number="11" class="anchored" data-anchor-id="references"><span class="header-section-number">11</span> References</h2>
+<section id="bug-fixes-during-strip-integration" class="level2" data-number="11">
+<h2 data-number="11" class="anchored" data-anchor-id="bug-fixes-during-strip-integration"><span class="header-section-number">11</span> Bug Fixes During Strip Integration</h2>
+<section id="pdf-report-panel-rendering-fixed" class="level3" data-number="11.1">
+<h3 data-number="11.1" class="anchored" data-anchor-id="pdf-report-panel-rendering-fixed"><span class="header-section-number">11.1</span> PDF Report Panel Rendering (Fixed)</h3>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Issue: Excluded Components Showed Flat Data in PDF Reports
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>When using strip mode, PDF report panels for excluded components showed:</p>
+<ul>
+<li>Time series: Scale “1e-15” (essentially zero)</li>
+<li>ERP image: Uniform green (no variation)</li>
+<li>PSD: Flat line at -200 dB</li>
+</ul>
+<p>Only topographies rendered correctly.</p>
+</div>
+</div>
+<p><strong>Root Cause</strong>: The <code>_apply_artifact_rejection()</code> function modified the raw data <strong>in-place</strong> via <code>ica.apply(raw)</code>. When the PDF report was generated, it received the already-modified raw data where excluded component signals had been zeroed out.</p>
+<p><strong>Solution</strong>: Modified <code>_apply_artifact_rejection()</code> to work on a copy:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Before (in-place modification broke PDF report)</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _apply_artifact_rejection(raw, ica):</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> ica.exclude:</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>        ica.<span class="bu">apply</span>(raw)  <span class="co"># Modifies raw in-place!</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> raw</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="co"># After (preserves original for PDF report)</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _apply_artifact_rejection(raw, ica):</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>    raw_cleaned <span class="op">=</span> raw.copy()  <span class="co"># Make copy first</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> ica.exclude:</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>        ica.<span class="bu">apply</span>(raw_cleaned)  <span class="co"># Apply to copy only</span></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> raw_cleaned</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Commits</strong>: <code>d9262b6</code></p>
+</section>
+<section id="psd-frequency-limit-changed" class="level3" data-number="11.2">
+<h3 data-number="11.2" class="anchored" data-anchor-id="psd-frequency-limit-changed"><span class="header-section-number">11.2</span> PSD Frequency Limit (Changed)</h3>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Change: Default PSD Cutoff Reduced from 80Hz to 45Hz
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>EEG data typically has notch filters applied at 50Hz (Europe/Asia) or 60Hz (Americas) to remove line noise. These filters create visible dips in the power spectrum that can confuse visual interpretation by both humans and the AI classifier.</p>
+</div>
+</div>
+<p><strong>Solution</strong>: Changed default <code>psd_fmax</code> from 80Hz to 45Hz across all plotting functions:</p>
+<ul>
+<li><code>plot_component_for_classification()</code>: 80Hz → 45Hz</li>
+<li><code>plot_single_component_subplot()</code>: 55Hz → 45Hz</li>
+<li>CLI help text updated to reflect new default</li>
+</ul>
+<p>This displays clean spectral content through alpha and beta ranges without notch filter artifacts. Users can still specify higher frequencies via <code>--psd-fmax</code> flag if needed.</p>
+<p><strong>Commits</strong>: <code>316ea41</code></p>
+</section>
+</section>
+<section id="references" class="level2" data-number="12">
+<h2 data-number="12" class="anchored" data-anchor-id="references"><span class="header-section-number">12</span> References</h2>
 <ol type="1">
 <li>Current implementation: <code>src/icvision/core.py</code></li>
 <li>Experimental strip: <code>test_grid_classify.py</code></li>

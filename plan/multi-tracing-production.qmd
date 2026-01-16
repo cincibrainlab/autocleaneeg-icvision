@@ -20,13 +20,14 @@ This document describes the current single-image implementation of ICVision and 
 
 | Field | Value |
 |-------|-------|
-| Status | **Phase 4 Complete** |
+| Status | **Phase 4 Complete + Bug Fixes** |
 | Created | 2026-01-15 |
 | Updated | 2026-01-15 |
 | Target | v0.3.0 |
 | Dependencies | test_grid_classify.py (experimental) |
 | Model | gpt-5.2 (via custom endpoint) |
-| Tests | 29/29 passing (3 test files) |
+| Tests | 58/61 passing (3 pre-existing failures) |
+| Bug Fixes | PDF report panels, PSD cutoff (45Hz) |
 
 ## Current Single-Image Implementation
 
@@ -207,7 +208,7 @@ def plot_single_component_subplot(
     raw_obj: mne.io.Raw,
     comp_idx: int,
     precomputed_sources: Optional[mne.io.Raw] = None,
-    psd_fmax: float = 80.0,
+    psd_fmax: float = 45.0,
 ) -> None:
 ```
 
@@ -229,7 +230,7 @@ def create_strip_image(
     component_indices: List[int],
     output_path: Path,
     precomputed_sources: Optional[mne.io.Raw] = None,
-    psd_fmax: float = 80.0,
+    psd_fmax: float = 45.0,
     dpi: int = 150,
 ) -> Path:
 ```
@@ -758,6 +759,61 @@ Or pass through kwargs from the pipeline configuration:
 kwargs = {"layout": "strip", "strip_size": 9, **kwargs}
 label_components(raw, ica, **kwargs)
 ```
+
+## Bug Fixes During Strip Integration
+
+### PDF Report Panel Rendering (Fixed)
+
+::: {.callout-important}
+## Issue: Excluded Components Showed Flat Data in PDF Reports
+
+When using strip mode, PDF report panels for excluded components showed:
+
+- Time series: Scale "1e-15" (essentially zero)
+- ERP image: Uniform green (no variation)
+- PSD: Flat line at -200 dB
+
+Only topographies rendered correctly.
+:::
+
+**Root Cause**: The `_apply_artifact_rejection()` function modified the raw data **in-place** via `ica.apply(raw)`. When the PDF report was generated, it received the already-modified raw data where excluded component signals had been zeroed out.
+
+**Solution**: Modified `_apply_artifact_rejection()` to work on a copy:
+
+```python
+# Before (in-place modification broke PDF report)
+def _apply_artifact_rejection(raw, ica):
+    if ica.exclude:
+        ica.apply(raw)  # Modifies raw in-place!
+    return raw
+
+# After (preserves original for PDF report)
+def _apply_artifact_rejection(raw, ica):
+    raw_cleaned = raw.copy()  # Make copy first
+    if ica.exclude:
+        ica.apply(raw_cleaned)  # Apply to copy only
+    return raw_cleaned
+```
+
+**Commits**: `d9262b6`
+
+### PSD Frequency Limit (Changed)
+
+::: {.callout-note}
+## Change: Default PSD Cutoff Reduced from 80Hz to 45Hz
+
+EEG data typically has notch filters applied at 50Hz (Europe/Asia) or 60Hz (Americas) to remove line noise. These filters create visible dips in the power spectrum that can confuse visual interpretation by both humans and the AI classifier.
+:::
+
+**Solution**: Changed default `psd_fmax` from 80Hz to 45Hz across all plotting functions:
+
+- `plot_component_for_classification()`: 80Hz → 45Hz
+- `plot_single_component_subplot()`: 55Hz → 45Hz
+- CLI help text updated to reflect new default
+
+This displays clean spectral content through alpha and beta ranges without notch filter artifacts. Users can still specify higher frequencies via `--psd-fmax` flag if needed.
+
+**Commits**: `316ea41`
 
 ## References
 
