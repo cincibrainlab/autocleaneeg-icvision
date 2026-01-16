@@ -144,3 +144,21 @@ classify_components_batch(
 **Commit**: `60f17dd`
 
 **Status**: Phase 2 complete. Strip layout now produces drop-in compatible output.
+
+---
+
+## 2026-01-15: PDF Report Option A Verified
+
+**Decision**: Option A selected — generate individual images for PDF reports in strip mode.
+
+**Finding**: No code changes required. The existing `generate_classification_report()` function already generates individual component images fresh from the ICA object, independent of how classification was performed. The Phase 2 DataFrame schema fix ensures compatibility.
+
+**Tests added** (`test_strip_compatibility.py`):
+- `TestPDFReportIntegration::test_generate_report_accepts_strip_dataframe`
+- `TestPDFReportIntegration::test_generate_report_artifacts_only_with_strip_dataframe`
+
+**Test count**: 12/12 passing
+
+**Commit**: `4a9aa97`
+
+**Status**: PDF report generation works with strip mode. 2 of 5 open questions now resolved.
