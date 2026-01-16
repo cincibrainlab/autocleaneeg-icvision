@@ -162,3 +162,47 @@ classify_components_batch(
 **Commit**: `4a9aa97`
 
 **Status**: PDF report generation works with strip mode. 2 of 5 open questions now resolved.
+
+---
+
+## 2026-01-15: Phase 3 & Phase 4 Complete (TDD)
+
+**Summary**: Completed CLI/API surface and error handling using TDD approach.
+
+### Phase 3: CLI and API Surface
+
+**Changes**:
+- Added `--layout` flag to CLI (`single`/`strip`, default: `single`)
+- Added `--strip-size` flag (default: 9)
+- Added `layout` and `strip_size` parameters to:
+  - `core.label_components()`
+  - `compat.label_components()`
+- Parameters flow through to `classify_components_batch()`
+
+**Test suite**: `tests/test_phase3_cli_api.py` (10 tests)
+
+### Phase 4: Error Handling
+
+**Decision**: Retry with exponential backoff selected
+
+**Changes**:
+- Added `max_retries` parameter to `classify_strip_image()` (default: 3)
+- Extracted `_call_openai_api()` helper for testability
+- Implemented exponential backoff: 1s → 2s → 4s
+- Exhausted retries fall back to `other_artifact` label
+
+**Test suite**: `tests/test_phase4_retry.py` (7 tests)
+
+### Summary
+
+| Phase | Tests | Status |
+|-------|-------|--------|
+| Phase 1 (Core) | - | ✅ Complete |
+| Phase 2 (Output) | 12 | ✅ Complete |
+| Phase 3 (CLI/API) | 10 | ✅ Complete |
+| Phase 4 (Retry) | 7 | ✅ Complete |
+| **Total** | **29** | **All passing** |
+
+**Commit**: `7266f0b`
+
+**Status**: All 4 phases complete. 4 of 5 open questions resolved. Ready for production testing.
