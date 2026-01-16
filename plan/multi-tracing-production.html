@@ -134,6 +134,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul class="collapse">
   <li><a href="#pdf-report-panel-rendering-fixed" id="toc-pdf-report-panel-rendering-fixed" class="nav-link" data-scroll-target="#pdf-report-panel-rendering-fixed"><span class="header-section-number">11.1</span> PDF Report Panel Rendering (Fixed)</a></li>
   <li><a href="#psd-frequency-limit-changed" id="toc-psd-frequency-limit-changed" class="nav-link" data-scroll-target="#psd-frequency-limit-changed"><span class="header-section-number">11.2</span> PSD Frequency Limit (Changed)</a></li>
+  <li><a href="#visual-examples" id="toc-visual-examples" class="nav-link" data-scroll-target="#visual-examples"><span class="header-section-number">11.3</span> Visual Examples</a></li>
   </ul></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">12</span> References</a></li>
   </ul>
@@ -1695,6 +1696,36 @@ Change: Default PSD Cutoff Reduced from 80Hz to 45Hz
 </ul>
 <p>This displays clean spectral content through alpha and beta ranges without notch filter artifacts. Users can still specify higher frequencies via <code>--psd-fmax</code> flag if needed.</p>
 <p><strong>Commits</strong>: <code>316ea41</code></p>
+</section>
+<section id="visual-examples" class="level3" data-number="11.3">
+<h3 data-number="11.3" class="anchored" data-anchor-id="visual-examples"><span class="header-section-number">11.3</span> Visual Examples</h3>
+<p>The following strip image demonstrates the 45Hz PSD cutoff in action. Notice how the PSD plots (rightmost column) show clean spectral content without notch filter artifacts:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/strip_example_45hz.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption>Strip layout with 45Hz PSD cutoff - 9 ICA components showing topography, time series, ERP, and power spectrum</figcaption>
+</figure>
+</div>
+<p><strong>Key observations</strong>:</p>
+<ol type="1">
+<li><strong>Topography (Column 1)</strong>: Scalp maps show component spatial patterns for identifying artifact sources</li>
+<li><strong>Time Series (Column 2)</strong>: Raw component activation over time reveals temporal characteristics</li>
+<li><strong>ERP/Average (Column 3)</strong>: Event-related patterns highlight stimulus-locked activity</li>
+<li><strong>PSD (Column 4)</strong>: Power spectrum now displays 1-45Hz range, avoiding the 50-60Hz notch filter region</li>
+</ol>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Before vs After
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The PSD plots previously showed frequencies up to 80Hz, which included visible notch filter dips at 50-60Hz. These dips created artificial-looking “valleys” in the spectrum that could mislead both human reviewers and AI classifiers. By capping at 45Hz, we show meaningful spectral content (delta through beta bands) without these artifacts.</p>
+</div>
+</div>
 </section>
 </section>
 <section id="references" class="level2" data-number="12">

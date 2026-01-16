@@ -44,6 +44,13 @@ use TDD style lets do phase 3, repeat loop until all tests pass
 use TDD style lets do phase 4, repeat loop until all tests pass
 -  Retry failed batch — Add retry logic with exponential backoff
 
+use TDD; investigate when using strip the PDF report panels are incomplete. only the topography seems rendered correctly. what is the root cause?
+
+For the PSD plot let's cut the X axis at 45 visually so we can not have to worry about the notch or highest frequences for the AI interpreation.
+visualize in the report which plots changed by showing examples
+
+
+
 now add a section detailing how this vision tool was originally implemented in /Users/ernie/sandbox/autocleaneeg-testing/autocleaneeg_pipeline and what changes o optimizations are proposed with our new strip version. write out a plan only and a table. use prose to explain what and why. 
 
 

@@ -815,6 +815,25 @@ This displays clean spectral content through alpha and beta ranges without notch
 
 **Commits**: `316ea41`
 
+### Visual Examples
+
+The following strip image demonstrates the 45Hz PSD cutoff in action. Notice how the PSD plots (rightmost column) show clean spectral content without notch filter artifacts:
+
+![Strip layout with 45Hz PSD cutoff - 9 ICA components showing topography, time series, ERP, and power spectrum](images/strip_example_45hz.png){width=100%}
+
+**Key observations**:
+
+1. **Topography (Column 1)**: Scalp maps show component spatial patterns for identifying artifact sources
+2. **Time Series (Column 2)**: Raw component activation over time reveals temporal characteristics
+3. **ERP/Average (Column 3)**: Event-related patterns highlight stimulus-locked activity
+4. **PSD (Column 4)**: Power spectrum now displays 1-45Hz range, avoiding the 50-60Hz notch filter region
+
+::: {.callout-tip}
+## Before vs After
+
+The PSD plots previously showed frequencies up to 80Hz, which included visible notch filter dips at 50-60Hz. These dips created artificial-looking "valleys" in the spectrum that could mislead both human reviewers and AI classifiers. By capping at 45Hz, we show meaningful spectral content (delta through beta bands) without these artifacts.
+:::
+
 ## References
 
 1. Current implementation: `src/icvision/core.py`

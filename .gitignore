@@ -351,6 +351,7 @@ data/
 !docs/**/*.svg
 !examples/**/*.png
 !tests/**/*.png
+!plan/**/*.png
 
 # EEG/neuroscience specific
 *.fif
