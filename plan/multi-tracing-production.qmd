@@ -26,7 +26,7 @@ This document describes the current single-image implementation of ICVision and 
 | Target | v0.3.0 |
 | Dependencies | test_grid_classify.py (experimental) |
 | Model | gpt-5.2 (via custom endpoint) |
-| Tests | 10/10 passing (`test_strip_compatibility.py`) |
+| Tests | 12/12 passing (`test_strip_compatibility.py`) |
 
 ## Current Single-Image Implementation
 
@@ -387,9 +387,9 @@ Ensure strip classification results integrate with existing output functions:
 - ICA object updates via `_update_ica_with_classifications()` — compatible
 - Cleaned Raw export — independent of classification method
 
-**Requires work**:
-- PDF report generation needs decision on strip vs individual image layout
-- Custom prompt file support (`--prompt-file`) not yet adapted for strip mode
+**Resolved**:
+- ✅ PDF report generation: Option A selected (individual images) — works without code changes
+- Custom prompt file support (`--prompt-file`) not yet adapted for strip mode (Phase 3)
 :::
 
 ### Phase 2: Completion Status
@@ -421,16 +421,18 @@ to:
 
 **Test suite** (`tests/test_strip_compatibility.py`): 10 tests, all passing.
 
-::: {.callout-important}
-## Clarification Needed: PDF Report Content
+::: {.callout-note}
+## Decision Resolved: PDF Report Content
 
-The current PDF report shows individual component images with their classifications. For strip mode:
+**Option A selected**: Generate individual images for the report (slower, but familiar format).
 
-- **Option A**: Generate individual images for the report (slower, but familiar format)
-- **Option B**: Include strip images in the report (faster, but different visual layout)
-- **Option C**: Skip PDF generation in strip mode (fastest, rely on CSV only)
+This approach maintains visual consistency with single-image mode reports. The `generate_classification_report()` function already generates individual component images fresh from the ICA object, independent of how classification was performed.
 
-Which approach aligns with your pipeline requirements?
+**Verification**: 2 tests added to `test_strip_compatibility.py`:
+- `test_generate_report_accepts_strip_dataframe` — PDF generated successfully
+- `test_generate_report_artifacts_only_with_strip_dataframe` — Artifacts-only mode works
+
+**No code changes required** — existing report generation works with strip DataFrame thanks to Phase 2 schema fix.
 :::
 
 ### Phase 3: CLI and API Surface
@@ -565,7 +567,7 @@ Do you have additional test data for validation?
 ## Questions Requiring Your Input
 
 1. ~~**Strip size**: Fixed at 9, or configurable?~~ **RESOLVED: Fixed at 9**
-2. **PDF report**: Individual images, strip images, or skip?
+2. ~~**PDF report**: Individual images, strip images, or skip?~~ **RESOLVED: Option A (individual images)**
 3. **Default behavior**: Keep `single` forever, or plan transition?
 4. **Error handling**: Fail, retry, fallback, or skip?
 5. **Validation data**: Available test subjects for accuracy comparison?

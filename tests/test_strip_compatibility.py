@@ -387,3 +387,88 @@ class TestMNELabelMapping:
         for _, row in results_df.iterrows():
             expected_mne = ICVISION_TO_MNE_LABEL_MAP.get(row["label"], "other")
             assert row["mne_label"] == expected_mne
+
+
+# --- Test: PDF Report Integration (Option A) ---
+
+
+class TestPDFReportIntegration:
+    """Tests to verify PDF report generation works with strip-mode DataFrames (Option A)."""
+
+    def test_generate_report_accepts_strip_dataframe(
+        self, dummy_ica_data: mne.preprocessing.ICA, dummy_raw_data: mne.io.Raw, temp_test_dir: Path
+    ):
+        """generate_classification_report() must accept strip-generated DataFrame."""
+        from icvision.api import classify_components_strip_batch
+        from icvision.reports import generate_classification_report
+
+        mock_results = [
+            {"component_idx": i, "label": "eye" if i == 0 else "brain", "confidence": 0.95, "reason": "Test reason"}
+            for i in range(3)
+        ]
+
+        with patch("icvision.api.classify_strip_image", return_value=mock_results):
+            with patch("icvision.api.create_strip_image"):
+                results_df, _ = classify_components_strip_batch(
+                    ica_obj=dummy_ica_data,
+                    raw_obj=dummy_raw_data,
+                    api_key="test-key",
+                    component_indices=[0, 1, 2],
+                    output_dir=temp_test_dir,
+                )
+
+        # This should not raise an exception
+        pdf_path = generate_classification_report(
+            ica_obj=dummy_ica_data,
+            raw_obj=dummy_raw_data,
+            results_df=results_df,
+            output_dir=temp_test_dir,
+            input_basename="strip_test",
+            components_to_detail="all",
+        )
+
+        assert pdf_path is not None
+        assert pdf_path.exists()
+        assert pdf_path.suffix == ".pdf"
+
+    def test_generate_report_artifacts_only_with_strip_dataframe(
+        self, dummy_ica_data: mne.preprocessing.ICA, dummy_raw_data: mne.io.Raw, temp_test_dir: Path
+    ):
+        """PDF report 'artifacts_only' mode must work with strip DataFrame."""
+        from icvision.api import classify_components_strip_batch
+        from icvision.reports import generate_classification_report
+
+        # Mark component 0 as eye (artifact), others as brain
+        mock_results = [
+            {"component_idx": 0, "label": "eye", "confidence": 0.95, "reason": "Blink pattern"},
+            {"component_idx": 1, "label": "brain", "confidence": 0.90, "reason": "Neural"},
+            {"component_idx": 2, "label": "brain", "confidence": 0.85, "reason": "Neural"},
+        ]
+
+        with patch("icvision.api.classify_strip_image", return_value=mock_results):
+            with patch("icvision.api.create_strip_image"):
+                results_df, _ = classify_components_strip_batch(
+                    ica_obj=dummy_ica_data,
+                    raw_obj=dummy_raw_data,
+                    api_key="test-key",
+                    component_indices=[0, 1, 2],
+                    output_dir=temp_test_dir,
+                    labels_to_exclude=["eye"],
+                )
+
+        # Verify exclude_vision is set correctly
+        assert results_df.loc[0, "exclude_vision"] == True  # noqa: E712 (numpy bool)
+
+        # Generate artifacts-only report
+        pdf_path = generate_classification_report(
+            ica_obj=dummy_ica_data,
+            raw_obj=dummy_raw_data,
+            results_df=results_df,
+            output_dir=temp_test_dir,
+            input_basename="strip_artifacts",
+            components_to_detail="artifacts_only",
+        )
+
+        assert pdf_path is not None
+        assert pdf_path.exists()
+        assert "artifacts_only" in pdf_path.name

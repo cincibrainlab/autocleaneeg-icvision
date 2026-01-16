@@ -196,7 +196,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="odd">
 <td>Tests</td>
-<td>10/10 passing (<code>test_strip_compatibility.py</code>)</td>
+<td>12/12 passing (<code>test_strip_compatibility.py</code>)</td>
 </tr>
 </tbody>
 </table>
@@ -925,7 +925,7 @@ Phase 2 Preflight Check
 </tbody>
 </table>
 <p><strong>Ready items</strong> (no changes needed): - CSV output via <code>save_results()</code> — strip DataFrame schema already matches - ICA object updates via <code>_update_ica_with_classifications()</code> — compatible - Cleaned Raw export — independent of classification method</p>
-<p><strong>Requires work</strong>: - PDF report generation needs decision on strip vs individual image layout - Custom prompt file support (<code>--prompt-file</code>) not yet adapted for strip mode</p>
+<p><strong>Resolved</strong>: - ✅ PDF report generation: Option A selected (individual images) — works without code changes - Custom prompt file support (<code>--prompt-file</code>) not yet adapted for strip mode (Phase 3)</p>
 </div>
 </div>
 </section>
@@ -986,23 +986,20 @@ Phase 2 Preflight Check
 <div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># NEW (compatible)</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>{<span class="st">"component_index"</span>: ..., <span class="st">"component_name"</span>: <span class="ss">f"IC</span><span class="sc">{</span>idx<span class="sc">}</span><span class="ss">"</span>, <span class="st">"label"</span>: ..., <span class="st">"exclude_vision"</span>: ...}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><strong>Test suite</strong> (<code>tests/test_strip_compatibility.py</code>): 10 tests, all passing.</p>
-<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Clarification Needed: PDF Report Content
+Decision Resolved: PDF Report Content
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>The current PDF report shows individual component images with their classifications. For strip mode:</p>
-<ul>
-<li><strong>Option A</strong>: Generate individual images for the report (slower, but familiar format)</li>
-<li><strong>Option B</strong>: Include strip images in the report (faster, but different visual layout)</li>
-<li><strong>Option C</strong>: Skip PDF generation in strip mode (fastest, rely on CSV only)</li>
-</ul>
-<p>Which approach aligns with your pipeline requirements?</p>
+<p><strong>Option A selected</strong>: Generate individual images for the report (slower, but familiar format).</p>
+<p>This approach maintains visual consistency with single-image mode reports. The <code>generate_classification_report()</code> function already generates individual component images fresh from the ICA object, independent of how classification was performed.</p>
+<p><strong>Verification</strong>: 2 tests added to <code>test_strip_compatibility.py</code>: - <code>test_generate_report_accepts_strip_dataframe</code> — PDF generated successfully - <code>test_generate_report_artifacts_only_with_strip_dataframe</code> — Artifacts-only mode works</p>
+<p><strong>No code changes required</strong> — existing report generation works with strip DataFrame thanks to Phase 2 schema fix.</p>
 </div>
 </div>
 </section>
@@ -1210,7 +1207,7 @@ Questions Requiring Your Input
 <div class="callout-body-container callout-body">
 <ol type="1">
 <li><del><strong>Strip size</strong>: Fixed at 9, or configurable?</del> <strong>RESOLVED: Fixed at 9</strong></li>
-<li><strong>PDF report</strong>: Individual images, strip images, or skip?</li>
+<li><del><strong>PDF report</strong>: Individual images, strip images, or skip?</del> <strong>RESOLVED: Option A (individual images)</strong></li>
 <li><strong>Default behavior</strong>: Keep <code>single</code> forever, or plan transition?</li>
 <li><strong>Error handling</strong>: Fail, retry, fallback, or skip?</li>
 <li><strong>Validation data</strong>: Available test subjects for accuracy comparison?</li>
