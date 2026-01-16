@@ -140,6 +140,8 @@ def label_components(
     component_indices: Optional[List[int]] = None,
     model_name: str = "gpt-4.1",
     base_url: Optional[str] = None,
+    layout: str = "single",
+    strip_size: int = 9,
 ) -> Dict[str, Union[np.ndarray, List[str]]]:
     """
     Drop-in replacement for mne_icalabel.label_components.
@@ -159,6 +161,9 @@ def label_components(
         model_name: OpenAI model to use (e.g., 'gpt-4.1', 'gpt-4.1-mini', 'gpt-4.1-nano').
             Default: 'gpt-4.1'
         base_url: Optional custom API base URL for OpenAI-compatible endpoints.
+        layout: Classification layout mode. 'single' processes one component per API call,
+            'strip' batches multiple components (default: 'single').
+        strip_size: Number of components per strip image when layout='strip' (default: 9).
 
     Returns:
         Dictionary with ICLabel-compatible structure:
@@ -198,6 +203,8 @@ def label_components(
             component_indices=component_indices,
             model_name=model_name,  # Pass through model selection
             base_url=base_url,  # Pass through custom API endpoint
+            layout=layout,  # Pass through layout mode
+            strip_size=strip_size,  # Pass through strip size
         )
 
         # Extract classification results

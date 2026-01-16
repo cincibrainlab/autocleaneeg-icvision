@@ -50,6 +50,8 @@ def label_components(
     component_indices: Optional[List[int]] = None,
     psd_fmax: Optional[float] = None,
     base_url: Optional[str] = None,
+    layout: str = "single",
+    strip_size: int = 9,
 ) -> Tuple[mne.io.Raw, mne.preprocessing.ICA, pd.DataFrame]:
     """
     Classify ICA components using OpenAI Vision API and apply artifact rejection.
@@ -86,6 +88,9 @@ def label_components(
             all components are processed.
         psd_fmax: Maximum frequency for PSD plot (default: None, uses 80 Hz or Nyquist).
         base_url: Optional custom API base URL for OpenAI-compatible endpoints.
+        layout: Classification layout mode. 'single' processes one component per API call,
+            'strip' batches multiple components (default: 'single' for backward compatibility).
+        strip_size: Number of components per strip image when layout='strip' (default: 9).
 
     Returns:
         Tuple containing:
@@ -210,6 +215,8 @@ def label_components(
             psd_fmax=psd_fmax,
             component_indices=component_indices,
             base_url=base_url,
+            layout=layout,
+            strip_size=strip_size,
         )
         if isinstance(classification_result, tuple):
             results_df, cost_tracking = classification_result

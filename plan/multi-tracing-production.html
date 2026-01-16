@@ -109,7 +109,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#phase-2-output-compatibility" id="toc-phase-2-output-compatibility" class="nav-link" data-scroll-target="#phase-2-output-compatibility"><span class="header-section-number">6.4</span> Phase 2: Output Compatibility</a></li>
   <li><a href="#phase-2-completion-status" id="toc-phase-2-completion-status" class="nav-link" data-scroll-target="#phase-2-completion-status"><span class="header-section-number">6.5</span> Phase 2: Completion Status</a></li>
   <li><a href="#phase-3-cli-and-api-surface" id="toc-phase-3-cli-and-api-surface" class="nav-link" data-scroll-target="#phase-3-cli-and-api-surface"><span class="header-section-number">6.6</span> Phase 3: CLI and API Surface</a></li>
-  <li><a href="#phase-4-batch-windowing" id="toc-phase-4-batch-windowing" class="nav-link" data-scroll-target="#phase-4-batch-windowing"><span class="header-section-number">6.7</span> Phase 4: Batch Windowing</a></li>
+  <li><a href="#phase-3-completion-status" id="toc-phase-3-completion-status" class="nav-link" data-scroll-target="#phase-3-completion-status"><span class="header-section-number">6.7</span> Phase 3: Completion Status</a></li>
+  <li><a href="#phase-4-batch-windowing" id="toc-phase-4-batch-windowing" class="nav-link" data-scroll-target="#phase-4-batch-windowing"><span class="header-section-number">6.8</span> Phase 4: Batch Windowing</a></li>
+  <li><a href="#phase-4-completion-status" id="toc-phase-4-completion-status" class="nav-link" data-scroll-target="#phase-4-completion-status"><span class="header-section-number">6.9</span> Phase 4: Completion Status</a></li>
   </ul></li>
   <li><a href="#api-changes" id="toc-api-changes" class="nav-link" data-scroll-target="#api-changes"><span class="header-section-number">7</span> API Changes</a>
   <ul class="collapse">
@@ -172,7 +174,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td>Status</td>
-<td><strong>Phase 2 Complete</strong></td>
+<td><strong>Phase 4 Complete</strong></td>
 </tr>
 <tr class="even">
 <td>Created</td>
@@ -196,7 +198,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="odd">
 <td>Tests</td>
-<td>12/12 passing (<code>test_strip_compatibility.py</code>)</td>
+<td>29/29 passing (3 test files)</td>
 </tr>
 </tbody>
 </table>
@@ -1018,21 +1020,71 @@ Decision Resolved: PDF Report Content
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Design Decision: Default Behavior
+Decision Resolved: Default Behavior
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>For backward compatibility, the default layout should be <code>single</code>. However, if strip mode proves significantly more accurate or cost-effective, should we:</p>
-<ul>
-<li>Keep <code>single</code> as default indefinitely?</li>
-<li>Plan a future version where <code>strip</code> becomes default?</li>
-<li>Make the default configurable via environment variable?</li>
-</ul>
+<p><strong>Default is <code>single</code></strong> for backward compatibility. This can be revisited in a future version if strip mode proves superior.</p>
 </div>
 </div>
 </section>
-<section id="phase-4-batch-windowing" class="level3" data-number="6.7">
-<h3 data-number="6.7" class="anchored" data-anchor-id="phase-4-batch-windowing"><span class="header-section-number">6.7</span> Phase 4: Batch Windowing</h3>
+<section id="phase-3-completion-status" class="level3" data-number="6.7">
+<h3 data-number="6.7" class="anchored" data-anchor-id="phase-3-completion-status"><span class="header-section-number">6.7</span> Phase 3: Completion Status</h3>
+<p>Phase 3 (CLI and API Surface) is complete. TDD: 10 tests written, all passing.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 26%">
+<col style="width: 34%">
+<col style="width: 39%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Task</th>
+<th>Status</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>--layout</code> CLI flag</td>
+<td>✅ Complete</td>
+<td>Accepts <code>single</code> or <code>strip</code>, default <code>single</code></td>
+</tr>
+<tr class="even">
+<td><code>--strip-size</code> CLI flag</td>
+<td>✅ Complete</td>
+<td>Default 9, configurable</td>
+</tr>
+<tr class="odd">
+<td><code>layout</code> in <code>label_components()</code></td>
+<td>✅ Complete</td>
+<td><code>core.py</code> parameter added</td>
+</tr>
+<tr class="even">
+<td><code>layout</code> in <code>compat.label_components()</code></td>
+<td>✅ Complete</td>
+<td>Passthrough to core</td>
+</tr>
+<tr class="odd">
+<td>Parameter passthrough</td>
+<td>✅ Complete</td>
+<td>Layout/strip_size flow to <code>classify_components_batch()</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>CLI usage</strong>:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Single-image mode (default, backward compatible)</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="ex">autoclean-icvision</span> raw.set</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Strip mode (batch 9 components per image)</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="ex">autoclean-icvision</span> raw.set <span class="at">--layout</span> strip</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Custom strip size</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="ex">autoclean-icvision</span> raw.set <span class="at">--layout</span> strip <span class="at">--strip-size</span> 12</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Test suite</strong>: <code>tests/test_phase3_cli_api.py</code> (10 tests)</p>
+</section>
+<section id="phase-4-batch-windowing" class="level3" data-number="6.8">
+<h3 data-number="6.8" class="anchored" data-anchor-id="phase-4-batch-windowing"><span class="header-section-number">6.8</span> Phase 4: Batch Windowing</h3>
 <p>Implement sliding window for large component counts:</p>
 <ol type="1">
 <li>For N &gt; 9 components, process in batches of 9</li>
@@ -1065,59 +1117,107 @@ Design Decision: Default Behavior
 </div>
 </div>
 </div>
-<div class="callout callout-style-default callout-caution callout-titled">
+<div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Risk: Partial Batch Failures
+Decision Resolved: Partial Batch Failures
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>If one strip image fails classification (API error, timeout, malformed response), what should happen?</p>
+<p><strong>Retry failed batch with exponential backoff</strong> selected. Implementation:</p>
 <ul>
-<li><strong>Fail entire run</strong> — Simple but loses all progress</li>
-<li><strong>Retry failed batch</strong> — Add retry logic with exponential backoff</li>
-<li><strong>Fall back to single-image</strong> — Classify failed components individually</li>
-<li><strong>Skip and continue</strong> — Mark failed components as “unknown” and proceed</li>
+<li>Max 3 retries per batch</li>
+<li>Exponential backoff: 1s, 2s, 4s delays</li>
+<li>On exhausted retries: fall back to <code>other_artifact</code> label</li>
 </ul>
-<p>This affects reliability in production pipelines.</p>
 </div>
 </div>
+</section>
+<section id="phase-4-completion-status" class="level3" data-number="6.9">
+<h3 data-number="6.9" class="anchored" data-anchor-id="phase-4-completion-status"><span class="header-section-number">6.9</span> Phase 4: Completion Status</h3>
+<p>Phase 4 (Error Handling) is complete. TDD: 7 tests written, all passing.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 26%">
+<col style="width: 34%">
+<col style="width: 39%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Task</th>
+<th>Status</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>max_retries</code> parameter</td>
+<td>✅ Complete</td>
+<td>Added to <code>classify_strip_image()</code>, default 3</td>
+</tr>
+<tr class="even">
+<td>Exponential backoff</td>
+<td>✅ Complete</td>
+<td>Delays: 1s, 2s, 4s between retries</td>
+</tr>
+<tr class="odd">
+<td>Retry on API failure</td>
+<td>✅ Complete</td>
+<td>Transient errors trigger retry</td>
+</tr>
+<tr class="even">
+<td>Fallback on exhausted</td>
+<td>✅ Complete</td>
+<td>Failed components labeled <code>other_artifact</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Implementation</strong> (<code>api.py</code>):</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Retry loop with exponential backoff</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> attempt <span class="kw">in</span> <span class="bu">range</span>(max_retries):</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>        result <span class="op">=</span> _call_openai_api(...)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">break</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">Exception</span>:</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>        backoff_time <span class="op">=</span> <span class="dv">2</span> <span class="op">**</span> attempt  <span class="co"># 1s, 2s, 4s</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>        time.sleep(backoff_time)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Test suite</strong>: <code>tests/test_phase4_retry.py</code> (7 tests)</p>
 </section>
 </section>
 <section id="api-changes" class="level2" data-number="7">
 <h2 data-number="7" class="anchored" data-anchor-id="api-changes"><span class="header-section-number">7</span> API Changes</h2>
 <section id="proposed-label_components-signature" class="level3" data-number="7.1">
 <h3 data-number="7.1" class="anchored" data-anchor-id="proposed-label_components-signature"><span class="header-section-number">7.1</span> Proposed label_components Signature</h3>
-<div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> label_components(</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    raw_data: Union[<span class="bu">str</span>, Path, mne.io.Raw],</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    ica_data: Optional[Union[<span class="bu">str</span>, Path, mne.preprocessing.ICA]] <span class="op">=</span> <span class="va">None</span>,</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    api_key: Optional[<span class="bu">str</span>] <span class="op">=</span> <span class="va">None</span>,</span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    confidence_threshold: <span class="bu">float</span> <span class="op">=</span> <span class="fl">0.8</span>,</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    auto_exclude: <span class="bu">bool</span> <span class="op">=</span> <span class="va">True</span>,</span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    labels_to_exclude: Optional[List[<span class="bu">str</span>]] <span class="op">=</span> <span class="va">None</span>,</span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    output_dir: Optional[Union[<span class="bu">str</span>, Path]] <span class="op">=</span> <span class="va">None</span>,</span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    generate_report: <span class="bu">bool</span> <span class="op">=</span> <span class="va">True</span>,</span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    batch_size: <span class="bu">int</span> <span class="op">=</span> <span class="dv">10</span>,</span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    max_concurrency: <span class="bu">int</span> <span class="op">=</span> <span class="dv">4</span>,</span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    model_name: <span class="bu">str</span> <span class="op">=</span> <span class="st">"gpt-5.2"</span>,</span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>    custom_prompt: Optional[<span class="bu">str</span>] <span class="op">=</span> <span class="va">None</span>,</span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    component_indices: Optional[List[<span class="bu">int</span>]] <span class="op">=</span> <span class="va">None</span>,</span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    psd_fmax: Optional[<span class="bu">float</span>] <span class="op">=</span> <span class="va">None</span>,</span>
-<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>    base_url: Optional[<span class="bu">str</span>] <span class="op">=</span> <span class="va">None</span>,</span>
-<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>    layout: <span class="bu">str</span> <span class="op">=</span> <span class="st">"single"</span>,  <span class="co"># NEW: "single" or "strip"</span></span>
-<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>    strip_size: <span class="bu">int</span> <span class="op">=</span> <span class="dv">9</span>,     <span class="co"># NEW: components per strip image</span></span>
-<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> Tuple[mne.io.Raw, mne.preprocessing.ICA, pd.DataFrame]:</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> label_components(</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    raw_data: Union[<span class="bu">str</span>, Path, mne.io.Raw],</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    ica_data: Optional[Union[<span class="bu">str</span>, Path, mne.preprocessing.ICA]] <span class="op">=</span> <span class="va">None</span>,</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    api_key: Optional[<span class="bu">str</span>] <span class="op">=</span> <span class="va">None</span>,</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    confidence_threshold: <span class="bu">float</span> <span class="op">=</span> <span class="fl">0.8</span>,</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    auto_exclude: <span class="bu">bool</span> <span class="op">=</span> <span class="va">True</span>,</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    labels_to_exclude: Optional[List[<span class="bu">str</span>]] <span class="op">=</span> <span class="va">None</span>,</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    output_dir: Optional[Union[<span class="bu">str</span>, Path]] <span class="op">=</span> <span class="va">None</span>,</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    generate_report: <span class="bu">bool</span> <span class="op">=</span> <span class="va">True</span>,</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    batch_size: <span class="bu">int</span> <span class="op">=</span> <span class="dv">10</span>,</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    max_concurrency: <span class="bu">int</span> <span class="op">=</span> <span class="dv">4</span>,</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>    model_name: <span class="bu">str</span> <span class="op">=</span> <span class="st">"gpt-5.2"</span>,</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    custom_prompt: Optional[<span class="bu">str</span>] <span class="op">=</span> <span class="va">None</span>,</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>    component_indices: Optional[List[<span class="bu">int</span>]] <span class="op">=</span> <span class="va">None</span>,</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>    psd_fmax: Optional[<span class="bu">float</span>] <span class="op">=</span> <span class="va">None</span>,</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>    base_url: Optional[<span class="bu">str</span>] <span class="op">=</span> <span class="va">None</span>,</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>    layout: <span class="bu">str</span> <span class="op">=</span> <span class="st">"single"</span>,  <span class="co"># NEW: "single" or "strip"</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>    strip_size: <span class="bu">int</span> <span class="op">=</span> <span class="dv">9</span>,     <span class="co"># NEW: components per strip image</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> Tuple[mne.io.Raw, mne.preprocessing.ICA, pd.DataFrame]:</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="proposed-cli-addition" class="level3" data-number="7.2">
 <h3 data-number="7.2" class="anchored" data-anchor-id="proposed-cli-addition"><span class="header-section-number">7.2</span> Proposed CLI Addition</h3>
-<div class="sourceCode" id="cb11"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ex">autoclean-icvision</span> raw.set <span class="dt">\</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--layout</span> strip <span class="dt">\</span></span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--strip-size</span> 9 <span class="dt">\</span></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--model</span> gpt-5.2 <span class="dt">\</span></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">--base-url</span> https://openai.cincibrainlab.com/v1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="ex">autoclean-icvision</span> raw.set <span class="dt">\</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--layout</span> strip <span class="dt">\</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--strip-size</span> 9 <span class="dt">\</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--model</span> gpt-5.2 <span class="dt">\</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">--base-url</span> https://openai.cincibrainlab.com/v1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -1129,8 +1229,8 @@ Suggestion: Environment Variable Override
 </div>
 <div class="callout-body-container callout-body">
 <p>For pipeline automation, consider supporting <code>ICVISION_LAYOUT</code> environment variable so operators can switch modes without modifying scripts:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">ICVISION_LAYOUT</span><span class="op">=</span>strip</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="ex">autoclean-icvision</span> raw.set  <span class="co"># Uses strip mode</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">ICVISION_LAYOUT</span><span class="op">=</span>strip</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="ex">autoclean-icvision</span> raw.set  <span class="co"># Uses strip mode</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </section>
@@ -1208,8 +1308,8 @@ Questions Requiring Your Input
 <ol type="1">
 <li><del><strong>Strip size</strong>: Fixed at 9, or configurable?</del> <strong>RESOLVED: Fixed at 9</strong></li>
 <li><del><strong>PDF report</strong>: Individual images, strip images, or skip?</del> <strong>RESOLVED: Option A (individual images)</strong></li>
-<li><strong>Default behavior</strong>: Keep <code>single</code> forever, or plan transition?</li>
-<li><strong>Error handling</strong>: Fail, retry, fallback, or skip?</li>
+<li><del><strong>Default behavior</strong>: Keep <code>single</code> forever, or plan transition?</del> <strong>RESOLVED: <code>single</code> default</strong></li>
+<li><del><strong>Error handling</strong>: Fail, retry, fallback, or skip?</del> <strong>RESOLVED: Retry with exponential backoff</strong></li>
 <li><strong>Validation data</strong>: Available test subjects for accuracy comparison?</li>
 </ol>
 </div>

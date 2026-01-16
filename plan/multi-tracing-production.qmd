@@ -20,13 +20,13 @@ This document describes the current single-image implementation of ICVision and 
 
 | Field | Value |
 |-------|-------|
-| Status | **Phase 2 Complete** |
+| Status | **Phase 4 Complete** |
 | Created | 2026-01-15 |
 | Updated | 2026-01-15 |
 | Target | v0.3.0 |
 | Dependencies | test_grid_classify.py (experimental) |
 | Model | gpt-5.2 (via custom endpoint) |
-| Tests | 12/12 passing (`test_strip_compatibility.py`) |
+| Tests | 29/29 passing (3 test files) |
 
 ## Current Single-Image Implementation
 
@@ -445,14 +445,36 @@ Add layout selection to public interfaces:
 4. Default to `single` for backward compatibility
 
 ::: {.callout-note}
-## Design Decision: Default Behavior
+## Decision Resolved: Default Behavior
 
-For backward compatibility, the default layout should be `single`. However, if strip mode proves significantly more accurate or cost-effective, should we:
-
-- Keep `single` as default indefinitely?
-- Plan a future version where `strip` becomes default?
-- Make the default configurable via environment variable?
+**Default is `single`** for backward compatibility. This can be revisited in a future version if strip mode proves superior.
 :::
+
+### Phase 3: Completion Status
+
+Phase 3 (CLI and API Surface) is complete. TDD: 10 tests written, all passing.
+
+| Task | Status | Details |
+|------|--------|---------|
+| `--layout` CLI flag | ✅ Complete | Accepts `single` or `strip`, default `single` |
+| `--strip-size` CLI flag | ✅ Complete | Default 9, configurable |
+| `layout` in `label_components()` | ✅ Complete | `core.py` parameter added |
+| `layout` in `compat.label_components()` | ✅ Complete | Passthrough to core |
+| Parameter passthrough | ✅ Complete | Layout/strip_size flow to `classify_components_batch()` |
+
+**CLI usage**:
+```bash
+# Single-image mode (default, backward compatible)
+autoclean-icvision raw.set
+
+# Strip mode (batch 9 components per image)
+autoclean-icvision raw.set --layout strip
+
+# Custom strip size
+autoclean-icvision raw.set --layout strip --strip-size 12
+```
+
+**Test suite**: `tests/test_phase3_cli_api.py` (10 tests)
 
 ### Phase 4: Batch Windowing
 
@@ -480,18 +502,40 @@ flowchart TD
     K --> H
 ```
 
-::: {.callout-caution}
-## Risk: Partial Batch Failures
+::: {.callout-note}
+## Decision Resolved: Partial Batch Failures
 
-If one strip image fails classification (API error, timeout, malformed response), what should happen?
+**Retry failed batch with exponential backoff** selected. Implementation:
 
-- **Fail entire run** — Simple but loses all progress
-- **Retry failed batch** — Add retry logic with exponential backoff
-- **Fall back to single-image** — Classify failed components individually
-- **Skip and continue** — Mark failed components as "unknown" and proceed
-
-This affects reliability in production pipelines.
+- Max 3 retries per batch
+- Exponential backoff: 1s, 2s, 4s delays
+- On exhausted retries: fall back to `other_artifact` label
 :::
+
+### Phase 4: Completion Status
+
+Phase 4 (Error Handling) is complete. TDD: 7 tests written, all passing.
+
+| Task | Status | Details |
+|------|--------|---------|
+| `max_retries` parameter | ✅ Complete | Added to `classify_strip_image()`, default 3 |
+| Exponential backoff | ✅ Complete | Delays: 1s, 2s, 4s between retries |
+| Retry on API failure | ✅ Complete | Transient errors trigger retry |
+| Fallback on exhausted | ✅ Complete | Failed components labeled `other_artifact` |
+
+**Implementation** (`api.py`):
+```python
+# Retry loop with exponential backoff
+for attempt in range(max_retries):
+    try:
+        result = _call_openai_api(...)
+        break
+    except Exception:
+        backoff_time = 2 ** attempt  # 1s, 2s, 4s
+        time.sleep(backoff_time)
+```
+
+**Test suite**: `tests/test_phase4_retry.py` (7 tests)
 
 ## API Changes
 
@@ -568,8 +612,8 @@ Do you have additional test data for validation?
 
 1. ~~**Strip size**: Fixed at 9, or configurable?~~ **RESOLVED: Fixed at 9**
 2. ~~**PDF report**: Individual images, strip images, or skip?~~ **RESOLVED: Option A (individual images)**
-3. **Default behavior**: Keep `single` forever, or plan transition?
-4. **Error handling**: Fail, retry, fallback, or skip?
+3. ~~**Default behavior**: Keep `single` forever, or plan transition?~~ **RESOLVED: `single` default**
+4. ~~**Error handling**: Fail, retry, fallback, or skip?~~ **RESOLVED: Retry with exponential backoff**
 5. **Validation data**: Available test subjects for accuracy comparison?
 :::
 

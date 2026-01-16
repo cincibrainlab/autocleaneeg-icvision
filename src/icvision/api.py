@@ -286,17 +286,72 @@ def _classify_single_component_wrapper(
 # ============================================================================
 
 
+def _call_openai_api(
+    client: openai.OpenAI,
+    model_name: str,
+    prompt: str,
+    base64_image: str,
+) -> Optional[str]:
+    """Make a single API call to OpenAI. Extracted for testability.
+
+    Args:
+        client: OpenAI client instance
+        model_name: Model to use
+        prompt: Text prompt
+        base64_image: Base64-encoded image data
+
+    Returns:
+        Message content string or None on failure
+    """
+    response = client.responses.create(
+        model=model_name,
+        input=[
+            {"role": "user", "content": prompt},
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "input_image",
+                        "image_url": f"data:image/webp;base64,{base64_image}",
+                    }
+                ],
+            },
+        ],
+        temperature=0.2,
+    )
+
+    # Parse response - find the message content
+    message_content = None
+    if response and hasattr(response, "output") and response.output:
+        for output_item in response.output:
+            if (
+                hasattr(output_item, "type")
+                and output_item.type == "message"
+                and hasattr(output_item, "content")
+                and output_item.content
+                and len(output_item.content) > 0
+            ):
+                content_item = output_item.content[0]
+                if hasattr(content_item, "text"):
+                    message_content = content_item.text
+                    break
+
+    return message_content
+
+
 def classify_strip_image(
     image_path: Path,
     component_indices: List[int],
     api_key: str,
     model_name: str = "gpt-5.2",
     base_url: Optional[str] = None,
+    max_retries: int = 3,
 ) -> List[Dict[str, Any]]:
     """Classify multiple ICA components from a single strip image.
 
     Sends a strip image containing multiple components to the vision API
-    and parses the batch response.
+    and parses the batch response. Implements retry logic with exponential
+    backoff for transient failures.
 
     Args:
         image_path: Path to the strip image (webp format)
@@ -304,6 +359,7 @@ def classify_strip_image(
         api_key: OpenAI API key
         model_name: Model to use (default: gpt-5.2)
         base_url: Optional custom API base URL
+        max_retries: Maximum number of retry attempts (default: 3)
 
     Returns:
         List of classification results, each with keys:
@@ -347,60 +403,65 @@ def classify_strip_image(
         component_indices,
     )
 
+    # Encode image once
     try:
-        # Encode image
         with open(image_path, "rb") as f:
             base64_image = base64.b64encode(f.read()).decode("utf-8")
+    except Exception as e:
+        logger.error("Failed to read image file %s: %s", image_path, e)
+        return []
 
-        # Get prompt for this number of components
-        prompt = get_strip_prompt(n_components)
+    # Get prompt for this number of components
+    prompt = get_strip_prompt(n_components)
 
-        # Create client and send request
-        client = openai.OpenAI(api_key=api_key, base_url=base_url)
-        logger.debug(
-            "Sending strip image to API (model: %s, base_url: %s, components: %d)",
-            model_name,
-            base_url or "default",
-            n_components,
+    # Create client
+    client = openai.OpenAI(api_key=api_key, base_url=base_url)
+
+    # Retry loop with exponential backoff
+    message_content = None
+    last_error = None
+    for attempt in range(max_retries):
+        try:
+            logger.debug(
+                "API call attempt %d/%d (model: %s, base_url: %s, components: %d)",
+                attempt + 1,
+                max_retries,
+                model_name,
+                base_url or "default",
+                n_components,
+            )
+
+            message_content = _call_openai_api(client, model_name, prompt, base64_image)
+
+            if message_content:
+                break  # Success
+            else:
+                raise ValueError("Empty response from API")
+
+        except Exception as e:
+            last_error = e
+            logger.warning(
+                "API call attempt %d/%d failed: %s",
+                attempt + 1,
+                max_retries,
+                e,
+            )
+            if attempt < max_retries - 1:
+                # Exponential backoff: 1s, 2s, 4s, ...
+                backoff_time = 2 ** attempt
+                logger.info("Retrying in %ds...", backoff_time)
+                time.sleep(backoff_time)
+
+    if not message_content:
+        logger.error(
+            "All %d API attempts failed for strip classification. Last error: %s",
+            max_retries,
+            last_error,
         )
+        return []
 
-        response = client.responses.create(
-            model=model_name,
-            input=[
-                {"role": "user", "content": prompt},
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "input_image",
-                            "image_url": f"data:image/webp;base64,{base64_image}",
-                        }
-                    ],
-                },
-            ],
-            temperature=0.2,
-        )
-
-        # Parse response - find the message content
-        message_content = None
-        if response and hasattr(response, "output") and response.output:
-            for output_item in response.output:
-                if (
-                    hasattr(output_item, "type")
-                    and output_item.type == "message"
-                    and hasattr(output_item, "content")
-                    and output_item.content
-                    and len(output_item.content) > 0
-                ):
-                    content_item = output_item.content[0]
-                    if hasattr(content_item, "text"):
-                        message_content = content_item.text
-                        break
-
-        if not message_content:
-            logger.error("No valid response content from strip classification")
-            return []
-
+    # Parse the successful response
+    try:
         logger.debug("Raw strip response: %s", message_content[:500])
 
         # Parse JSON - handle markdown code blocks
@@ -450,11 +511,8 @@ def classify_strip_image(
     except json.JSONDecodeError as e:
         logger.error("JSON parse error in strip response: %s", e)
         return []
-    except openai.APIError as e:
-        logger.error("OpenAI API error during strip classification: %s", e)
-        return []
     except Exception as e:
-        logger.error("Unexpected error during strip classification: %s", e)
+        logger.error("Unexpected error parsing strip response: %s", e)
         return []
 
 

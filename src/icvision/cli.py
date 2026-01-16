@@ -177,6 +177,20 @@ Examples:
         help="List of component labels to consider for auto-exclusion "
         "(e.g., eye muscle heart). Defaults to all non-brain types.",
     )
+    class_group.add_argument(
+        "--layout",
+        type=str,
+        choices=["single", "strip"],
+        default="single",
+        help="Classification layout mode. 'single' processes one component per API call, "
+        "'strip' batches multiple components into one image (default: single).",
+    )
+    class_group.add_argument(
+        "--strip-size",
+        type=int,
+        default=9,
+        help="Number of components per strip image when --layout=strip (default: 9).",
+    )
 
     # Output and Reporting
     output_group = parser.add_argument_group("Output and Reporting")
@@ -290,6 +304,8 @@ Examples:
             custom_prompt=custom_prompt_text,
             psd_fmax=args.psd_fmax,
             base_url=args.base_url,
+            layout=args.layout,
+            strip_size=args.strip_size,
         )
 
         # Determine output path
