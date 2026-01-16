@@ -28,7 +28,23 @@ write out phase 1 with exact execution plans that you plan to do and any pitfall
 - keep it fixed at 9
 - but do you have a plan when the total compents are not a multiple of 9
 add your response to the call out
+- the new AI endpoint uses gpt-5.2
 
+check on phase 1 and document concisely in plain language in a table what was completed.
+
+check preflight for doing phase 2 and document prep findings in callout.
+
+use TDD style dev and complete phase 2, repeat loop until all tests pass
+
+we choose Option A: Generate individual images for the report (slower, but familiar format)
+
+use TDD style lets do phase 3, repeat loop until all tests pass
+- single is default for now
+
+use TDD style lets do phase 4, repeat loop until all tests pass
+-  Retry failed batch — Add retry logic with exponential backoff
+
+now add a section detailing how this vision tool was originally implemented in /Users/ernie/sandbox/autocleaneeg-testing/autocleaneeg_pipeline and what changes o optimizations are proposed with our new strip version. write out a plan only and a table. use prose to explain what and why. 
 
 
 post instruction hooks

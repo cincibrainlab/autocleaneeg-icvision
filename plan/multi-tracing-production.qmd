@@ -617,8 +617,151 @@ Do you have additional test data for validation?
 5. **Validation data**: Available test subjects for accuracy comparison?
 :::
 
+## Pipeline Integration: autocleaneeg_pipeline
+
+### Original Implementation
+
+ICVision is integrated into the `autocleaneeg_pipeline` as an alternative ICA classification method alongside ICLabel. The integration lives in `src/autoclean/functions/ica/ica_processing.py` and uses the `icvision.compat.label_components()` compatibility layer to maintain API parity with MNE-ICLabel.
+
+The pipeline supports three classification modes:
+
+| Mode | Description | Use Case |
+|------|-------------|----------|
+| `iclabel` | MNE-ICLabel only | Fast local classification, no API cost |
+| `icvision` | ICVision only | Vision-based classification for all components |
+| `hybrid` | ICLabel first, ICVision for top N | Balance cost and accuracy |
+
+The **hybrid mode** is particularly interesting: it runs ICLabel on all components first, then reclassifies the first N components (default: 20) using ICVision. This approach assumes that the most important components to accurately classify are the highest-variance ones (lowest indices), while allowing cheaper ICLabel classifications for the tail components that are often noise.
+
+### Integration Flow
+
+```{mermaid}
+flowchart TD
+    subgraph "autocleaneeg_pipeline"
+        A[ica_processing.classify_ica_components] --> B{method?}
+        B -->|iclabel| C[mne_icalabel.label_components]
+        B -->|icvision| D[icvision.compat.label_components]
+        B -->|hybrid| E[ICLabel all + ICVision subset]
+        C --> F[_icalabel_to_dataframe]
+        D --> F
+        E --> F
+        F --> G[_attach_source_metadata]
+        G --> H[DataFrame with iclabel/icvision columns]
+    end
+    subgraph "icvision package"
+        D --> I[core.label_components]
+        I --> J[api.classify_components_batch]
+        J --> K[N individual API calls]
+    end
+```
+
+The pipeline merges classification results from both sources, preserving:
+
+- `iclabel_ic_type` / `iclabel_confidence` — ICLabel predictions
+- `icvision_ic_type` / `icvision_confidence` — ICVision predictions
+- `ic_type` / `confidence` — Final merged values
+- `annotator` — Source of the final classification
+
+### Current Bottleneck
+
+In hybrid mode with N=20 components and 127 total ICA components, the current implementation makes **20 individual API calls** for the ICVision portion. Each call:
+
+1. Generates a single-component image (topo, time series, ERP, PSD)
+2. Encodes image as base64
+3. Sends HTTP request to OpenAI Vision API
+4. Waits for response
+5. Parses JSON classification
+
+With typical API latency of ~3.5 seconds per call, the ICVision portion takes approximately **70 seconds** per dataset.
+
+### Proposed Strip Optimization
+
+The strip layout reduces hybrid mode from 20 API calls to **3 API calls** (ceil(20/9) = 3 batches):
+
+| Batch | Components | Image |
+|-------|------------|-------|
+| 1 | IC0–IC8 | 9-row strip |
+| 2 | IC9–IC17 | 9-row strip |
+| 3 | IC18–IC19 | 2-row strip |
+
+```{mermaid}
+flowchart TD
+    subgraph "Proposed: Strip Mode in Hybrid"
+        A[classify_ica_components method=hybrid] --> B[ICLabel all components]
+        B --> C[icvision.compat.label_components<br/>layout='strip', component_indices=0..19]
+        C --> D[create_strip_image batch 1<br/>IC0-IC8]
+        C --> E[create_strip_image batch 2<br/>IC9-IC17]
+        C --> F[create_strip_image batch 3<br/>IC18-IC19]
+        D --> G[Single API call]
+        E --> G
+        F --> G
+        G --> H[Parse 3 JSON responses]
+        H --> I[Merge with ICLabel results]
+    end
+```
+
+### Cost and Time Savings
+
+The following table projects savings for a typical hybrid workflow (20 ICVision components):
+
+| Metric | Single-Image | Strip (9) | Reduction |
+|--------|--------------|-----------|-----------|
+| API calls | 20 | 3 | 85% |
+| Total latency | ~70s | ~11s | 84% |
+| Token cost | 20 × prompt + 20 × response | 3 × prompt + 3 × response | ~85% |
+| Image generation time | 20 × 0.3s = 6s | 3 × 0.5s = 1.5s | 75% |
+
+For full ICVision mode (127 components):
+
+| Metric | Single-Image | Strip (9) | Reduction |
+|--------|--------------|-----------|-----------|
+| API calls | 127 | 15 | 88% |
+| Total latency | ~445s | ~53s | 88% |
+| Token cost | 127 × base | 15 × base | ~88% |
+
+### Implementation Plan for Pipeline Integration
+
+The strip layout is already implemented in ICVision (Phases 1-4 complete). The following steps enable pipeline usage:
+
+| Step | Task | Location | Status |
+|------|------|----------|--------|
+| 1 | Add `layout` parameter to `compat.label_components()` | `icvision/compat.py` | ✅ Complete |
+| 2 | Pass `layout` through to `core.label_components()` | `icvision/compat.py` | ✅ Complete |
+| 3 | Dispatch to strip batch in `classify_components_batch()` | `icvision/api.py` | ✅ Complete |
+| 4 | Update pipeline kwargs to pass `layout='strip'` | `ica_processing.py` | **TODO** |
+| 5 | Test hybrid mode with strip layout | Integration test | **TODO** |
+| 6 | Measure accuracy vs single-image mode | Validation study | **TODO** |
+
+### Backward Compatibility
+
+The integration is designed for zero-disruption adoption:
+
+1. **Default behavior unchanged**: `layout="single"` is default, existing pipelines work identically
+2. **Opt-in activation**: Pipeline must explicitly pass `layout="strip"` to enable
+3. **DataFrame schema preserved**: Strip results produce identical columns
+4. **Fallback preserved**: If ICVision fails, ICLabel results are used (existing behavior)
+
+To enable strip mode in the pipeline, modify the `classify_ica_components()` call:
+
+```python
+# Before (single-image mode)
+label_components(raw, ica, component_indices=component_indices, **kwargs)
+
+# After (strip mode)
+label_components(raw, ica, component_indices=component_indices, layout="strip", **kwargs)
+```
+
+Or pass through kwargs from the pipeline configuration:
+
+```python
+# In ica_processing.py classify_ica_components()
+kwargs = {"layout": "strip", "strip_size": 9, **kwargs}
+label_components(raw, ica, **kwargs)
+```
+
 ## References
 
 1. Current implementation: `src/icvision/core.py`
 2. Experimental strip: `test_grid_classify.py`
 3. Experiment results: `experiments/grid_tests/results.md`
+4. Pipeline integration: `autocleaneeg_pipeline/src/autoclean/functions/ica/ica_processing.py`

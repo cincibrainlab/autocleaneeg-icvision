@@ -120,7 +120,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </ul></li>
   <li><a href="#performance-projections" id="toc-performance-projections" class="nav-link" data-scroll-target="#performance-projections"><span class="header-section-number">8</span> Performance Projections</a></li>
   <li><a href="#open-questions-summary" id="toc-open-questions-summary" class="nav-link" data-scroll-target="#open-questions-summary"><span class="header-section-number">9</span> Open Questions Summary</a></li>
-  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">10</span> References</a></li>
+  <li><a href="#pipeline-integration-autocleaneeg_pipeline" id="toc-pipeline-integration-autocleaneeg_pipeline" class="nav-link" data-scroll-target="#pipeline-integration-autocleaneeg_pipeline"><span class="header-section-number">10</span> Pipeline Integration: autocleaneeg_pipeline</a>
+  <ul class="collapse">
+  <li><a href="#original-implementation" id="toc-original-implementation" class="nav-link" data-scroll-target="#original-implementation"><span class="header-section-number">10.1</span> Original Implementation</a></li>
+  <li><a href="#integration-flow" id="toc-integration-flow" class="nav-link" data-scroll-target="#integration-flow"><span class="header-section-number">10.2</span> Integration Flow</a></li>
+  <li><a href="#current-bottleneck" id="toc-current-bottleneck" class="nav-link" data-scroll-target="#current-bottleneck"><span class="header-section-number">10.3</span> Current Bottleneck</a></li>
+  <li><a href="#proposed-strip-optimization" id="toc-proposed-strip-optimization" class="nav-link" data-scroll-target="#proposed-strip-optimization"><span class="header-section-number">10.4</span> Proposed Strip Optimization</a></li>
+  <li><a href="#cost-and-time-savings" id="toc-cost-and-time-savings" class="nav-link" data-scroll-target="#cost-and-time-savings"><span class="header-section-number">10.5</span> Cost and Time Savings</a></li>
+  <li><a href="#implementation-plan-for-pipeline-integration" id="toc-implementation-plan-for-pipeline-integration" class="nav-link" data-scroll-target="#implementation-plan-for-pipeline-integration"><span class="header-section-number">10.6</span> Implementation Plan for Pipeline Integration</a></li>
+  <li><a href="#backward-compatibility" id="toc-backward-compatibility" class="nav-link" data-scroll-target="#backward-compatibility"><span class="header-section-number">10.7</span> Backward Compatibility</a></li>
+  </ul></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">11</span> References</a></li>
   </ul>
 </nav>
 </div>
@@ -1315,12 +1325,312 @@ Questions Requiring Your Input
 </div>
 </div>
 </section>
-<section id="references" class="level2" data-number="10">
-<h2 data-number="10" class="anchored" data-anchor-id="references"><span class="header-section-number">10</span> References</h2>
+<section id="pipeline-integration-autocleaneeg_pipeline" class="level2" data-number="10">
+<h2 data-number="10" class="anchored" data-anchor-id="pipeline-integration-autocleaneeg_pipeline"><span class="header-section-number">10</span> Pipeline Integration: autocleaneeg_pipeline</h2>
+<section id="original-implementation" class="level3" data-number="10.1">
+<h3 data-number="10.1" class="anchored" data-anchor-id="original-implementation"><span class="header-section-number">10.1</span> Original Implementation</h3>
+<p>ICVision is integrated into the <code>autocleaneeg_pipeline</code> as an alternative ICA classification method alongside ICLabel. The integration lives in <code>src/autoclean/functions/ica/ica_processing.py</code> and uses the <code>icvision.compat.label_components()</code> compatibility layer to maintain API parity with MNE-ICLabel.</p>
+<p>The pipeline supports three classification modes:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 44%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Mode</th>
+<th>Description</th>
+<th>Use Case</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>iclabel</code></td>
+<td>MNE-ICLabel only</td>
+<td>Fast local classification, no API cost</td>
+</tr>
+<tr class="even">
+<td><code>icvision</code></td>
+<td>ICVision only</td>
+<td>Vision-based classification for all components</td>
+</tr>
+<tr class="odd">
+<td><code>hybrid</code></td>
+<td>ICLabel first, ICVision for top N</td>
+<td>Balance cost and accuracy</td>
+</tr>
+</tbody>
+</table>
+<p>The <strong>hybrid mode</strong> is particularly interesting: it runs ICLabel on all components first, then reclassifies the first N components (default: 20) using ICVision. This approach assumes that the most important components to accurately classify are the highest-variance ones (lowest indices), while allowing cheaper ICLabel classifications for the tail components that are often noise.</p>
+</section>
+<section id="integration-flow" class="level3" data-number="10.2">
+<h3 data-number="10.2" class="anchored" data-anchor-id="integration-flow"><span class="header-section-number">10.2</span> Integration Flow</h3>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">flowchart TD
+    subgraph "autocleaneeg_pipeline"
+        A[ica_processing.classify_ica_components] --&gt; B{method?}
+        B --&gt;|iclabel| C[mne_icalabel.label_components]
+        B --&gt;|icvision| D[icvision.compat.label_components]
+        B --&gt;|hybrid| E[ICLabel all + ICVision subset]
+        C --&gt; F[_icalabel_to_dataframe]
+        D --&gt; F
+        E --&gt; F
+        F --&gt; G[_attach_source_metadata]
+        G --&gt; H[DataFrame with iclabel/icvision columns]
+    end
+    subgraph "icvision package"
+        D --&gt; I[core.label_components]
+        I --&gt; J[api.classify_components_batch]
+        J --&gt; K[N individual API calls]
+    end
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<p>The pipeline merges classification results from both sources, preserving:</p>
+<ul>
+<li><code>iclabel_ic_type</code> / <code>iclabel_confidence</code> — ICLabel predictions</li>
+<li><code>icvision_ic_type</code> / <code>icvision_confidence</code> — ICVision predictions</li>
+<li><code>ic_type</code> / <code>confidence</code> — Final merged values</li>
+<li><code>annotator</code> — Source of the final classification</li>
+</ul>
+</section>
+<section id="current-bottleneck" class="level3" data-number="10.3">
+<h3 data-number="10.3" class="anchored" data-anchor-id="current-bottleneck"><span class="header-section-number">10.3</span> Current Bottleneck</h3>
+<p>In hybrid mode with N=20 components and 127 total ICA components, the current implementation makes <strong>20 individual API calls</strong> for the ICVision portion. Each call:</p>
+<ol type="1">
+<li>Generates a single-component image (topo, time series, ERP, PSD)</li>
+<li>Encodes image as base64</li>
+<li>Sends HTTP request to OpenAI Vision API</li>
+<li>Waits for response</li>
+<li>Parses JSON classification</li>
+</ol>
+<p>With typical API latency of ~3.5 seconds per call, the ICVision portion takes approximately <strong>70 seconds</strong> per dataset.</p>
+</section>
+<section id="proposed-strip-optimization" class="level3" data-number="10.4">
+<h3 data-number="10.4" class="anchored" data-anchor-id="proposed-strip-optimization"><span class="header-section-number">10.4</span> Proposed Strip Optimization</h3>
+<p>The strip layout reduces hybrid mode from 20 API calls to <strong>3 API calls</strong> (ceil(20/9) = 3 batches):</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Batch</th>
+<th>Components</th>
+<th>Image</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>IC0–IC8</td>
+<td>9-row strip</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>IC9–IC17</td>
+<td>9-row strip</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>IC18–IC19</td>
+<td>2-row strip</td>
+</tr>
+</tbody>
+</table>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">flowchart TD
+    subgraph "Proposed: Strip Mode in Hybrid"
+        A[classify_ica_components method=hybrid] --&gt; B[ICLabel all components]
+        B --&gt; C[icvision.compat.label_components&lt;br/&gt;layout='strip', component_indices=0..19]
+        C --&gt; D[create_strip_image batch 1&lt;br/&gt;IC0-IC8]
+        C --&gt; E[create_strip_image batch 2&lt;br/&gt;IC9-IC17]
+        C --&gt; F[create_strip_image batch 3&lt;br/&gt;IC18-IC19]
+        D --&gt; G[Single API call]
+        E --&gt; G
+        F --&gt; G
+        G --&gt; H[Parse 3 JSON responses]
+        H --&gt; I[Merge with ICLabel results]
+    end
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+</section>
+<section id="cost-and-time-savings" class="level3" data-number="10.5">
+<h3 data-number="10.5" class="anchored" data-anchor-id="cost-and-time-savings"><span class="header-section-number">10.5</span> Cost and Time Savings</h3>
+<p>The following table projects savings for a typical hybrid workflow (20 ICVision components):</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 18%">
+<col style="width: 31%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Single-Image</th>
+<th>Strip (9)</th>
+<th>Reduction</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>API calls</td>
+<td>20</td>
+<td>3</td>
+<td>85%</td>
+</tr>
+<tr class="even">
+<td>Total latency</td>
+<td>~70s</td>
+<td>~11s</td>
+<td>84%</td>
+</tr>
+<tr class="odd">
+<td>Token cost</td>
+<td>20 × prompt + 20 × response</td>
+<td>3 × prompt + 3 × response</td>
+<td>~85%</td>
+</tr>
+<tr class="even">
+<td>Image generation time</td>
+<td>20 × 0.3s = 6s</td>
+<td>3 × 0.5s = 1.5s</td>
+<td>75%</td>
+</tr>
+</tbody>
+</table>
+<p>For full ICVision mode (127 components):</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Single-Image</th>
+<th>Strip (9)</th>
+<th>Reduction</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>API calls</td>
+<td>127</td>
+<td>15</td>
+<td>88%</td>
+</tr>
+<tr class="even">
+<td>Total latency</td>
+<td>~445s</td>
+<td>~53s</td>
+<td>88%</td>
+</tr>
+<tr class="odd">
+<td>Token cost</td>
+<td>127 × base</td>
+<td>15 × base</td>
+<td>~88%</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="implementation-plan-for-pipeline-integration" class="level3" data-number="10.6">
+<h3 data-number="10.6" class="anchored" data-anchor-id="implementation-plan-for-pipeline-integration"><span class="header-section-number">10.6</span> Implementation Plan for Pipeline Integration</h3>
+<p>The strip layout is already implemented in ICVision (Phases 1-4 complete). The following steps enable pipeline usage:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 33%">
+<col style="width: 26%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Step</th>
+<th>Task</th>
+<th>Location</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>Add <code>layout</code> parameter to <code>compat.label_components()</code></td>
+<td><code>icvision/compat.py</code></td>
+<td>✅ Complete</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>Pass <code>layout</code> through to <code>core.label_components()</code></td>
+<td><code>icvision/compat.py</code></td>
+<td>✅ Complete</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>Dispatch to strip batch in <code>classify_components_batch()</code></td>
+<td><code>icvision/api.py</code></td>
+<td>✅ Complete</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>Update pipeline kwargs to pass <code>layout='strip'</code></td>
+<td><code>ica_processing.py</code></td>
+<td><strong>TODO</strong></td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>Test hybrid mode with strip layout</td>
+<td>Integration test</td>
+<td><strong>TODO</strong></td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>Measure accuracy vs single-image mode</td>
+<td>Validation study</td>
+<td><strong>TODO</strong></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="backward-compatibility" class="level3" data-number="10.7">
+<h3 data-number="10.7" class="anchored" data-anchor-id="backward-compatibility"><span class="header-section-number">10.7</span> Backward Compatibility</h3>
+<p>The integration is designed for zero-disruption adoption:</p>
+<ol type="1">
+<li><strong>Default behavior unchanged</strong>: <code>layout="single"</code> is default, existing pipelines work identically</li>
+<li><strong>Opt-in activation</strong>: Pipeline must explicitly pass <code>layout="strip"</code> to enable</li>
+<li><strong>DataFrame schema preserved</strong>: Strip results produce identical columns</li>
+<li><strong>Fallback preserved</strong>: If ICVision fails, ICLabel results are used (existing behavior)</li>
+</ol>
+<p>To enable strip mode in the pipeline, modify the <code>classify_ica_components()</code> call:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Before (single-image mode)</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>label_components(raw, ica, component_indices<span class="op">=</span>component_indices, <span class="op">**</span>kwargs)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="co"># After (strip mode)</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>label_components(raw, ica, component_indices<span class="op">=</span>component_indices, layout<span class="op">=</span><span class="st">"strip"</span>, <span class="op">**</span>kwargs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Or pass through kwargs from the pipeline configuration:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># In ica_processing.py classify_ica_components()</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>kwargs <span class="op">=</span> {<span class="st">"layout"</span>: <span class="st">"strip"</span>, <span class="st">"strip_size"</span>: <span class="dv">9</span>, <span class="op">**</span>kwargs}</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>label_components(raw, ica, <span class="op">**</span>kwargs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="references" class="level2" data-number="11">
+<h2 data-number="11" class="anchored" data-anchor-id="references"><span class="header-section-number">11</span> References</h2>
 <ol type="1">
 <li>Current implementation: <code>src/icvision/core.py</code></li>
 <li>Experimental strip: <code>test_grid_classify.py</code></li>
 <li>Experiment results: <code>experiments/grid_tests/results.md</code></li>
+<li>Pipeline integration: <code>autocleaneeg_pipeline/src/autoclean/functions/ica/ica_processing.py</code></li>
 </ol>
 </section>
 
