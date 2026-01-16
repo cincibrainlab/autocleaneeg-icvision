@@ -206,3 +206,74 @@ classify_components_batch(
 **Commit**: `7266f0b`
 
 **Status**: All 4 phases complete. 4 of 5 open questions resolved. Ready for production testing.
+
+---
+
+## 2026-01-15: Pipeline Integration Documentation
+
+**Document**: `multi-tracing-production.qmd` (updated)
+
+**Summary**: Added comprehensive section documenting how ICVision is integrated in `autocleaneeg_pipeline` and proposed optimizations with strip layout.
+
+**Original implementation documented**:
+- Integration point: `ica_processing.py` uses `icvision.compat.label_components()`
+- Three classification modes: `iclabel`, `icvision`, `hybrid`
+- Hybrid mode: ICLabel on all components, then ICVision reclassifies first N (default: 20)
+- DataFrame schema with source metadata: `iclabel_ic_type`, `icvision_ic_type`, etc.
+- Fallback behavior: ICVision failure falls back to ICLabel results
+
+**Proposed optimizations**:
+- Hybrid mode API call reduction: 20 calls → 3 batches (85% reduction)
+- Full ICVision mode: 127 calls → 15 batches (88% reduction)
+- Latency savings: ~70s → ~11s for hybrid, ~445s → ~53s for full
+
+**Implementation plan for pipeline**:
+| Step | Task | Status |
+|------|------|--------|
+| 1-3 | ICVision `layout` parameter support | ✅ Complete |
+| 4 | Update pipeline kwargs to pass `layout='strip'` | TODO |
+| 5 | Integration test hybrid mode + strip | TODO |
+| 6 | Accuracy validation study | TODO |
+
+**Backward compatibility**: Default `layout="single"` ensures zero-disruption adoption.
+
+**Commit**: `8d5c9f9`
+
+**Status**: Documentation complete. Ready for pipeline integration when accuracy validated.
+
+---
+
+## 2026-01-15: PDF Report Fix - Preserve Original Raw Data
+
+**Issue**: When using strip mode, PDF report showed incomplete panels for excluded components. Topography rendered correctly, but time series showed scale "1e-15", ERP images were uniform green, and PSD showed flat lines at -200 dB.
+
+**Root cause investigation**:
+1. Strip images (`.webp`) rendered all 4 panels correctly — problem was specific to PDF generation
+2. Initial fix: Changed `generate_classification_report()` to receive `raw` instead of `raw_cleaned`
+3. Problem persisted because `_apply_artifact_rejection()` modified `raw` **in-place** via `ica.apply(raw)`
+4. By the time PDF report was generated, `raw` had already been modified
+
+**Solution**: Modified `_apply_artifact_rejection()` to work on a copy:
+
+```python
+# Before (in-place modification)
+def _apply_artifact_rejection(raw, ica):
+    if ica.exclude:
+        ica.apply(raw)  # Modifies raw in-place!
+    return raw
+
+# After (preserves original)
+def _apply_artifact_rejection(raw, ica):
+    raw_cleaned = raw.copy()  # Make copy first
+    if ica.exclude:
+        ica.apply(raw_cleaned)  # Apply to copy
+    return raw_cleaned
+```
+
+**Files changed**:
+- `src/icvision/core.py:393-414` — `_apply_artifact_rejection()` now returns copy
+- `tests/test_core.py:374-408` — Updated test to verify copy behavior
+
+**Test results**: 1 related test updated and passing. 57/61 tests passing overall (4 pre-existing failures unrelated to this fix).
+
+**Status**: PDF report fix complete. Original raw data preserved for showing full component visualizations including excluded components.

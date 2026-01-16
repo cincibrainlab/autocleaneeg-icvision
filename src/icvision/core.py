@@ -290,7 +290,7 @@ def label_components(
 
             report_path = generate_classification_report(
                 ica_obj=ica_updated,
-                raw_obj=raw_cleaned,
+                raw_obj=raw,  # Use original raw, not cleaned, to show full component data
                 results_df=results_df,
                 output_dir=output_path,
                 input_basename=input_basename,
@@ -395,17 +395,20 @@ def _apply_artifact_rejection(raw: mne.io.Raw, ica: mne.preprocessing.ICA) -> mn
     Apply ICA artifact rejection to raw data.
 
     Args:
-        raw: Original raw data.
+        raw: Original raw data (not modified).
         ica: ICA object with exclusions set.
 
     Returns:
-        Cleaned raw data with artifacts removed.
+        Cleaned raw data with artifacts removed (copy of original).
     """
-    # Apply ICA in-place if there are components to exclude
+    # Make a copy to preserve original raw data for PDF report generation
+    raw_cleaned = raw.copy()
+
+    # Apply ICA to the copy if there are components to exclude
     if ica.exclude:
         logger.info("Applying ICA to remove %d components", len(ica.exclude))
-        ica.apply(raw)
+        ica.apply(raw_cleaned)
     else:
-        logger.info("No components marked for exclusion, returning original data")
+        logger.info("No components marked for exclusion, returning copy of original data")
 
-    return raw
+    return raw_cleaned

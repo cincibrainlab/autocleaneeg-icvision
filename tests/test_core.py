@@ -372,7 +372,11 @@ def test_update_ica_with_classifications(dummy_ica_data: mne.preprocessing.ICA) 
 
 
 def test_apply_artifact_rejection(dummy_raw_data: mne.io.Raw, dummy_ica_data: mne.preprocessing.ICA) -> None:
-    """Test applying artifact rejection to Raw data based on ICA exclude list."""
+    """Test applying artifact rejection to Raw data based on ICA exclude list.
+
+    Note: _apply_artifact_rejection returns a copy to preserve the original raw data
+    for PDF report generation (showing all components including excluded ones).
+    """
     logger.info("Testing _apply_artifact_rejection...")
     raw_to_clean = dummy_raw_data.copy()
     ica_with_exclusions = dummy_ica_data.copy()
@@ -385,18 +389,21 @@ def test_apply_artifact_rejection(dummy_raw_data: mne.io.Raw, dummy_ica_data: mn
         ica_with_exclusions.exclude = []
 
     # Capture data before applying rejection to compare
-    # Note: .apply() modifies data in-place for Raw, but returns a new Epochs object.
-    # We are testing with Raw.
     data_before, _ = raw_to_clean[:, :]
 
     cleaned_raw = _apply_artifact_rejection(raw_to_clean, ica_with_exclusions)
 
-    assert cleaned_raw is raw_to_clean, "Raw object should be modified in-place"
+    # Function now returns a copy to preserve original raw for PDF report
+    assert cleaned_raw is not raw_to_clean, "Function should return a copy, not modify in-place"
+
+    # Verify original data is unchanged
+    data_original_after, _ = raw_to_clean[:, :]
+    assert np.array_equal(data_before, data_original_after), "Original raw data should be unchanged"
 
     if ica_with_exclusions.exclude and len(ica_with_exclusions.exclude) > 0:
         data_after, _ = cleaned_raw[:, :]
-        # Check if data has changed (artifact removal should alter the data)
-        assert not np.array_equal(data_before, data_after), "Data should change after applying ICA with exclusions"
+        # Check if returned copy has cleaned data (artifact removal should alter the data)
+        assert not np.array_equal(data_before, data_after), "Cleaned copy should differ from original after applying ICA"
     else:
         logger.info("No components were excluded, data should remain unchanged.")
         data_after, _ = cleaned_raw[:, :]
