@@ -86,7 +86,7 @@ def label_components(
         custom_prompt: Custom classification prompt. If None, uses default.
         component_indices: Optional list of component indices to classify. If None,
             all components are processed.
-        psd_fmax: Maximum frequency for PSD plot (default: None, uses 80 Hz or Nyquist).
+        psd_fmax: Maximum frequency for PSD plot (default: None, uses 45 Hz to avoid notch filter artifacts).
         base_url: Optional custom API base URL for OpenAI-compatible endpoints.
         layout: Classification layout mode. 'single' processes one component per API call,
             'strip' batches multiple components (default: 'single' for backward compatibility).

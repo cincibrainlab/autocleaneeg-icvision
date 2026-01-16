@@ -50,7 +50,7 @@ def plot_component_for_classification(
         raw_obj: The MNE Raw object used for ICA.
         component_idx: Index of the component to plot.
         output_dir: Directory to save the plot (if not returning a figure object).
-        psd_fmax: Maximum frequency for PSD plot (default: None, uses 80 Hz or Nyquist).
+        psd_fmax: Maximum frequency for PSD plot (default: None, uses 45 Hz to avoid notch filter artifacts).
         classification_label: Vision API label (for PDF report).
         classification_confidence: Vision API confidence (for PDF report).
         classification_reason: Vision API reason (for PDF report).
@@ -265,11 +265,11 @@ def plot_component_for_classification(
     # 4. IC Activity Power Spectrum
     try:
         fmin_psd = 1.0
-        # Use provided psd_fmax or default to 80Hz
+        # Use provided psd_fmax or default to 45Hz (before notch filter region at 50-60Hz)
         if psd_fmax is not None:
             fmax_psd = min(psd_fmax, sfreq / 2.0 - 0.51)  # Cap at provided value or Nyquist
         else:
-            fmax_psd = min(80.0, sfreq / 2.0 - 0.51)  # Default: Cap at 80Hz or Nyquist
+            fmax_psd = min(45.0, sfreq / 2.0 - 0.51)  # Default: Cap at 45Hz to avoid notch filter artifacts
         n_fft_psd = int(sfreq * 2.0)  # 2-second window
         if n_fft_psd > len(component_data_array):
             n_fft_psd = len(component_data_array)
@@ -432,7 +432,7 @@ def plot_components_batch(
         component_indices: List of component indices to plot.
         output_dir: Directory to save the component images.
         batch_size: Number of components to process before cleanup (default: 1).
-        psd_fmax: Maximum frequency for PSD plot (default: None, uses 80 Hz or Nyquist).
+        psd_fmax: Maximum frequency for PSD plot (default: None, uses 45 Hz to avoid notch filter artifacts).
 
     Returns:
         Dictionary mapping component_idx to image path (or None if plotting failed).
@@ -547,7 +547,7 @@ def plot_single_component_subplot(
         component_idx: Component index to plot
         axes_dict: Dict with keys 'topo', 'ts', 'erp', 'psd' containing matplotlib Axes
         label: Label string (A, B, C, etc.) for this component
-        psd_fmax: Maximum frequency for PSD plot (default: None, uses 55 Hz or Nyquist)
+        psd_fmax: Maximum frequency for PSD plot (default: None, uses 45 Hz to avoid notch filter artifacts)
         precomputed_sources: Optional precomputed ICA sources to speed up plotting
 
     Example:
@@ -668,11 +668,11 @@ def plot_single_component_subplot(
     # 4. PSD - minimal labels
     try:
         fmin = 1.0
-        # Use provided psd_fmax or default to 55Hz (before notch filter dip)
+        # Use provided psd_fmax or default to 45Hz (before notch filter region at 50-60Hz)
         if psd_fmax is not None:
             fmax = min(psd_fmax, sfreq / 2.0 - 0.5)
         else:
-            fmax = min(55.0, sfreq / 2.0 - 0.5)
+            fmax = min(45.0, sfreq / 2.0 - 0.5)
         n_fft = min(int(sfreq * 2), len(component_data))
         n_fft = max(n_fft, 256) if len(component_data) >= 256 else len(component_data)
 
@@ -717,7 +717,7 @@ def create_strip_image(
         raw_obj: MNE Raw object used for ICA fitting
         component_indices: List of component indices to include (max 9 recommended)
         output_path: Path to save the strip image (webp format)
-        psd_fmax: Maximum frequency for PSD plots (default: None, uses 55 Hz)
+        psd_fmax: Maximum frequency for PSD plots (default: None, uses 45 Hz to avoid notch filter artifacts)
         precomputed_sources: Optional precomputed ICA sources to speed up plotting
 
     Returns:

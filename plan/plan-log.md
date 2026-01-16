@@ -277,3 +277,26 @@ def _apply_artifact_rejection(raw, ica):
 **Test results**: 1 related test updated and passing. 57/61 tests passing overall (4 pre-existing failures unrelated to this fix).
 
 **Status**: PDF report fix complete. Original raw data preserved for showing full component visualizations including excluded components.
+
+---
+
+## 2026-01-15: PSD Frequency Limit Change (45Hz Default)
+
+**Issue**: PSD plots showed notch filter artifacts in the 50-60Hz range, making the spectrum appear distorted.
+
+**Solution**: Changed default PSD frequency limit from 80Hz to 45Hz to avoid displaying the notch filter dip region.
+
+**Files changed**:
+- `src/icvision/plotting.py`:
+  - `plot_component_for_classification()`: 80Hz → 45Hz default
+  - `plot_single_component_subplot()`: 55Hz → 45Hz default
+  - Updated docstrings in both functions and `create_strip_image()`
+- `src/icvision/api.py`: Updated docstring
+- `src/icvision/core.py`: Updated docstring
+- `src/icvision/cli.py`: Updated help text
+
+**Rationale**: Line noise is typically at 50Hz (Europe/Asia) or 60Hz (Americas). Notch filters create dips in this region that distort the PSD appearance. By capping at 45Hz, we show clean spectral content up to the alpha/beta range without notch filter artifacts.
+
+**Backward compatibility**: Users can still specify higher frequencies via `--psd-fmax` CLI flag or `psd_fmax` parameter.
+
+**Status**: Complete. PSD plots now avoid notch filter artifacts by default.

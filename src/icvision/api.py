@@ -726,7 +726,7 @@ def classify_components_batch(
         auto_exclude: If True, mark components for exclusion.
         labels_to_exclude: List of labels to exclude (e.g., ["eye", "muscle"]).
         output_dir: Directory to save temporary component images.
-        psd_fmax: Maximum frequency for PSD plot (default: None, uses 80 Hz or Nyquist).
+        psd_fmax: Maximum frequency for PSD plot (default: None, uses 45 Hz to avoid notch filter artifacts).
         component_indices: Optional list of component indices to classify. If None,
             all components are processed.
         base_url: Optional custom API base URL for OpenAI-compatible endpoints.

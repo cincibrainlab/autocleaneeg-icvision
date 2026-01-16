@@ -158,7 +158,7 @@ Examples:
         "--psd-fmax",
         type=float,
         default=None,
-        help="Maximum frequency for PSD plots in Hz (default: 80 or Nyquist). "
+        help="Maximum frequency for PSD plots in Hz (default: 45 to avoid notch filter artifacts). "
         "Useful for ERP studies where data is filtered at lower frequencies.",
     )
     class_group.add_argument(
