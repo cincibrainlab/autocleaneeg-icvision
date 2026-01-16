@@ -81,3 +81,28 @@ classify_components_batch(
 ```
 
 **Status**: Phase 1 complete. Ready for testing and Phase 2 (output compatibility).
+
+---
+
+## 2026-01-15: Phase 1 Documented & Phase 2 Preflight
+
+**Document**: `multi-tracing-production.qmd` (updated)
+
+**Summary**: Added Phase 1 completion table and Phase 2 preflight assessment to RFC documentation. Updated model references to gpt-5.2 for custom endpoint compatibility.
+
+**Phase 1 completion table**: Documents all 5 implementation steps with file locations and status:
+- `plot_single_component_subplot()` at `plotting.py:530`
+- `create_strip_image()` at `plotting.py:702`
+- `classify_strip_image()` at `api.py:289`
+- `classify_components_strip_batch()` at `api.py:461`
+- Integration dispatch with `layout` parameter
+
+**Phase 2 preflight findings**:
+- **Ready (no changes needed)**: `save_results()`, `_update_ica_with_classifications()`, cleaned Raw export
+- **Requires work**: PDF report generation (strip vs individual layout decision), custom prompt file support
+
+**Model update**: All references updated from gpt-4.1 to gpt-5.2 for custom OpenAI endpoint.
+
+**Commit**: `9a97e1c`
+
+**Status**: Phase 2 ready to proceed pending PDF report format decision.
