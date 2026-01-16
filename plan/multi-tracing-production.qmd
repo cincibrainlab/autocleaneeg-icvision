@@ -20,10 +20,12 @@ This document describes the current single-image implementation of ICVision and 
 
 | Field | Value |
 |-------|-------|
-| Status | Proposed |
+| Status | **Phase 1 Complete** |
 | Created | 2026-01-15 |
+| Updated | 2026-01-15 |
 | Target | v0.3.0 |
 | Dependencies | test_grid_classify.py (experimental) |
+| Model | gpt-5.2 (via custom endpoint) |
 
 ## Current Single-Image Implementation
 
@@ -247,7 +249,7 @@ def classify_strip_image(
     image_path: Path,
     component_indices: List[int],
     api_key: str,
-    model_name: str = "gpt-4.1",
+    model_name: str = "gpt-5.2",
     custom_prompt: Optional[str] = None,
     base_url: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
@@ -268,7 +270,7 @@ def classify_components_strip_batch(
     ica_obj: mne.preprocessing.ICA,
     raw_obj: mne.io.Raw,
     api_key: str,
-    model_name: str = "gpt-4.1",
+    model_name: str = "gpt-5.2",
     output_dir: Path,
     component_indices: Optional[List[int]] = None,
     psd_fmax: Optional[float] = None,
@@ -329,6 +331,34 @@ flowchart TD
     end
 ```
 
+### Phase 1: Completion Status
+
+Phase 1 implementation is complete. The following table documents what was delivered:
+
+| Step | Task | Location | Status | Notes |
+|------|------|----------|--------|-------|
+| 1.1 | Extract `plot_single_component_subplot()` | `plotting.py:530` | ✅ Complete | Plots single ICA component into provided axes dict (topo, ts, erp, psd) |
+| 1.2 | Extract `create_strip_image()` | `plotting.py:702` | ✅ Complete | Creates 4-column strip image with N components (1-52 supported) |
+| 1.3 | Add `classify_strip_image()` | `api.py:289` | ✅ Complete | Sends strip to API, parses JSON array, maps letter labels to indices |
+| 1.4 | Create batch orchestration | `api.py:461` | ✅ Complete | `classify_components_strip_batch()` with windowing logic |
+| 1.5 | Integration dispatch | `api.py` | ✅ Complete | `layout` and `strip_size` parameters added to `classify_components_batch()` |
+
+**Key implementation details**:
+
+- Precomputed ICA sources optimization is applied to avoid redundant computation
+- Remainder handling works correctly: final batch accepts 1-8 components with same layout
+- Error handling: failed batches fall back to `"other_artifact"` classification
+- DataFrame schema parity: strip results produce identical columns as single-image mode
+
+**API surface added**:
+```python
+classify_components_batch(
+    ...,
+    layout="strip",      # NEW: "single" or "strip"
+    strip_size=9,        # NEW: components per strip (default: 9)
+)
+```
+
 ### Phase 2: Output Compatibility
 
 Ensure strip classification results integrate with existing output functions:
@@ -337,6 +367,29 @@ Ensure strip classification results integrate with existing output functions:
 2. Verify `save_results()` works with strip-generated DataFrames
 3. Verify `_update_ica_with_classifications()` accepts strip results
 4. Test all output file generation paths
+
+::: {.callout-note}
+## Phase 2 Preflight Check
+
+**Status**: Ready to proceed. Preparation findings:
+
+| Component | Location | Integration Status |
+|-----------|----------|-------------------|
+| `save_results()` | `utils.py:344` | DataFrame columns match expected schema; no changes required |
+| `_update_ica_with_classifications()` | `core.py:310` | Accepts any DataFrame with `component_index`, `label`, `mne_label`, `exclude_vision`; compatible |
+| `generate_classification_report()` | `reports.py:164` | Requires individual component images; needs adaptation for strip mode |
+| Label validation | `config.py` | `COMPONENT_LABELS` list exists; already integrated in strip parsing |
+| Cost tracking | `api.py` | Token usage aggregated across batches; working |
+
+**Ready items** (no changes needed):
+- CSV output via `save_results()` — strip DataFrame schema already matches
+- ICA object updates via `_update_ica_with_classifications()` — compatible
+- Cleaned Raw export — independent of classification method
+
+**Requires work**:
+- PDF report generation needs decision on strip vs individual image layout
+- Custom prompt file support (`--prompt-file`) not yet adapted for strip mode
+:::
 
 ::: {.callout-important}
 ## Clarification Needed: PDF Report Content
@@ -424,7 +477,7 @@ def label_components(
     generate_report: bool = True,
     batch_size: int = 10,
     max_concurrency: int = 4,
-    model_name: str = "gpt-4.1",
+    model_name: str = "gpt-5.2",
     custom_prompt: Optional[str] = None,
     component_indices: Optional[List[int]] = None,
     psd_fmax: Optional[float] = None,

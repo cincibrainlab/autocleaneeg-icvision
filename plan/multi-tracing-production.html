@@ -105,9 +105,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul class="collapse">
   <li><a href="#phase-1-core-integration" id="toc-phase-1-core-integration" class="nav-link" data-scroll-target="#phase-1-core-integration"><span class="header-section-number">6.1</span> Phase 1: Core Integration</a></li>
   <li><a href="#phase-1-detailed-execution-plan" id="toc-phase-1-detailed-execution-plan" class="nav-link" data-scroll-target="#phase-1-detailed-execution-plan"><span class="header-section-number">6.2</span> Phase 1: Detailed Execution Plan</a></li>
-  <li><a href="#phase-2-output-compatibility" id="toc-phase-2-output-compatibility" class="nav-link" data-scroll-target="#phase-2-output-compatibility"><span class="header-section-number">6.3</span> Phase 2: Output Compatibility</a></li>
-  <li><a href="#phase-3-cli-and-api-surface" id="toc-phase-3-cli-and-api-surface" class="nav-link" data-scroll-target="#phase-3-cli-and-api-surface"><span class="header-section-number">6.4</span> Phase 3: CLI and API Surface</a></li>
-  <li><a href="#phase-4-batch-windowing" id="toc-phase-4-batch-windowing" class="nav-link" data-scroll-target="#phase-4-batch-windowing"><span class="header-section-number">6.5</span> Phase 4: Batch Windowing</a></li>
+  <li><a href="#phase-1-completion-status" id="toc-phase-1-completion-status" class="nav-link" data-scroll-target="#phase-1-completion-status"><span class="header-section-number">6.3</span> Phase 1: Completion Status</a></li>
+  <li><a href="#phase-2-output-compatibility" id="toc-phase-2-output-compatibility" class="nav-link" data-scroll-target="#phase-2-output-compatibility"><span class="header-section-number">6.4</span> Phase 2: Output Compatibility</a></li>
+  <li><a href="#phase-3-cli-and-api-surface" id="toc-phase-3-cli-and-api-surface" class="nav-link" data-scroll-target="#phase-3-cli-and-api-surface"><span class="header-section-number">6.5</span> Phase 3: CLI and API Surface</a></li>
+  <li><a href="#phase-4-batch-windowing" id="toc-phase-4-batch-windowing" class="nav-link" data-scroll-target="#phase-4-batch-windowing"><span class="header-section-number">6.6</span> Phase 4: Batch Windowing</a></li>
   </ul></li>
   <li><a href="#api-changes" id="toc-api-changes" class="nav-link" data-scroll-target="#api-changes"><span class="header-section-number">7</span> API Changes</a>
   <ul class="collapse">
@@ -170,19 +171,27 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td>Status</td>
-<td>Proposed</td>
+<td><strong>Phase 1 Complete</strong></td>
 </tr>
 <tr class="even">
 <td>Created</td>
 <td>2026-01-15</td>
 </tr>
 <tr class="odd">
+<td>Updated</td>
+<td>2026-01-15</td>
+</tr>
+<tr class="even">
 <td>Target</td>
 <td>v0.3.0</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>Dependencies</td>
 <td>test_grid_classify.py (experimental)</td>
+</tr>
+<tr class="even">
+<td>Model</td>
+<td>gpt-5.2 (via custom endpoint)</td>
 </tr>
 </tbody>
 </table>
@@ -696,7 +705,7 @@ Decision: Strip Size Fixed at 9
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    image_path: Path,</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    component_indices: List[<span class="bu">int</span>],</span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    api_key: <span class="bu">str</span>,</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    model_name: <span class="bu">str</span> <span class="op">=</span> <span class="st">"gpt-4.1"</span>,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    model_name: <span class="bu">str</span> <span class="op">=</span> <span class="st">"gpt-5.2"</span>,</span>
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    custom_prompt: Optional[<span class="bu">str</span>] <span class="op">=</span> <span class="va">None</span>,</span>
 <span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    base_url: Optional[<span class="bu">str</span>] <span class="op">=</span> <span class="va">None</span>,</span>
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> List[Dict[<span class="bu">str</span>, Any]]:</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -714,7 +723,7 @@ Decision: Strip Size Fixed at 9
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    ica_obj: mne.preprocessing.ICA,</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    raw_obj: mne.io.Raw,</span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    api_key: <span class="bu">str</span>,</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    model_name: <span class="bu">str</span> <span class="op">=</span> <span class="st">"gpt-4.1"</span>,</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    model_name: <span class="bu">str</span> <span class="op">=</span> <span class="st">"gpt-5.2"</span>,</span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    output_dir: Path,</span>
 <span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    component_indices: Optional[List[<span class="bu">int</span>]] <span class="op">=</span> <span class="va">None</span>,</span>
 <span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    psd_fmax: Optional[<span class="bu">float</span>] <span class="op">=</span> <span class="va">None</span>,</span>
@@ -777,8 +786,80 @@ Decision: Strip Size Fixed at 9
 </div>
 </section>
 </section>
-<section id="phase-2-output-compatibility" class="level3" data-number="6.3">
-<h3 data-number="6.3" class="anchored" data-anchor-id="phase-2-output-compatibility"><span class="header-section-number">6.3</span> Phase 2: Output Compatibility</h3>
+<section id="phase-1-completion-status" class="level3" data-number="6.3">
+<h3 data-number="6.3" class="anchored" data-anchor-id="phase-1-completion-status"><span class="header-section-number">6.3</span> Phase 1: Completion Status</h3>
+<p>Phase 1 implementation is complete. The following table documents what was delivered:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 27%">
+<col style="width: 21%">
+<col style="width: 18%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Step</th>
+<th>Task</th>
+<th>Location</th>
+<th>Status</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1.1</td>
+<td>Extract <code>plot_single_component_subplot()</code></td>
+<td><code>plotting.py:530</code></td>
+<td>✅ Complete</td>
+<td>Plots single ICA component into provided axes dict (topo, ts, erp, psd)</td>
+</tr>
+<tr class="even">
+<td>1.2</td>
+<td>Extract <code>create_strip_image()</code></td>
+<td><code>plotting.py:702</code></td>
+<td>✅ Complete</td>
+<td>Creates 4-column strip image with N components (1-52 supported)</td>
+</tr>
+<tr class="odd">
+<td>1.3</td>
+<td>Add <code>classify_strip_image()</code></td>
+<td><code>api.py:289</code></td>
+<td>✅ Complete</td>
+<td>Sends strip to API, parses JSON array, maps letter labels to indices</td>
+</tr>
+<tr class="even">
+<td>1.4</td>
+<td>Create batch orchestration</td>
+<td><code>api.py:461</code></td>
+<td>✅ Complete</td>
+<td><code>classify_components_strip_batch()</code> with windowing logic</td>
+</tr>
+<tr class="odd">
+<td>1.5</td>
+<td>Integration dispatch</td>
+<td><code>api.py</code></td>
+<td>✅ Complete</td>
+<td><code>layout</code> and <code>strip_size</code> parameters added to <code>classify_components_batch()</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Key implementation details</strong>:</p>
+<ul>
+<li>Precomputed ICA sources optimization is applied to avoid redundant computation</li>
+<li>Remainder handling works correctly: final batch accepts 1-8 components with same layout</li>
+<li>Error handling: failed batches fall back to <code>"other_artifact"</code> classification</li>
+<li>DataFrame schema parity: strip results produce identical columns as single-image mode</li>
+</ul>
+<p><strong>API surface added</strong>:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>classify_components_batch(</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    ...,</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    layout<span class="op">=</span><span class="st">"strip"</span>,      <span class="co"># NEW: "single" or "strip"</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    strip_size<span class="op">=</span><span class="dv">9</span>,        <span class="co"># NEW: components per strip (default: 9)</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="phase-2-output-compatibility" class="level3" data-number="6.4">
+<h3 data-number="6.4" class="anchored" data-anchor-id="phase-2-output-compatibility"><span class="header-section-number">6.4</span> Phase 2: Output Compatibility</h3>
 <p>Ensure strip classification results integrate with existing output functions:</p>
 <ol type="1">
 <li>Adapt JSON response parsing to produce identical DataFrame schema</li>
@@ -786,6 +867,62 @@ Decision: Strip Size Fixed at 9
 <li>Verify <code>_update_ica_with_classifications()</code> accepts strip results</li>
 <li>Test all output file generation paths</li>
 </ol>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Phase 2 Preflight Check
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Status</strong>: Ready to proceed. Preparation findings:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 27%">
+<col style="width: 25%">
+<col style="width: 47%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Component</th>
+<th>Location</th>
+<th>Integration Status</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>save_results()</code></td>
+<td><code>utils.py:344</code></td>
+<td>DataFrame columns match expected schema; no changes required</td>
+</tr>
+<tr class="even">
+<td><code>_update_ica_with_classifications()</code></td>
+<td><code>core.py:310</code></td>
+<td>Accepts any DataFrame with <code>component_index</code>, <code>label</code>, <code>mne_label</code>, <code>exclude_vision</code>; compatible</td>
+</tr>
+<tr class="odd">
+<td><code>generate_classification_report()</code></td>
+<td><code>reports.py:164</code></td>
+<td>Requires individual component images; needs adaptation for strip mode</td>
+</tr>
+<tr class="even">
+<td>Label validation</td>
+<td><code>config.py</code></td>
+<td><code>COMPONENT_LABELS</code> list exists; already integrated in strip parsing</td>
+</tr>
+<tr class="odd">
+<td>Cost tracking</td>
+<td><code>api.py</code></td>
+<td>Token usage aggregated across batches; working</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ready items</strong> (no changes needed): - CSV output via <code>save_results()</code> — strip DataFrame schema already matches - ICA object updates via <code>_update_ica_with_classifications()</code> — compatible - Cleaned Raw export — independent of classification method</p>
+<p><strong>Requires work</strong>: - PDF report generation needs decision on strip vs individual image layout - Custom prompt file support (<code>--prompt-file</code>) not yet adapted for strip mode</p>
+</div>
+</div>
 <div class="callout callout-style-default callout-important callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -806,8 +943,8 @@ Clarification Needed: PDF Report Content
 </div>
 </div>
 </section>
-<section id="phase-3-cli-and-api-surface" class="level3" data-number="6.4">
-<h3 data-number="6.4" class="anchored" data-anchor-id="phase-3-cli-and-api-surface"><span class="header-section-number">6.4</span> Phase 3: CLI and API Surface</h3>
+<section id="phase-3-cli-and-api-surface" class="level3" data-number="6.5">
+<h3 data-number="6.5" class="anchored" data-anchor-id="phase-3-cli-and-api-surface"><span class="header-section-number">6.5</span> Phase 3: CLI and API Surface</h3>
 <p>Add layout selection to public interfaces:</p>
 <ol type="1">
 <li>Add <code>--layout</code> flag to CLI (values: <code>single</code>, <code>strip</code>)</li>
@@ -834,8 +971,8 @@ Design Decision: Default Behavior
 </div>
 </div>
 </section>
-<section id="phase-4-batch-windowing" class="level3" data-number="6.5">
-<h3 data-number="6.5" class="anchored" data-anchor-id="phase-4-batch-windowing"><span class="header-section-number">6.5</span> Phase 4: Batch Windowing</h3>
+<section id="phase-4-batch-windowing" class="level3" data-number="6.6">
+<h3 data-number="6.6" class="anchored" data-anchor-id="phase-4-batch-windowing"><span class="header-section-number">6.6</span> Phase 4: Batch Windowing</h3>
 <p>Implement sliding window for large component counts:</p>
 <ol type="1">
 <li>For N &gt; 9 components, process in batches of 9</li>
@@ -894,33 +1031,33 @@ Risk: Partial Batch Failures
 <h2 data-number="7" class="anchored" data-anchor-id="api-changes"><span class="header-section-number">7</span> API Changes</h2>
 <section id="proposed-label_components-signature" class="level3" data-number="7.1">
 <h3 data-number="7.1" class="anchored" data-anchor-id="proposed-label_components-signature"><span class="header-section-number">7.1</span> Proposed label_components Signature</h3>
-<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> label_components(</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    raw_data: Union[<span class="bu">str</span>, Path, mne.io.Raw],</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    ica_data: Optional[Union[<span class="bu">str</span>, Path, mne.preprocessing.ICA]] <span class="op">=</span> <span class="va">None</span>,</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    api_key: Optional[<span class="bu">str</span>] <span class="op">=</span> <span class="va">None</span>,</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    confidence_threshold: <span class="bu">float</span> <span class="op">=</span> <span class="fl">0.8</span>,</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    auto_exclude: <span class="bu">bool</span> <span class="op">=</span> <span class="va">True</span>,</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    labels_to_exclude: Optional[List[<span class="bu">str</span>]] <span class="op">=</span> <span class="va">None</span>,</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    output_dir: Optional[Union[<span class="bu">str</span>, Path]] <span class="op">=</span> <span class="va">None</span>,</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    generate_report: <span class="bu">bool</span> <span class="op">=</span> <span class="va">True</span>,</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    batch_size: <span class="bu">int</span> <span class="op">=</span> <span class="dv">10</span>,</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    max_concurrency: <span class="bu">int</span> <span class="op">=</span> <span class="dv">4</span>,</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    model_name: <span class="bu">str</span> <span class="op">=</span> <span class="st">"gpt-4.1"</span>,</span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    custom_prompt: Optional[<span class="bu">str</span>] <span class="op">=</span> <span class="va">None</span>,</span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    component_indices: Optional[List[<span class="bu">int</span>]] <span class="op">=</span> <span class="va">None</span>,</span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    psd_fmax: Optional[<span class="bu">float</span>] <span class="op">=</span> <span class="va">None</span>,</span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    base_url: Optional[<span class="bu">str</span>] <span class="op">=</span> <span class="va">None</span>,</span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>    layout: <span class="bu">str</span> <span class="op">=</span> <span class="st">"single"</span>,  <span class="co"># NEW: "single" or "strip"</span></span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>    strip_size: <span class="bu">int</span> <span class="op">=</span> <span class="dv">9</span>,     <span class="co"># NEW: components per strip image</span></span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> Tuple[mne.io.Raw, mne.preprocessing.ICA, pd.DataFrame]:</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> label_components(</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    raw_data: Union[<span class="bu">str</span>, Path, mne.io.Raw],</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    ica_data: Optional[Union[<span class="bu">str</span>, Path, mne.preprocessing.ICA]] <span class="op">=</span> <span class="va">None</span>,</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    api_key: Optional[<span class="bu">str</span>] <span class="op">=</span> <span class="va">None</span>,</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    confidence_threshold: <span class="bu">float</span> <span class="op">=</span> <span class="fl">0.8</span>,</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    auto_exclude: <span class="bu">bool</span> <span class="op">=</span> <span class="va">True</span>,</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    labels_to_exclude: Optional[List[<span class="bu">str</span>]] <span class="op">=</span> <span class="va">None</span>,</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    output_dir: Optional[Union[<span class="bu">str</span>, Path]] <span class="op">=</span> <span class="va">None</span>,</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    generate_report: <span class="bu">bool</span> <span class="op">=</span> <span class="va">True</span>,</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    batch_size: <span class="bu">int</span> <span class="op">=</span> <span class="dv">10</span>,</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    max_concurrency: <span class="bu">int</span> <span class="op">=</span> <span class="dv">4</span>,</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    model_name: <span class="bu">str</span> <span class="op">=</span> <span class="st">"gpt-5.2"</span>,</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    custom_prompt: Optional[<span class="bu">str</span>] <span class="op">=</span> <span class="va">None</span>,</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    component_indices: Optional[List[<span class="bu">int</span>]] <span class="op">=</span> <span class="va">None</span>,</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    psd_fmax: Optional[<span class="bu">float</span>] <span class="op">=</span> <span class="va">None</span>,</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    base_url: Optional[<span class="bu">str</span>] <span class="op">=</span> <span class="va">None</span>,</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    layout: <span class="bu">str</span> <span class="op">=</span> <span class="st">"single"</span>,  <span class="co"># NEW: "single" or "strip"</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>    strip_size: <span class="bu">int</span> <span class="op">=</span> <span class="dv">9</span>,     <span class="co"># NEW: components per strip image</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> Tuple[mne.io.Raw, mne.preprocessing.ICA, pd.DataFrame]:</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="proposed-cli-addition" class="level3" data-number="7.2">
 <h3 data-number="7.2" class="anchored" data-anchor-id="proposed-cli-addition"><span class="header-section-number">7.2</span> Proposed CLI Addition</h3>
-<div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">autoclean-icvision</span> raw.set <span class="dt">\</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--layout</span> strip <span class="dt">\</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--strip-size</span> 9 <span class="dt">\</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--model</span> gpt-5.2 <span class="dt">\</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">--base-url</span> https://openai.cincibrainlab.com/v1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">autoclean-icvision</span> raw.set <span class="dt">\</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--layout</span> strip <span class="dt">\</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--strip-size</span> 9 <span class="dt">\</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--model</span> gpt-5.2 <span class="dt">\</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">--base-url</span> https://openai.cincibrainlab.com/v1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -932,8 +1069,8 @@ Suggestion: Environment Variable Override
 </div>
 <div class="callout-body-container callout-body">
 <p>For pipeline automation, consider supporting <code>ICVISION_LAYOUT</code> environment variable so operators can switch modes without modifying scripts:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">ICVISION_LAYOUT</span><span class="op">=</span>strip</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">autoclean-icvision</span> raw.set  <span class="co"># Uses strip mode</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">ICVISION_LAYOUT</span><span class="op">=</span>strip</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="ex">autoclean-icvision</span> raw.set  <span class="co"># Uses strip mode</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </section>
