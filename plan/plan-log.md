@@ -106,3 +106,41 @@ classify_components_batch(
 **Commit**: `9a97e1c`
 
 **Status**: Phase 2 ready to proceed pending PDF report format decision.
+
+---
+
+## 2026-01-15: Phase 2 Implementation Complete (TDD)
+
+**Summary**: Fixed strip DataFrame schema for output compatibility using TDD approach.
+
+**Problem identified**: Strip layout produced DataFrame with incompatible column names:
+- `component` instead of `component_index`
+- `ic_type` instead of `label`
+- `exclude` instead of `exclude_vision`
+- Missing `component_name`
+
+**TDD process**:
+1. Wrote 10 tests in `tests/test_strip_compatibility.py` (Red phase)
+2. All tests failed initially, confirming schema mismatch
+3. Fixed `classify_components_strip_batch()` in `api.py:600-613` (Green phase)
+4. All 10 tests passing
+
+**Test categories**:
+- `TestDataFrameSchemaParity` (4 tests): Column names, types, format, index
+- `TestSaveResultsIntegration` (1 test): CSV export compatibility
+- `TestUpdateICAIntegration` (2 tests): ICA object updates, exclusion handling
+- `TestRemainderHandling` (1 test): Partial batch validation
+- `TestMNELabelMapping` (2 tests): Label mapping verification
+
+**Code fix** (`api.py`):
+```python
+# Before (incompatible)
+{"component": idx, "ic_type": label, "exclude": should_exclude}
+
+# After (compatible)
+{"component_index": idx, "component_name": f"IC{idx}", "label": label, "exclude_vision": should_exclude}
+```
+
+**Commit**: `60f17dd`
+
+**Status**: Phase 2 complete. Strip layout now produces drop-in compatible output.
