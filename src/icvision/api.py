@@ -22,8 +22,9 @@ from .config import (
     DEFAULT_CONFIG,
     ICVISION_TO_MNE_LABEL_MAP,
     OPENAI_ICA_PROMPT,
+    get_strip_prompt,
 )
-from .plotting import plot_components_batch
+from .plotting import create_strip_image, plot_components_batch
 
 # Set up logging for the module
 logger = logging.getLogger("icvision.api")
@@ -280,6 +281,358 @@ def _classify_single_component_wrapper(
     return (comp_idx,) + classification_result
 
 
+# ============================================================================
+# Strip Classification Functions (Phase 1 Implementation)
+# ============================================================================
+
+
+def classify_strip_image(
+    image_path: Path,
+    component_indices: List[int],
+    api_key: str,
+    model_name: str = "gpt-5.2",
+    base_url: Optional[str] = None,
+) -> List[Dict[str, Any]]:
+    """Classify multiple ICA components from a single strip image.
+
+    Sends a strip image containing multiple components to the vision API
+    and parses the batch response.
+
+    Args:
+        image_path: Path to the strip image (webp format)
+        component_indices: List of component indices in the strip (in order)
+        api_key: OpenAI API key
+        model_name: Model to use (default: gpt-5.2)
+        base_url: Optional custom API base URL
+
+    Returns:
+        List of classification results, each with keys:
+        - component_idx: int (actual IC index)
+        - label: str (classification label)
+        - confidence: float (0.0-1.0)
+        - reason: str (explanation)
+
+    Example:
+        >>> results = classify_strip_image(
+        ...     Path("strip.webp"),
+        ...     [0, 1, 2, 3, 4, 5, 6, 7, 8],
+        ...     api_key="sk-..."
+        ... )
+        >>> for r in results:
+        ...     print(f"IC{r['component_idx']}: {r['label']}")
+    """
+    import json
+    import time
+
+    if not image_path or not image_path.exists():
+        logger.error("Invalid or non-existent strip image path: %s", image_path)
+        return []
+
+    n_components = len(component_indices)
+    if n_components == 0:
+        logger.error("No component indices provided")
+        return []
+
+    # Generate labels for mapping: A, B, C, ... Z, AA, AB, ...
+    single_labels = [chr(ord("A") + i) for i in range(26)]
+    double_labels = ["A" + chr(ord("A") + i) for i in range(26)]
+    all_labels = single_labels + double_labels
+    labels = all_labels[:n_components]
+    label_to_idx = {labels[i]: component_indices[i] for i in range(n_components)}
+
+    start_time = time.time()
+    logger.info(
+        "Starting strip classification for %d components: %s",
+        n_components,
+        component_indices,
+    )
+
+    try:
+        # Encode image
+        with open(image_path, "rb") as f:
+            base64_image = base64.b64encode(f.read()).decode("utf-8")
+
+        # Get prompt for this number of components
+        prompt = get_strip_prompt(n_components)
+
+        # Create client and send request
+        client = openai.OpenAI(api_key=api_key, base_url=base_url)
+        logger.debug(
+            "Sending strip image to API (model: %s, base_url: %s, components: %d)",
+            model_name,
+            base_url or "default",
+            n_components,
+        )
+
+        response = client.responses.create(
+            model=model_name,
+            input=[
+                {"role": "user", "content": prompt},
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "input_image",
+                            "image_url": f"data:image/webp;base64,{base64_image}",
+                        }
+                    ],
+                },
+            ],
+            temperature=0.2,
+        )
+
+        # Parse response - find the message content
+        message_content = None
+        if response and hasattr(response, "output") and response.output:
+            for output_item in response.output:
+                if (
+                    hasattr(output_item, "type")
+                    and output_item.type == "message"
+                    and hasattr(output_item, "content")
+                    and output_item.content
+                    and len(output_item.content) > 0
+                ):
+                    content_item = output_item.content[0]
+                    if hasattr(content_item, "text"):
+                        message_content = content_item.text
+                        break
+
+        if not message_content:
+            logger.error("No valid response content from strip classification")
+            return []
+
+        logger.debug("Raw strip response: %s", message_content[:500])
+
+        # Parse JSON - handle markdown code blocks
+        json_str = message_content.strip()
+        if json_str.startswith("```"):
+            lines = json_str.split("\n")
+            json_str = "\n".join(
+                lines[1:-1] if lines[-1].startswith("```") else lines[1:]
+            )
+
+        raw_results = json.loads(json_str)
+
+        # Map letter labels back to component indices
+        results = []
+        for r in raw_results:
+            letter = r.get("component", "?")
+            actual_idx = label_to_idx.get(letter)
+            if actual_idx is None:
+                logger.warning("Unknown component label in response: %s", letter)
+                continue
+
+            label = r.get("label", "other_artifact").lower()
+            if label not in COMPONENT_LABELS:
+                logger.warning("Unknown label '%s' for IC%d, using 'other_artifact'", label, actual_idx)
+                label = "other_artifact"
+
+            results.append(
+                {
+                    "component_idx": actual_idx,
+                    "label": label,
+                    "confidence": float(r.get("confidence", 0.8)),
+                    "reason": r.get("reason", ""),
+                }
+            )
+
+        elapsed = time.time() - start_time
+        logger.info(
+            "Strip classification completed: %d/%d components in %.2fs (%.2fs per component)",
+            len(results),
+            n_components,
+            elapsed,
+            elapsed / n_components if n_components > 0 else 0,
+        )
+
+        return results
+
+    except json.JSONDecodeError as e:
+        logger.error("JSON parse error in strip response: %s", e)
+        return []
+    except openai.APIError as e:
+        logger.error("OpenAI API error during strip classification: %s", e)
+        return []
+    except Exception as e:
+        logger.error("Unexpected error during strip classification: %s", e)
+        return []
+
+
+def classify_components_strip_batch(
+    ica_obj: mne.preprocessing.ICA,
+    raw_obj: mne.io.Raw,
+    api_key: str,
+    component_indices: List[int],
+    model_name: str = "gpt-5.2",
+    strip_size: int = 9,
+    output_dir: Optional[Path] = None,
+    psd_fmax: Optional[float] = None,
+    base_url: Optional[str] = None,
+    confidence_threshold: float = 0.8,
+    auto_exclude: bool = True,
+    labels_to_exclude: Optional[List[str]] = None,
+) -> Tuple[pd.DataFrame, Dict[str, Any]]:
+    """Classify ICA components using strip layout (batches of 9).
+
+    This function creates strip images containing multiple components
+    and classifies them in batches, reducing API calls significantly.
+
+    Args:
+        ica_obj: Fitted MNE ICA object
+        raw_obj: MNE Raw object used for ICA
+        api_key: OpenAI API key
+        component_indices: List of component indices to classify
+        model_name: Model to use (default: gpt-5.2)
+        strip_size: Components per strip image (default: 9)
+        output_dir: Directory for temporary images
+        psd_fmax: Maximum frequency for PSD plots
+        base_url: Optional custom API base URL
+        confidence_threshold: Min confidence for auto-exclusion
+        auto_exclude: If True, mark components for exclusion
+        labels_to_exclude: Labels to exclude (default: all except brain)
+
+    Returns:
+        Tuple of (results_df, metadata_dict) with same schema as
+        classify_components_batch for drop-in compatibility.
+    """
+    import time
+
+    start_time = time.time()
+    n_total = len(component_indices)
+    logger.info(
+        "Starting strip batch classification: %d components in batches of %d",
+        n_total,
+        strip_size,
+    )
+
+    if labels_to_exclude is None:
+        labels_to_exclude = cast(List[str], DEFAULT_CONFIG["labels_to_exclude"])
+
+    # Precompute ICA sources once
+    precomputed_sources = ica_obj.get_sources(raw_obj)
+
+    # Create output directory
+    if output_dir is None:
+        output_dir = Path(tempfile.mkdtemp(prefix="icvision_strip_"))
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    all_results: List[Dict[str, Any]] = []
+    n_batches = (n_total + strip_size - 1) // strip_size
+
+    # Process in batches of strip_size
+    for batch_idx in range(n_batches):
+        batch_start = batch_idx * strip_size
+        batch_end = min(batch_start + strip_size, n_total)
+        batch_indices = component_indices[batch_start:batch_end]
+
+        logger.info(
+            "Processing batch %d/%d: components %s",
+            batch_idx + 1,
+            n_batches,
+            batch_indices,
+        )
+
+        # Create strip image for this batch
+        strip_path = output_dir / f"strip_batch_{batch_idx}.webp"
+        try:
+            create_strip_image(
+                ica_obj,
+                raw_obj,
+                batch_indices,
+                strip_path,
+                psd_fmax=psd_fmax,
+                precomputed_sources=precomputed_sources,
+            )
+        except Exception as e:
+            logger.error("Failed to create strip image for batch %d: %s", batch_idx, e)
+            # Add fallback results for failed batch
+            for idx in batch_indices:
+                all_results.append(
+                    {
+                        "component_idx": idx,
+                        "label": "other_artifact",
+                        "confidence": 1.0,
+                        "reason": f"Strip image creation failed: {e}",
+                    }
+                )
+            continue
+
+        # Classify the strip
+        batch_results = classify_strip_image(
+            strip_path,
+            batch_indices,
+            api_key,
+            model_name=model_name,
+            base_url=base_url,
+        )
+
+        if batch_results:
+            all_results.extend(batch_results)
+        else:
+            # Fallback for failed classification
+            logger.warning("Strip classification failed for batch %d, using fallback", batch_idx)
+            for idx in batch_indices:
+                all_results.append(
+                    {
+                        "component_idx": idx,
+                        "label": "other_artifact",
+                        "confidence": 1.0,
+                        "reason": "Strip classification API call failed",
+                    }
+                )
+
+    # Build DataFrame with same schema as single-image classification
+    df_data = []
+    for r in all_results:
+        comp_idx = r["component_idx"]
+        label = r["label"]
+        confidence = r["confidence"]
+        reason = r["reason"]
+
+        # Determine exclusion
+        should_exclude = (
+            auto_exclude
+            and label in labels_to_exclude
+            and confidence >= confidence_threshold
+        )
+
+        df_data.append(
+            {
+                "component": comp_idx,
+                "ic_type": label,
+                "confidence": confidence,
+                "reason": reason,
+                "mne_label": ICVISION_TO_MNE_LABEL_MAP.get(label, "other"),
+                "exclude": should_exclude,
+            }
+        )
+
+    results_df = pd.DataFrame(df_data)
+    results_df = results_df.sort_values("component").reset_index(drop=True)
+
+    elapsed = time.time() - start_time
+    metadata = {
+        "total_components": n_total,
+        "n_batches": n_batches,
+        "strip_size": strip_size,
+        "elapsed_seconds": elapsed,
+        "seconds_per_component": elapsed / n_total if n_total > 0 else 0,
+        "model_name": model_name,
+        "layout": "strip",
+    }
+
+    logger.info(
+        "Strip batch classification completed: %d components in %.2fs (%.2fs/component, %d API calls)",
+        n_total,
+        elapsed,
+        elapsed / n_total if n_total > 0 else 0,
+        n_batches,
+    )
+
+    return results_df, metadata
+
+
 def classify_components_batch(
     ica_obj: mne.preprocessing.ICA,
     raw_obj: mne.io.Raw,
@@ -295,6 +648,8 @@ def classify_components_batch(
     psd_fmax: Optional[float] = None,
     component_indices: Optional[List[int]] = None,
     base_url: Optional[str] = None,
+    layout: str = "single",
+    strip_size: int = 9,
 ) -> Tuple[pd.DataFrame, dict]:
     """
     Classifies ICA components in batches using OpenAI Vision API with parallel processing.
@@ -315,11 +670,39 @@ def classify_components_batch(
         component_indices: Optional list of component indices to classify. If None,
             all components are processed.
         base_url: Optional custom API base URL for OpenAI-compatible endpoints.
+        layout: Classification layout - "single" (one image per component) or
+            "strip" (multiple components per image). Default: "single".
+        strip_size: Components per strip image when layout="strip". Default: 9.
 
     Returns:
         Tuple of (pd.DataFrame with classification results, dict with cost tracking information).
     """
-    logger.debug("Starting batch classification of ICA components.")
+    # Validate and prepare component indices
+    if component_indices is None:
+        component_indices = list(range(ica_obj.n_components_))
+    else:
+        component_indices = sorted({i for i in component_indices if 0 <= i < ica_obj.n_components_})
+
+    # Dispatch to strip layout if requested
+    if layout == "strip":
+        logger.info("Using strip layout with %d components per image", strip_size)
+        return classify_components_strip_batch(
+            ica_obj=ica_obj,
+            raw_obj=raw_obj,
+            api_key=api_key,
+            component_indices=component_indices,
+            model_name=model_name,
+            strip_size=strip_size,
+            output_dir=output_dir,
+            psd_fmax=psd_fmax,
+            base_url=base_url,
+            confidence_threshold=confidence_threshold,
+            auto_exclude=auto_exclude,
+            labels_to_exclude=labels_to_exclude,
+        )
+
+    # Original single-image classification logic
+    logger.debug("Starting batch classification of ICA components (single layout).")
 
     if labels_to_exclude is None:
         labels_to_exclude = [lbl for lbl in COMPONENT_LABELS if lbl != "brain"]
@@ -328,11 +711,7 @@ def classify_components_batch(
     import time
     batch_start_time = time.time()
 
-    if component_indices is None:
-        component_indices = list(range(ica_obj.n_components_))
-    else:
-        component_indices = sorted({i for i in component_indices if 0 <= i < ica_obj.n_components_})
-
+    # component_indices already validated and prepared above
     num_components = len(component_indices)
 
     # Initialize cost tracking

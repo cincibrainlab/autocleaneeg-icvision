@@ -522,6 +522,268 @@ def plot_components_batch(
     return results_dict
 
 
+# ============================================================================
+# Strip Layout Functions (Phase 1 Implementation)
+# ============================================================================
+
+
+def plot_single_component_subplot(
+    ica_obj: ICA,
+    raw_obj: mne.io.Raw,
+    component_idx: int,
+    axes_dict: Dict[str, plt.Axes],
+    label: str,
+    psd_fmax: Optional[float] = None,
+    precomputed_sources: Optional[mne.io.Raw] = None,
+) -> None:
+    """Plot a single ICA component into the provided axes dictionary.
+
+    This function is used for creating strip/grid layouts where multiple
+    components are plotted in a single figure.
+
+    Args:
+        ica_obj: MNE ICA object
+        raw_obj: MNE Raw object used for ICA fitting
+        component_idx: Component index to plot
+        axes_dict: Dict with keys 'topo', 'ts', 'erp', 'psd' containing matplotlib Axes
+        label: Label string (A, B, C, etc.) for this component
+        psd_fmax: Maximum frequency for PSD plot (default: None, uses 55 Hz or Nyquist)
+        precomputed_sources: Optional precomputed ICA sources to speed up plotting
+
+    Example:
+        >>> axes_dict = {
+        ...     'topo': fig.add_subplot(gs[0, 0]),
+        ...     'ts': fig.add_subplot(gs[0, 1]),
+        ...     'erp': fig.add_subplot(gs[1, 0]),
+        ...     'psd': fig.add_subplot(gs[1, 1]),
+        ... }
+        >>> plot_single_component_subplot(ica, raw, 0, axes_dict, "A")
+    """
+    ax_topo = axes_dict["topo"]
+    ax_ts = axes_dict["ts"]
+    ax_erp = axes_dict["erp"]
+    ax_psd = axes_dict["psd"]
+
+    # Get component data
+    sources = precomputed_sources or ica_obj.get_sources(raw_obj)
+    sfreq = sources.info["sfreq"]
+    component_data = sources.get_data(picks=[component_idx])[0]
+
+    # 1. Topography with label overlay
+    try:
+        ica_obj.plot_components(
+            picks=component_idx,
+            axes=ax_topo,
+            ch_type="eeg",
+            show=False,
+            colorbar=False,
+            cmap="jet",
+            outlines="head",
+            sensors=True,
+            contours=6,
+        )
+        ax_topo.set_title("")
+        # Add label with IC index in top-left corner (e.g., "A:IC44")
+        label_text = f"{label}:IC{component_idx}"
+        ax_topo.text(
+            0.05,
+            0.95,
+            label_text,
+            transform=ax_topo.transAxes,
+            fontsize=10,
+            fontweight="bold",
+            va="top",
+            ha="left",
+            color="white",
+            bbox=dict(boxstyle="round,pad=0.2", facecolor="black", alpha=0.7),
+        )
+    except Exception as e:
+        logger.warning("Topography plot failed for IC%d: %s", component_idx, e)
+        ax_topo.text(0.5, 0.5, "Topo failed", ha="center", va="center")
+        label_text = f"{label}:IC{component_idx}"
+        ax_topo.text(
+            0.05,
+            0.95,
+            label_text,
+            transform=ax_topo.transAxes,
+            fontsize=10,
+            fontweight="bold",
+            va="top",
+            ha="left",
+            color="white",
+            bbox=dict(boxstyle="round,pad=0.2", facecolor="black", alpha=0.7),
+        )
+    ax_topo.set_xlabel("")
+    ax_topo.set_ylabel("")
+    ax_topo.set_xticks([])
+    ax_topo.set_yticks([])
+
+    # 2. Time series (first 2.5s) - minimal labels
+    try:
+        duration = 2.5
+        max_samples = min(int(duration * sfreq), len(component_data))
+        times_ms = (np.arange(max_samples) / sfreq) * 1000
+        ax_ts.plot(times_ms, component_data[:max_samples], linewidth=0.5, color="dodgerblue")
+        ax_ts.set_xlim(times_ms[0], times_ms[-1])
+        ax_ts.set_title("")
+        ax_ts.set_xlabel("")
+        ax_ts.set_ylabel("")
+        ax_ts.set_xticks([])
+        ax_ts.set_yticks([])
+    except Exception as e:
+        logger.warning("Time series plot failed for IC%d: %s", component_idx, e)
+        ax_ts.text(0.5, 0.5, "TS failed", ha="center", va="center")
+
+    # 3. ERP image (continuous data) - minimal labels
+    try:
+        comp_centered = component_data - np.mean(component_data)
+        segment_duration = 1.5
+        max_segments = 100
+        segment_len = int(segment_duration * sfreq)
+        if segment_len == 0:
+            segment_len = 1
+
+        samples_to_use = min(len(comp_centered), max_segments * segment_len)
+        n_segments = samples_to_use // segment_len
+
+        if n_segments > 0:
+            erp_data = comp_centered[: n_segments * segment_len].reshape(n_segments, segment_len)
+            if n_segments >= 3:
+                erp_data = uniform_filter1d(erp_data, size=3, axis=0, mode="nearest")
+
+            max_val = np.max(np.abs(erp_data))
+            clim = (2 / 3) * max_val if max_val > 1e-9 else 1.0
+
+            ax_erp.imshow(erp_data, aspect="auto", cmap="jet", vmin=-clim, vmax=clim)
+            ax_erp.invert_yaxis()
+        ax_erp.set_title("")
+        ax_erp.set_xlabel("")
+        ax_erp.set_ylabel("")
+        ax_erp.set_xticks([])
+        ax_erp.set_yticks([])
+    except Exception as e:
+        logger.warning("ERP image plot failed for IC%d: %s", component_idx, e)
+        ax_erp.text(0.5, 0.5, "ERP failed", ha="center", va="center")
+
+    # 4. PSD - minimal labels
+    try:
+        fmin = 1.0
+        # Use provided psd_fmax or default to 55Hz (before notch filter dip)
+        if psd_fmax is not None:
+            fmax = min(psd_fmax, sfreq / 2.0 - 0.5)
+        else:
+            fmax = min(55.0, sfreq / 2.0 - 0.5)
+        n_fft = min(int(sfreq * 2), len(component_data))
+        n_fft = max(n_fft, 256) if len(component_data) >= 256 else len(component_data)
+
+        psds, freqs = psd_array_welch(
+            component_data,
+            sfreq=sfreq,
+            fmin=fmin,
+            fmax=fmax,
+            n_fft=n_fft,
+            n_overlap=n_fft // 2,
+            verbose=False,
+        )
+        psds_db = 10 * np.log10(np.maximum(psds, 1e-20))
+
+        ax_psd.plot(freqs, psds_db, color="red", linewidth=0.8)
+        ax_psd.set_xlim(freqs[0], freqs[-1])
+        ax_psd.set_title("")
+        ax_psd.set_xlabel("")
+        ax_psd.set_ylabel("")
+        ax_psd.set_xticks([])
+        ax_psd.set_yticks([])
+    except Exception as e:
+        logger.warning("PSD plot failed for IC%d: %s", component_idx, e)
+        ax_psd.text(0.5, 0.5, "PSD failed", ha="center", va="center")
+
+
+def create_strip_image(
+    ica_obj: ICA,
+    raw_obj: mne.io.Raw,
+    component_indices: List[int],
+    output_path: Path,
+    psd_fmax: Optional[float] = None,
+    precomputed_sources: Optional[mne.io.Raw] = None,
+) -> Path:
+    """Create a strip image with multiple ICA components in a 4-column layout.
+
+    Each component is displayed as a horizontal row with 4 panels:
+    topography, time series, ERP image, and power spectrum.
+
+    Args:
+        ica_obj: MNE ICA object
+        raw_obj: MNE Raw object used for ICA fitting
+        component_indices: List of component indices to include (max 9 recommended)
+        output_path: Path to save the strip image (webp format)
+        psd_fmax: Maximum frequency for PSD plots (default: None, uses 55 Hz)
+        precomputed_sources: Optional precomputed ICA sources to speed up plotting
+
+    Returns:
+        Path to the saved strip image
+
+    Example:
+        >>> indices = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+        >>> path = create_strip_image(ica, raw, indices, Path("strip.webp"))
+    """
+    matplotlib.use("Agg", force=True)
+    plt.close("all")
+
+    n_components = len(component_indices)
+    if n_components == 0:
+        raise ValueError("component_indices cannot be empty")
+
+    # Generate labels: A-Z, then AA-AZ for up to 52 components
+    single_labels = [chr(ord("A") + i) for i in range(26)]
+    double_labels = ["A" + chr(ord("A") + i) for i in range(26)]
+    all_labels = single_labels + double_labels
+    labels = all_labels[:n_components]
+
+    # Strip layout: one row per component, 4 columns
+    fig_width = 16
+    fig_height = 2 * n_components
+    fig = plt.figure(figsize=(fig_width, fig_height), dpi=150)
+    outer_gs = GridSpec(
+        n_components,
+        4,
+        figure=fig,
+        hspace=0.1,
+        wspace=0.05,
+        left=0.02,
+        right=0.98,
+        top=0.98,
+        bottom=0.02,
+    )
+
+    # Precompute sources once for all components
+    sources = precomputed_sources or ica_obj.get_sources(raw_obj)
+
+    for i, comp_idx in enumerate(component_indices):
+        label = labels[i]
+        axes_dict = {
+            "topo": fig.add_subplot(outer_gs[i, 0]),
+            "ts": fig.add_subplot(outer_gs[i, 1]),
+            "erp": fig.add_subplot(outer_gs[i, 2]),
+            "psd": fig.add_subplot(outer_gs[i, 3]),
+        }
+        plot_single_component_subplot(
+            ica_obj,
+            raw_obj,
+            comp_idx,
+            axes_dict,
+            label,
+            psd_fmax=psd_fmax,
+            precomputed_sources=sources,
+        )
+
+    plt.savefig(output_path, format="webp", bbox_inches="tight", pad_inches=0.02)
+    plt.close(fig)
+
+    logger.info("Saved strip image with %d components to %s", n_components, output_path)
+    return output_path
+
+
 def save_ica_data(
     ica_obj: mne.preprocessing.ICA,
     output_dir: Path,

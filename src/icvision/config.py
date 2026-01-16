@@ -321,6 +321,55 @@ Example JSON response:
 OPENAI_ICA_PROMPT = load_prompt("default")
 
 
+# Strip prompt template for batch classification
+# Supports variable number of components (1-9) with letter labels A-I
+STRIP_PROMPT_TEMPLATE = """Classify each of the {n} ICA components shown in this grid (labeled {labels}).
+
+Each component shows:
+- Topography map (scalp distribution)
+- Time series (first 2.5 seconds)
+- ERP-style image (continuous data segments)
+- Power spectrum (1-55Hz)
+
+Categories:
+- "brain": Dipolar pattern (can be central, parietal, OR lateral/temporal), 1/f spectrum with alpha (8-12Hz) or beta (13-30Hz) peaks. NOTE: Lateral/edge topography with alpha peak = brain, not muscle
+- "eye": Frontal/periocular focus with low-frequency dominated spectrum (<4Hz) AND large slow deflections in time series. Frontal focal + slow deflections = eye, even if topography looks focal
+- "muscle": Edge-focused topography AND flat/rising high-frequency spectrum (no alpha peak). Must have BOTH features
+- "heart": ~1Hz rhythmic deflections in time series, broad scalp distribution
+- "line_noise": Sharp narrow peak at 50/60Hz
+- "channel_noise": Single isolated focal spot (one sensor) with flat/noisy spectrum AND erratic/random time series. NOT eye if spectrum is low-frequency dominated with slow deflections
+- "other_artifact": Doesn't fit above categories
+
+Respond with JSON array (one object per component):
+{json_example}"""
+
+
+def get_strip_prompt(n_components: int) -> str:
+    """Generate classification prompt for N components in a strip image.
+
+    Args:
+        n_components: Number of components in the strip (1-52)
+
+    Returns:
+        Formatted prompt string
+    """
+    # Generate labels: A-Z, then AA-AZ for up to 52 components
+    single_labels = [chr(ord("A") + i) for i in range(26)]
+    double_labels = ["A" + chr(ord("A") + i) for i in range(26)]
+    all_labels = single_labels + double_labels
+    labels = all_labels[:n_components]
+    labels_str = ", ".join(labels)
+
+    # Build JSON example
+    json_lines = [
+        f'  {{"component": "{lbl}", "label": "category", "confidence": 0.0-1.0, "reason": "brief explanation"}}'
+        for lbl in labels
+    ]
+    json_example = "[\n" + ",\n".join(json_lines) + "\n]"
+
+    return STRIP_PROMPT_TEMPLATE.format(n=n_components, labels=labels_str, json_example=json_example)
+
+
 # Default configuration parameters
 DEFAULT_CONFIG = {
     "confidence_threshold": 0.8,
