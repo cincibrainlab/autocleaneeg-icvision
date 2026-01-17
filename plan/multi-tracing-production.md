@@ -69,6 +69,9 @@ autoclean-pipeline source code (installed as a uv tool)
 please update figures of the top 20 with single vs. strip classification
 i need the actual figures in the doc s i can manuallly review
 
+Get down into the details when running the strip currently. What reasoning mode does it use for GPT 5.2?
+Can you print out the actual API call?
+
 post instruction hooks
 
 - always render the file

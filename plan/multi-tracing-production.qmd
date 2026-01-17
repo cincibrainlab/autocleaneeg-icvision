@@ -950,6 +950,75 @@ When reviewing these strips, look for:
 4. **Channel noise**: Single focal spot in topography, flat/noisy spectrum
 :::
 
+### API Call Details
+
+The strip classification uses OpenAI's Responses API with the following structure:
+
+**Endpoint**: `client.responses.create()`
+
+**Parameters**:
+```python
+response = client.responses.create(
+    model="gpt-5.2",
+    input=[
+        {"role": "user", "content": <PROMPT>},
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "input_image",
+                    "image_url": "data:image/webp;base64,<BASE64_IMAGE>"
+                }
+            ]
+        }
+    ],
+    temperature=0.2
+)
+```
+
+**Classification Prompt** (for 9 components):
+
+```
+Classify each of the 9 ICA components shown in this grid (labeled A, B, C, D, E, F, G, H, I).
+
+Each component shows:
+- Topography map (scalp distribution)
+- Time series (first 2.5 seconds)
+- ERP-style image (continuous data segments)
+- Power spectrum (1-55Hz)
+
+Categories:
+- "brain": Dipolar pattern (can be central, parietal, OR lateral/temporal),
+  1/f spectrum with alpha (8-12Hz) or beta (13-30Hz) peaks
+- "eye": Frontal/periocular focus with low-frequency dominated spectrum (<4Hz)
+  AND large slow deflections in time series
+- "muscle": Edge-focused topography AND flat/rising high-frequency spectrum (no alpha peak)
+- "heart": ~1Hz rhythmic deflections in time series, broad scalp distribution
+- "line_noise": Sharp narrow peak at 50/60Hz
+- "channel_noise": Single isolated focal spot (one sensor) with flat/noisy spectrum
+- "other_artifact": Doesn't fit above categories
+
+Respond with JSON array (one object per component):
+[
+  {"component": "A", "label": "category", "confidence": 0.0-1.0, "reason": "..."},
+  {"component": "B", "label": "category", "confidence": 0.0-1.0, "reason": "..."},
+  ...
+]
+```
+
+::: {.callout-note}
+## Reasoning Mode for GPT-5.2
+
+The API call uses **default reasoning behavior** with these characteristics:
+
+1. **API Type**: OpenAI Responses API (not Chat Completions)
+2. **No explicit `reasoning_effort` parameter** is set
+3. **Temperature**: 0.2 (low for consistent, deterministic outputs)
+4. **Response format**: JSON array with classification + confidence + reasoning for each component
+
+The model performs visual analysis on the strip image and returns structured JSON with reasoning explanations for each classification decision.
+:::
+
 ## Bug Fixes During Strip Integration
 
 ### PDF Report Panel Rendering (Fixed)

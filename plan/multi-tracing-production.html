@@ -137,6 +137,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#classification-agreement" id="toc-classification-agreement" class="nav-link" data-scroll-target="#classification-agreement"><span class="header-section-number">11.2</span> Classification Agreement</a></li>
   <li><a href="#exclusion-summary" id="toc-exclusion-summary" class="nav-link" data-scroll-target="#exclusion-summary"><span class="header-section-number">11.3</span> Exclusion Summary</a></li>
   <li><a href="#strip-mode-classification-images" id="toc-strip-mode-classification-images" class="nav-link" data-scroll-target="#strip-mode-classification-images"><span class="header-section-number">11.4</span> Strip Mode Classification Images</a></li>
+  <li><a href="#api-call-details" id="toc-api-call-details" class="nav-link" data-scroll-target="#api-call-details"><span class="header-section-number">11.5</span> API Call Details</a></li>
   </ul></li>
   <li><a href="#bug-fixes-during-strip-integration" id="toc-bug-fixes-during-strip-integration" class="nav-link" data-scroll-target="#bug-fixes-during-strip-integration"><span class="header-section-number">12</span> Bug Fixes During Strip Integration</a>
   <ul class="collapse">
@@ -2077,6 +2078,74 @@ Visual Review Guide
 </div>
 </div>
 </section>
+<section id="api-call-details" class="level3" data-number="11.5">
+<h3 data-number="11.5" class="anchored" data-anchor-id="api-call-details"><span class="header-section-number">11.5</span> API Call Details</h3>
+<p>The strip classification uses OpenAI’s Responses API with the following structure:</p>
+<p><strong>Endpoint</strong>: <code>client.responses.create()</code></p>
+<p><strong>Parameters</strong>:</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>response <span class="op">=</span> client.responses.create(</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>    model<span class="op">=</span><span class="st">"gpt-5.2"</span>,</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span><span class="op">=</span>[</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>        {<span class="st">"role"</span>: <span class="st">"user"</span>, <span class="st">"content"</span>: <span class="op">&lt;</span>PROMPT<span class="op">&gt;</span>},</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>        {</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>            <span class="st">"role"</span>: <span class="st">"user"</span>,</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>            <span class="st">"content"</span>: [</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>                {</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>                    <span class="st">"type"</span>: <span class="st">"input_image"</span>,</span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>                    <span class="st">"image_url"</span>: <span class="st">"data:image/webp;base64,&lt;BASE64_IMAGE&gt;"</span></span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>                }</span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>            ]</span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>    ],</span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>    temperature<span class="op">=</span><span class="fl">0.2</span></span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Classification Prompt</strong> (for 9 components):</p>
+<pre><code>Classify each of the 9 ICA components shown in this grid (labeled A, B, C, D, E, F, G, H, I).
+
+Each component shows:
+- Topography map (scalp distribution)
+- Time series (first 2.5 seconds)
+- ERP-style image (continuous data segments)
+- Power spectrum (1-55Hz)
+
+Categories:
+- "brain": Dipolar pattern (can be central, parietal, OR lateral/temporal),
+  1/f spectrum with alpha (8-12Hz) or beta (13-30Hz) peaks
+- "eye": Frontal/periocular focus with low-frequency dominated spectrum (&lt;4Hz)
+  AND large slow deflections in time series
+- "muscle": Edge-focused topography AND flat/rising high-frequency spectrum (no alpha peak)
+- "heart": ~1Hz rhythmic deflections in time series, broad scalp distribution
+- "line_noise": Sharp narrow peak at 50/60Hz
+- "channel_noise": Single isolated focal spot (one sensor) with flat/noisy spectrum
+- "other_artifact": Doesn't fit above categories
+
+Respond with JSON array (one object per component):
+[
+  {"component": "A", "label": "category", "confidence": 0.0-1.0, "reason": "..."},
+  {"component": "B", "label": "category", "confidence": 0.0-1.0, "reason": "..."},
+  ...
+]</code></pre>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Reasoning Mode for GPT-5.2
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The API call uses <strong>default reasoning behavior</strong> with these characteristics:</p>
+<ol type="1">
+<li><strong>API Type</strong>: OpenAI Responses API (not Chat Completions)</li>
+<li><strong>No explicit <code>reasoning_effort</code> parameter</strong> is set</li>
+<li><strong>Temperature</strong>: 0.2 (low for consistent, deterministic outputs)</li>
+<li><strong>Response format</strong>: JSON array with classification + confidence + reasoning for each component</li>
+</ol>
+<p>The model performs visual analysis on the strip image and returns structured JSON with reasoning explanations for each classification decision.</p>
+</div>
+</div>
+</section>
 </section>
 <section id="bug-fixes-during-strip-integration" class="level2" data-number="12">
 <h2 data-number="12" class="anchored" data-anchor-id="bug-fixes-during-strip-integration"><span class="header-section-number">12</span> Bug Fixes During Strip Integration</h2>
@@ -2103,18 +2172,18 @@ Issue: Excluded Components Showed Flat Data in PDF Reports
 </div>
 <p><strong>Root Cause</strong>: The <code>_apply_artifact_rejection()</code> function modified the raw data <strong>in-place</strong> via <code>ica.apply(raw)</code>. When the PDF report was generated, it received the already-modified raw data where excluded component signals had been zeroed out.</p>
 <p><strong>Solution</strong>: Modified <code>_apply_artifact_rejection()</code> to work on a copy:</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Before (in-place modification broke PDF report)</span></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _apply_artifact_rejection(raw, ica):</span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> ica.exclude:</span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>        ica.<span class="bu">apply</span>(raw)  <span class="co"># Modifies raw in-place!</span></span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> raw</span>
-<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a><span class="co"># After (preserves original for PDF report)</span></span>
-<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _apply_artifact_rejection(raw, ica):</span>
-<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>    raw_cleaned <span class="op">=</span> raw.copy()  <span class="co"># Make copy first</span></span>
-<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> ica.exclude:</span>
-<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>        ica.<span class="bu">apply</span>(raw_cleaned)  <span class="co"># Apply to copy only</span></span>
-<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> raw_cleaned</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Before (in-place modification broke PDF report)</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _apply_artifact_rejection(raw, ica):</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> ica.exclude:</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>        ica.<span class="bu">apply</span>(raw)  <span class="co"># Modifies raw in-place!</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> raw</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a><span class="co"># After (preserves original for PDF report)</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _apply_artifact_rejection(raw, ica):</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>    raw_cleaned <span class="op">=</span> raw.copy()  <span class="co"># Make copy first</span></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> ica.exclude:</span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>        ica.<span class="bu">apply</span>(raw_cleaned)  <span class="co"># Apply to copy only</span></span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> raw_cleaned</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><strong>Commits</strong>: <code>d9262b6</code></p>
 </section>
 <section id="psd-frequency-limit-changed" class="level3" data-number="12.2">
