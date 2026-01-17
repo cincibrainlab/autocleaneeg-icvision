@@ -354,3 +354,29 @@ def _apply_artifact_rejection(raw, ica):
 - RFC: `1c6575e` (autocleaneeg-icvision)
 
 **Status**: Pipeline integration step 4 complete. Steps 5-6 (integration testing, validation study) remain TODO.
+
+---
+
+## 2026-01-16: Pipeline Execution Documentation Added
+
+**Document**: `multi-tracing-production.qmd` (updated)
+
+**Summary**: Added documentation for running and testing the pipeline with strip mode.
+
+**New section**: "Running the Pipeline with Strip Mode"
+
+**Contents**:
+1. **Prerequisites**: Workspace setup, `.env` configuration, task file requirements
+2. **CLI Commands**: Basic usage, explicit parameters, dry-run, non-interactive mode
+3. **Example**: Using BiotrialResting1020 task with test EEG file
+4. **Verification**: How to confirm strip mode is active in logs
+5. **Override Callout**: How to revert to single-image mode if needed
+
+**Test data paths documented**:
+- Task file: `~/sandbox/Autoclean-EEG/tasks/BiotrialResting1020.py`
+- Input file: `~/Downloads/qEEG/201001_D1BL_EC.set`
+- Output: `~/sandbox/Autoclean-EEG/output`
+
+**Commit**: `ecb83e0`
+
+**Status**: Documentation complete. Ready for integration testing (step 5).
