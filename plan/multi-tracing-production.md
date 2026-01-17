@@ -56,9 +56,11 @@ now add a section detailing how this vision tool was originally implemented in /
 let's surgically implement #4
 4	Update pipeline kwargs to pass layout='strip'	ica_processing.py	TODO
 
-test data is here /Users/ernie/sandbox/Autoclean-EEG/output/BiotrialResting1020
 
-before running and testing the pipeline 
+before running and testing the pipeline can you see how you would run it and document your steps and code and paameters.
+
+test data file is here
+
 
 post instruction hooks
 
