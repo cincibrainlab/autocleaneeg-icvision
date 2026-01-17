@@ -129,6 +129,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#cost-and-time-savings" id="toc-cost-and-time-savings" class="nav-link" data-scroll-target="#cost-and-time-savings"><span class="header-section-number">10.5</span> Cost and Time Savings</a></li>
   <li><a href="#implementation-plan-for-pipeline-integration" id="toc-implementation-plan-for-pipeline-integration" class="nav-link" data-scroll-target="#implementation-plan-for-pipeline-integration"><span class="header-section-number">10.6</span> Implementation Plan for Pipeline Integration</a></li>
   <li><a href="#backward-compatibility" id="toc-backward-compatibility" class="nav-link" data-scroll-target="#backward-compatibility"><span class="header-section-number">10.7</span> Backward Compatibility</a></li>
+  <li><a href="#running-the-pipeline-with-strip-mode" id="toc-running-the-pipeline-with-strip-mode" class="nav-link" data-scroll-target="#running-the-pipeline-with-strip-mode"><span class="header-section-number">10.8</span> Running the Pipeline with Strip Mode</a></li>
   </ul></li>
   <li><a href="#bug-fixes-during-strip-integration" id="toc-bug-fixes-during-strip-integration" class="nav-link" data-scroll-target="#bug-fixes-during-strip-integration"><span class="header-section-number">11</span> Bug Fixes During Strip Integration</a>
   <ul class="collapse">
@@ -1652,6 +1653,75 @@ Step 4 Complete: Pipeline Now Uses Strip Mode by Default
 </div>
 </div>
 </section>
+<section id="running-the-pipeline-with-strip-mode" class="level3" data-number="10.8">
+<h3 data-number="10.8" class="anchored" data-anchor-id="running-the-pipeline-with-strip-mode"><span class="header-section-number">10.8</span> Running the Pipeline with Strip Mode</h3>
+<p>With the pipeline integration complete, strip mode is now the default for all ICVision classification. Here’s how to run and verify the pipeline:</p>
+<p><strong>Prerequisites</strong>:</p>
+<ol type="1">
+<li><p><strong>Workspace configured</strong>: The workspace directory (e.g., <code>~/sandbox/Autoclean-EEG</code>) must contain:</p>
+<ul>
+<li><p><code>.env</code> file with API credentials:</p>
+<pre><code>OPENAI_BASE_URL=https://openai.cincibrainlab.com/v1
+OPENAI_API_KEY=&lt;your-api-key&gt;</code></pre></li>
+<li><p><code>tasks/</code> directory with task configuration files</p></li>
+</ul></li>
+<li><p><strong>Task file</strong>: Task must use <code>hybrid</code> or <code>icvision</code> method with the gpt-5.2 model:</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co">'component_rejection'</span>: {</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">'enabled'</span>: <span class="va">True</span>,</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">'method'</span>: <span class="st">'hybrid'</span>,           <span class="co"># or 'icvision'</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">'model_name'</span>: <span class="st">'gpt-5.2'</span>,</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">'value'</span>: {</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>        <span class="st">'ic_flags_to_reject'</span>: [<span class="st">'muscle'</span>, <span class="st">'heart'</span>, <span class="st">'eog'</span>, <span class="st">'ch_noise'</span>, <span class="st">'line_noise'</span>],</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>        <span class="st">'ic_rejection_threshold'</span>: <span class="fl">0.3</span>,</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>        <span class="st">'psd_fmax'</span>: <span class="dv">45</span>             <span class="co"># Recommended: avoid notch filter artifacts</span></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ol>
+<p><strong>Command-line execution</strong>:</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Basic usage (uses active task and input from workspace settings)</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="ex">autocleaneeg-pipeline</span> process</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Explicit task file and input</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="ex">autocleaneeg-pipeline</span> process <span class="dt">\</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">--task-file</span> /path/to/tasks/BiotrialResting1020.py <span class="dt">\</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">--file</span> /path/to/201001_D1BL_EC.set <span class="dt">\</span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">--output</span> /path/to/output</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Dry run (shows what would be processed without running)</span></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a><span class="ex">autocleaneeg-pipeline</span> process <span class="at">--dry-run</span></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Non-interactive mode (for automation)</span></span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a><span class="ex">autocleaneeg-pipeline</span> process <span class="at">--yes</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Example with test data</strong>:</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Using the BiotrialResting1020 task with test EEG file</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="ex">autocleaneeg-pipeline</span> process <span class="dt">\</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">--task-file</span> ~/sandbox/Autoclean-EEG/tasks/BiotrialResting1020.py <span class="dt">\</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">--file</span> ~/Downloads/qEEG/201001_D1BL_EC.set <span class="dt">\</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">--output</span> ~/sandbox/Autoclean-EEG/output</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Verifying strip mode is active</strong>:</p>
+<p>In the pipeline logs, you should see: - <code>"layout": "strip"</code> in ICVision parameters - Batch processing messages like “Processing strip batch 1/N” - Reduced API call count (N/9 instead of N calls for N components)</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Overriding Layout Mode
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>To revert to single-image mode for debugging or comparison, pass <code>layout='single'</code> in the task configuration:</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co">'component_rejection'</span>: {</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">'enabled'</span>: <span class="va">True</span>,</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">'method'</span>: <span class="st">'hybrid'</span>,</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">'value'</span>: {</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>        <span class="st">'layout'</span>: <span class="st">'single'</span>,  <span class="co"># Override: use single-image mode</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>        <span class="co"># ... other settings</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</section>
 </section>
 <section id="bug-fixes-during-strip-integration" class="level2" data-number="11">
 <h2 data-number="11" class="anchored" data-anchor-id="bug-fixes-during-strip-integration"><span class="header-section-number">11</span> Bug Fixes During Strip Integration</h2>
@@ -1678,18 +1748,18 @@ Issue: Excluded Components Showed Flat Data in PDF Reports
 </div>
 <p><strong>Root Cause</strong>: The <code>_apply_artifact_rejection()</code> function modified the raw data <strong>in-place</strong> via <code>ica.apply(raw)</code>. When the PDF report was generated, it received the already-modified raw data where excluded component signals had been zeroed out.</p>
 <p><strong>Solution</strong>: Modified <code>_apply_artifact_rejection()</code> to work on a copy:</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Before (in-place modification broke PDF report)</span></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _apply_artifact_rejection(raw, ica):</span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> ica.exclude:</span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>        ica.<span class="bu">apply</span>(raw)  <span class="co"># Modifies raw in-place!</span></span>
-<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> raw</span>
-<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="co"># After (preserves original for PDF report)</span></span>
-<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _apply_artifact_rejection(raw, ica):</span>
-<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>    raw_cleaned <span class="op">=</span> raw.copy()  <span class="co"># Make copy first</span></span>
-<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> ica.exclude:</span>
-<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>        ica.<span class="bu">apply</span>(raw_cleaned)  <span class="co"># Apply to copy only</span></span>
-<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> raw_cleaned</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Before (in-place modification broke PDF report)</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _apply_artifact_rejection(raw, ica):</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> ica.exclude:</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>        ica.<span class="bu">apply</span>(raw)  <span class="co"># Modifies raw in-place!</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> raw</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a><span class="co"># After (preserves original for PDF report)</span></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _apply_artifact_rejection(raw, ica):</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>    raw_cleaned <span class="op">=</span> raw.copy()  <span class="co"># Make copy first</span></span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> ica.exclude:</span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>        ica.<span class="bu">apply</span>(raw_cleaned)  <span class="co"># Apply to copy only</span></span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> raw_cleaned</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><strong>Commits</strong>: <code>d9262b6</code></p>
 </section>
 <section id="psd-frequency-limit-changed" class="level3" data-number="11.2">

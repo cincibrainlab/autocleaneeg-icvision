@@ -61,7 +61,10 @@ before running and testing the pipeline can you see how you would run it and doc
 
 test data file is here: 
 /Users/ernie/Downloads/qEEG/201001_D1BL_EC.set
-
+taskfile /Users/ernie/sandbox/Autoclean-EEG/tasks/BiotrialResting1020.py
+workspace /Users/ernie/sandbox/Autoclean-EEG
+autoclean-pipeline source code (installed as a uv tool)
+/Users/ernie/sandbox/autocleaneeg-testing/autocleaneeg_pipeline
 
 
 post instruction hooks

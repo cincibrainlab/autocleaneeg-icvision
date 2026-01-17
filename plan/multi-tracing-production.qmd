@@ -772,6 +772,87 @@ The `autocleaneeg_pipeline` now defaults to strip layout for ICVision classifica
 Users can still override with `layout="single"` if needed. The change is backward compatible.
 :::
 
+### Running the Pipeline with Strip Mode
+
+With the pipeline integration complete, strip mode is now the default for all ICVision classification. Here's how to run and verify the pipeline:
+
+**Prerequisites**:
+
+1. **Workspace configured**: The workspace directory (e.g., `~/sandbox/Autoclean-EEG`) must contain:
+   - `.env` file with API credentials:
+     ```
+     OPENAI_BASE_URL=https://openai.cincibrainlab.com/v1
+     OPENAI_API_KEY=<your-api-key>
+     ```
+   - `tasks/` directory with task configuration files
+
+2. **Task file**: Task must use `hybrid` or `icvision` method with the gpt-5.2 model:
+   ```python
+   'component_rejection': {
+       'enabled': True,
+       'method': 'hybrid',           # or 'icvision'
+       'model_name': 'gpt-5.2',
+       'value': {
+           'ic_flags_to_reject': ['muscle', 'heart', 'eog', 'ch_noise', 'line_noise'],
+           'ic_rejection_threshold': 0.3,
+           'psd_fmax': 45             # Recommended: avoid notch filter artifacts
+       }
+   }
+   ```
+
+**Command-line execution**:
+
+```bash
+# Basic usage (uses active task and input from workspace settings)
+autocleaneeg-pipeline process
+
+# Explicit task file and input
+autocleaneeg-pipeline process \
+    --task-file /path/to/tasks/BiotrialResting1020.py \
+    --file /path/to/201001_D1BL_EC.set \
+    --output /path/to/output
+
+# Dry run (shows what would be processed without running)
+autocleaneeg-pipeline process --dry-run
+
+# Non-interactive mode (for automation)
+autocleaneeg-pipeline process --yes
+```
+
+**Example with test data**:
+
+```bash
+# Using the BiotrialResting1020 task with test EEG file
+autocleaneeg-pipeline process \
+    --task-file ~/sandbox/Autoclean-EEG/tasks/BiotrialResting1020.py \
+    --file ~/Downloads/qEEG/201001_D1BL_EC.set \
+    --output ~/sandbox/Autoclean-EEG/output
+```
+
+**Verifying strip mode is active**:
+
+In the pipeline logs, you should see:
+- `"layout": "strip"` in ICVision parameters
+- Batch processing messages like "Processing strip batch 1/N"
+- Reduced API call count (N/9 instead of N calls for N components)
+
+::: {.callout-tip}
+## Overriding Layout Mode
+
+To revert to single-image mode for debugging or comparison, pass `layout='single'` in the task configuration:
+
+```python
+'component_rejection': {
+    'enabled': True,
+    'method': 'hybrid',
+    'value': {
+        'layout': 'single',  # Override: use single-image mode
+        # ... other settings
+    }
+}
+```
+:::
+
 ## Bug Fixes During Strip Integration
 
 ### PDF Report Panel Rendering (Fixed)
