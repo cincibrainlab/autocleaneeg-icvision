@@ -729,7 +729,7 @@ The strip layout is already implemented in ICVision (Phases 1-4 complete). The f
 | 1 | Add `layout` parameter to `compat.label_components()` | `icvision/compat.py` | ✅ Complete |
 | 2 | Pass `layout` through to `core.label_components()` | `icvision/compat.py` | ✅ Complete |
 | 3 | Dispatch to strip batch in `classify_components_batch()` | `icvision/api.py` | ✅ Complete |
-| 4 | Update pipeline kwargs to pass `layout='strip'` | `ica_processing.py` | **TODO** |
+| 4 | Update pipeline kwargs to pass `layout='strip'` | `ica_processing.py` | ✅ Complete |
 | 5 | Test hybrid mode with strip layout | Integration test | **TODO** |
 | 6 | Measure accuracy vs single-image mode | Validation study | **TODO** |
 
@@ -756,9 +756,21 @@ Or pass through kwargs from the pipeline configuration:
 
 ```python
 # In ica_processing.py classify_ica_components()
-kwargs = {"layout": "strip", "strip_size": 9, **kwargs}
-label_components(raw, ica, **kwargs)
+icvision_kwargs = {"layout": "strip", **kwargs}  # Allow user override
+label_components(raw, ica, **icvision_kwargs)
 ```
+
+::: {.callout-note}
+## Step 4 Complete: Pipeline Now Uses Strip Mode by Default
+
+The `autocleaneeg_pipeline` now defaults to strip layout for ICVision classification. Changes made to `ica_processing.py`:
+
+1. **icvision method** (line 212): Added `icvision_kwargs = {"layout": "strip", **kwargs}`
+2. **hybrid method** (line 275): Added `icvision_kwargs = {"layout": "strip", **kwargs}`
+3. **Docstring updated**: Documents `layout` parameter with default 'strip'
+
+Users can still override with `layout="single"` if needed. The change is backward compatible.
+:::
 
 ## Bug Fixes During Strip Integration
 

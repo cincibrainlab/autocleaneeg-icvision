@@ -53,6 +53,12 @@ visualize in the report which plots changed by showing examples
 
 now add a section detailing how this vision tool was originally implemented in /Users/ernie/sandbox/autocleaneeg-testing/autocleaneeg_pipeline and what changes o optimizations are proposed with our new strip version. write out a plan only and a table. use prose to explain what and why. 
 
+let's surgically implement #4
+4	Update pipeline kwargs to pass layout='strip'	ica_processing.py	TODO
+
+test data is here /Users/ernie/sandbox/Autoclean-EEG/output/BiotrialResting1020
+
+before running and testing the pipeline 
 
 post instruction hooks
 
