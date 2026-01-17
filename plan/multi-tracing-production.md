@@ -59,7 +59,7 @@ let's surgically implement #4
 
 before running and testing the pipeline can you see how you would run it and document your steps and code and paameters.
 
-test data file is here
+test data file is here: 
 
 
 post instruction hooks
