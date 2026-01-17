@@ -380,3 +380,33 @@ def _apply_artifact_rejection(raw, ica):
 **Commit**: `ecb83e0`
 
 **Status**: Documentation complete. Ready for integration testing (step 5).
+
+---
+
+## 2026-01-16: Benchmark Comparison - Single vs Strip Mode
+
+**Document**: `multi-tracing-production.qmd` (updated)
+
+**Summary**: Ran real benchmark tests comparing single and strip classification modes.
+
+**Test Configuration**:
+- Data: `201001_D1BL_EC_pre_ica_raw.set` (24 ICA components)
+- Model: `gpt-5.2`
+- Endpoint: `https://openai.cincibrainlab.com/v1`
+- PSD cutoff: 45Hz
+
+**Performance Results**:
+
+| Metric | Single Mode | Strip Mode | Improvement |
+|--------|-------------|------------|-------------|
+| Total Time | 66.50s | 51.24s | 23% faster |
+| API Calls | 24 | 3 | 87.5% reduction |
+| Est. Cost | $0.29 | ~$0.04 | ~86% savings |
+
+**Classification Agreement**: 19/24 (79.2%)
+
+5 disagreements on ambiguous components with lower confidence scores. Both modes correctly identified clear artifacts and brain components.
+
+**Commit**: `13b8679`
+
+**Status**: Benchmark complete. Strip mode validated with significant cost/time savings.
