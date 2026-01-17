@@ -60,6 +60,8 @@ let's surgically implement #4
 before running and testing the pipeline can you see how you would run it and document your steps and code and paameters.
 
 test data file is here: 
+/Users/ernie/Downloads/qEEG/201001_D1BL_EC.set
+
 
 
 post instruction hooks
