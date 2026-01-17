@@ -431,3 +431,27 @@ def _apply_artifact_rejection(raw, ica):
 **Commit**: `7f7f964`
 
 **Status**: RFC now contains actual classification input images for manual review.
+
+---
+
+## 2026-01-16: API Call Details and Reasoning Mode Documented
+
+**Document**: `multi-tracing-production.qmd` (updated)
+
+**Summary**: Added detailed documentation of the actual API call structure and reasoning mode.
+
+**New section**: "API Call Details"
+
+**Contents**:
+1. **API structure**: `client.responses.create()` endpoint with full parameter example
+2. **Input format**: User message + image in base64 webp format
+3. **Classification prompt**: Full 9-component prompt with category definitions
+4. **Reasoning mode callout**: Documents GPT-5.2 behavior:
+   - Uses OpenAI Responses API (not Chat Completions)
+   - No explicit `reasoning_effort` parameter
+   - Temperature 0.2 for consistent outputs
+   - Returns JSON with classification + confidence + reasoning
+
+**Commit**: `6d64397`
+
+**Status**: API internals fully documented for transparency.
