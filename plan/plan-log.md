@@ -325,3 +325,32 @@ def _apply_artifact_rejection(raw, ica):
 **Commit**: `2540a16`
 
 **Status**: RFC documentation now includes visual examples of the PSD frequency change.
+
+---
+
+## 2026-01-16: Pipeline Integration Step 4 Complete
+
+**Document**: `multi-tracing-production.qmd` (updated)
+
+**Summary**: Updated `autocleaneeg_pipeline` to use strip layout by default for ICVision classification.
+
+**Changes made**:
+
+1. **`autocleaneeg_pipeline/src/autoclean/functions/ica/ica_processing.py`**:
+   - `icvision` method (line 212): Added `icvision_kwargs = {"layout": "strip", **kwargs}`
+   - `hybrid` method (line 275): Added `icvision_kwargs = {"layout": "strip", **kwargs}`
+   - Updated docstring to document `layout` parameter (default: 'strip')
+
+2. **`multi-tracing-production.qmd`**:
+   - Marked step 4 as ✅ Complete in implementation table
+   - Added callout documenting the pipeline changes
+
+**Benefits**:
+- ~88% reduction in API calls (9 components per call instead of 1)
+- Backward compatible (users can override with `layout="single"`)
+
+**Commits**:
+- Pipeline: `05b9c37` (autocleaneeg_pipeline)
+- RFC: `1c6575e` (autocleaneeg-icvision)
+
+**Status**: Pipeline integration step 4 complete. Steps 5-6 (integration testing, validation study) remain TODO.
