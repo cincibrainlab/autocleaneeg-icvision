@@ -1033,8 +1033,9 @@ Tested the `reasoning_effort='low'` parameter to evaluate potential speed/accura
 
 | Metric | Default Reasoning | Low Reasoning | Difference |
 |--------|------------------|---------------|------------|
-| **Total Time** | 51.24s | 95.71s | 87% slower |
+| **Total Time** | 51.24s | 81.85s | 60% slower |
 | **API Calls** | 3 | 3 | Same |
+| **Artifacts Found** | 5 | 7 | 2 more |
 
 ::: {.callout-warning}
 ## Unexpected Result: Low Reasoning is Slower
