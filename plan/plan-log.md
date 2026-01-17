@@ -410,3 +410,24 @@ def _apply_artifact_rejection(raw, ica):
 **Commit**: `13b8679`
 
 **Status**: Benchmark complete. Strip mode validated with significant cost/time savings.
+
+---
+
+## 2026-01-16: Strip Batch Images Added to RFC
+
+**Document**: `multi-tracing-production.qmd` (updated)
+
+**Summary**: Added actual strip batch images for manual visual review.
+
+**Images added**:
+- `strip_batch_0.png`: Components IC0-IC8 (9 components)
+- `strip_batch_1.png`: Components IC9-IC17 (9 components)
+- `strip_batch_2.png`: Components IC18-IC23 (6 components)
+
+**Documentation updates**:
+- New section "Strip Mode Classification Images" with all 3 batches
+- Visual review guide callout explaining artifact patterns to look for
+
+**Commit**: `7f7f964`
+
+**Status**: RFC now contains actual classification input images for manual review.
