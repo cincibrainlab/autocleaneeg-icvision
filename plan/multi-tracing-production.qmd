@@ -1082,6 +1082,49 @@ Counter-intuitively, `reasoning_effort='low'` resulted in **longer** processing 
 
 Three disagreements: IC5 (muscle→brain), IC12 (brain→eye), IC21 (channel_noise→eye). All on ambiguous components.
 
+### Local Endpoint Test (Vision Routing Fix)
+
+Tested a local endpoint (`http://localhost:28080/v1`) with a vision routing fix that prevents image requests from being routed to the wrong model.
+
+**Endpoint Comparison Summary**:
+
+| Endpoint | Reasoning | Time | Artifacts |
+|----------|-----------|------|-----------|
+| **Production** | Default | 51.24s | 5 |
+| Production | Low | 81.85s | 7 |
+| Production | None | 82.18s | 8 |
+| **Local (fix)** | Default | 68.54s | 7 |
+| Local (fix) | Low | 75.41s | 6 |
+
+::: {.callout-note}
+## Vision Routing Fix Analysis
+
+The local endpoint with the vision routing fix shows:
+
+1. **Timing**: Between production default (51s) and production low/none (~82s)
+2. **Artifact count**: Local default (7) matches production low (7)
+3. **Low reasoning on local**: Slightly slower (75s) with fewer artifacts (6)
+
+**Interpretation**: The vision routing fix may be routing requests to a different model configuration. The "default" reasoning on local behaves more like "low" reasoning on production in terms of artifact detection aggressiveness.
+
+**Recommendation**: For consistent artifact detection, use production endpoint with default reasoning. For more aggressive artifact detection, use local endpoint or production with low/none reasoning.
+:::
+
+**Local Endpoint Classifications (default reasoning)**:
+
+| Component | Label | Confidence | Exclude |
+|-----------|-------|------------|---------|
+| IC0 | eye | 0.92 | ✓ |
+| IC1 | muscle | 0.88 | ✓ |
+| IC2 | brain | 0.98 | |
+| IC6 | channel_noise | 0.90 | ✓ |
+| IC8 | channel_noise | 0.82 | ✓ |
+| IC9 | muscle | 0.90 | ✓ |
+| IC11 | muscle | 0.90 | ✓ |
+| IC21 | eye | 0.86 | ✓ |
+
+Notable differences from production: IC6 and IC8 classified as `channel_noise` instead of `muscle`, IC23 classified as `channel_noise` (not excluded due to threshold).
+
 ## Bug Fixes During Strip Integration
 
 ### PDF Report Panel Rendering (Fixed)

@@ -482,3 +482,31 @@ def _apply_artifact_rejection(raw, ica):
 **Recommendation**: Use default reasoning (no explicit `reasoning_effort` parameter) for best performance with CLIProxy endpoint.
 
 **Status**: Documented in RFC. Full parameter threading implemented.
+
+---
+
+## 2026-01-17: Local Endpoint Test (Vision Routing Fix)
+
+**Document**: `multi-tracing-production.qmd` (updated)
+
+**Summary**: Tested local endpoint (`http://localhost:28080/v1`) with vision routing fix that prevents image requests from being routed to wrong model.
+
+**Results**:
+
+| Endpoint | Reasoning | Time | Artifacts |
+|----------|-----------|------|-----------|
+| Production | Default | 51.24s | 5 |
+| Production | Low | 81.85s | 7 |
+| Production | None | 82.18s | 8 |
+| Local (fix) | Default | 68.54s | 7 |
+| Local (fix) | Low | 75.41s | 6 |
+
+**Key findings**:
+- Local endpoint slower than production default but faster than production low/none
+- Local default artifacts (7) = production low artifacts (7)
+- Vision routing fix may route to different model configuration
+- Notable classification differences: IC6, IC8 as `channel_noise` on local
+
+**Recommendation**: Production with default reasoning for speed; local or production low/none for more aggressive artifact detection.
+
+**Status**: Both endpoints documented and compared in RFC.

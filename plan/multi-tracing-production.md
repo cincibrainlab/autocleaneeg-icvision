@@ -74,6 +74,57 @@ Can you print out the actual API call?
 
 try low reasoning
 
+next test: 
+
+we have setup a fixed local pipeline that we would like you test if it fixes the reasoning errors you were seeing earlier. We should be able to easily switch between.
+
+erver running on port 28080. Here's copy-paste ready credentials for your developer:                                                                                 
+                                                                                                                                                                        
+  ---                                                                                                                                                                   
+  Local Test Endpoint (with vision routing fix)                                                                                                                         
+                                                                                                                                                                        
+  BASE_URL=http://localhost:28080/v1                                                                                                                                    
+  API_KEY=dev-local-key                                                                                                                                                 
+                                                                                                                                                                        
+  Python test:                                                                                                                                                          
+  import urllib.request                                                                                                                                                 
+  import json                                                                                                                                                           
+                                                                                                                                                                        
+  url = "http://localhost:28080/v1/chat/completions"                                                                                                                    
+  headers = {                                                                                                                                                           
+      "Authorization": "Bearer dev-local-key",                                                                                                                          
+      "Content-Type": "application/json"                                                                                                                                
+  }                                                                                                                                                                     
+  data = {                                                                                                                                                              
+      "model": "gpt-5.2",                                                                                                                                               
+      "messages": [{"role": "user", "content": "Hello"}]                                                                                                                
+  }                                                                                                                                                                     
+                                                                                                                                                                        
+  req = urllib.request.Request(url, data=json.dumps(data).encode(), headers=headers)                                                                                    
+  with urllib.request.urlopen(req) as resp:                                                                                                                             
+      print(json.loads(resp.read()))                                                                                                                                    
+                                                                                                                                                                        
+  ---                                                                                                                                                                   
+  Production Endpoint (current behavior)                                                                                                                                
+                                                                                                                                                                        
+  BASE_URL=https://openai.cincibrainlab.com/v1                                                                                                                          
+  API_KEY=0yF9eM3j6J916Sb5AJWpGIJx2gO2z0In                                                                                                                              
+                                                                                                                                                                        
+  ---                                                                                                                                                                   
+  Side-by-Side Comparison                                                                                                                                               
+                                                                                                                                                                        
+  To switch between local and production, just change these two lines:                                                                                                  
+  ┌─────────────┬─────────────────────────────────────┬──────────────────────────────────┐                                                                              
+  │ Environment │              BASE_URL               │             API_KEY              │                                                                              
+  ├─────────────┼─────────────────────────────────────┼──────────────────────────────────┤                                                                              
+  │ Local (fix) │ http://localhost:28080/v1           │ dev-local-key                    │                                                                              
+  ├─────────────┼─────────────────────────────────────┼──────────────────────────────────┤                                                                              
+  │ Production  │ https://openai.cincibrainlab.com/v1 │ 0yF9eM3j6J916Sb5AJWpGIJx2gO2z0In │                                                                              
+  └─────────────┴─────────────────────────────────────┴──────────────────────────────────┘                                                                              
+  The vision routing logs will show: Vision routing: rerouting image request from gpt-5-codex to gpt-5.2 when an image request would have gone to Codex.   
+
+
+
 post instruction hooks
 
 - always render the file

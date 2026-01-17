@@ -139,6 +139,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#strip-mode-classification-images" id="toc-strip-mode-classification-images" class="nav-link" data-scroll-target="#strip-mode-classification-images"><span class="header-section-number">11.4</span> Strip Mode Classification Images</a></li>
   <li><a href="#api-call-details" id="toc-api-call-details" class="nav-link" data-scroll-target="#api-call-details"><span class="header-section-number">11.5</span> API Call Details</a></li>
   <li><a href="#low-reasoning-mode-comparison" id="toc-low-reasoning-mode-comparison" class="nav-link" data-scroll-target="#low-reasoning-mode-comparison"><span class="header-section-number">11.6</span> Low Reasoning Mode Comparison</a></li>
+  <li><a href="#local-endpoint-test-vision-routing-fix" id="toc-local-endpoint-test-vision-routing-fix" class="nav-link" data-scroll-target="#local-endpoint-test-vision-routing-fix"><span class="header-section-number">11.7</span> Local Endpoint Test (Vision Routing Fix)</a></li>
   </ul></li>
   <li><a href="#bug-fixes-during-strip-integration" id="toc-bug-fixes-during-strip-integration" class="nav-link" data-scroll-target="#bug-fixes-during-strip-integration"><span class="header-section-number">12</span> Bug Fixes During Strip Integration</a>
   <ul class="collapse">
@@ -2415,6 +2416,135 @@ Unexpected Result: Low Reasoning is Slower
 </table>
 <p><strong>Agreement: 21/24 (87.5%)</strong></p>
 <p>Three disagreements: IC5 (muscle→brain), IC12 (brain→eye), IC21 (channel_noise→eye). All on ambiguous components.</p>
+</section>
+<section id="local-endpoint-test-vision-routing-fix" class="level3" data-number="11.7">
+<h3 data-number="11.7" class="anchored" data-anchor-id="local-endpoint-test-vision-routing-fix"><span class="header-section-number">11.7</span> Local Endpoint Test (Vision Routing Fix)</h3>
+<p>Tested a local endpoint (<code>http://localhost:28080/v1</code>) with a vision routing fix that prevents image requests from being routed to the wrong model.</p>
+<p><strong>Endpoint Comparison Summary</strong>:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Endpoint</th>
+<th>Reasoning</th>
+<th>Time</th>
+<th>Artifacts</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Production</strong></td>
+<td>Default</td>
+<td>51.24s</td>
+<td>5</td>
+</tr>
+<tr class="even">
+<td>Production</td>
+<td>Low</td>
+<td>81.85s</td>
+<td>7</td>
+</tr>
+<tr class="odd">
+<td>Production</td>
+<td>None</td>
+<td>82.18s</td>
+<td>8</td>
+</tr>
+<tr class="even">
+<td><strong>Local (fix)</strong></td>
+<td>Default</td>
+<td>68.54s</td>
+<td>7</td>
+</tr>
+<tr class="odd">
+<td>Local (fix)</td>
+<td>Low</td>
+<td>75.41s</td>
+<td>6</td>
+</tr>
+</tbody>
+</table>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Vision Routing Fix Analysis
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The local endpoint with the vision routing fix shows:</p>
+<ol type="1">
+<li><strong>Timing</strong>: Between production default (51s) and production low/none (~82s)</li>
+<li><strong>Artifact count</strong>: Local default (7) matches production low (7)</li>
+<li><strong>Low reasoning on local</strong>: Slightly slower (75s) with fewer artifacts (6)</li>
+</ol>
+<p><strong>Interpretation</strong>: The vision routing fix may be routing requests to a different model configuration. The “default” reasoning on local behaves more like “low” reasoning on production in terms of artifact detection aggressiveness.</p>
+<p><strong>Recommendation</strong>: For consistent artifact detection, use production endpoint with default reasoning. For more aggressive artifact detection, use local endpoint or production with low/none reasoning.</p>
+</div>
+</div>
+<p><strong>Local Endpoint Classifications (default reasoning)</strong>:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Component</th>
+<th>Label</th>
+<th>Confidence</th>
+<th>Exclude</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>IC0</td>
+<td>eye</td>
+<td>0.92</td>
+<td>✓</td>
+</tr>
+<tr class="even">
+<td>IC1</td>
+<td>muscle</td>
+<td>0.88</td>
+<td>✓</td>
+</tr>
+<tr class="odd">
+<td>IC2</td>
+<td>brain</td>
+<td>0.98</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>IC6</td>
+<td>channel_noise</td>
+<td>0.90</td>
+<td>✓</td>
+</tr>
+<tr class="odd">
+<td>IC8</td>
+<td>channel_noise</td>
+<td>0.82</td>
+<td>✓</td>
+</tr>
+<tr class="even">
+<td>IC9</td>
+<td>muscle</td>
+<td>0.90</td>
+<td>✓</td>
+</tr>
+<tr class="odd">
+<td>IC11</td>
+<td>muscle</td>
+<td>0.90</td>
+<td>✓</td>
+</tr>
+<tr class="even">
+<td>IC21</td>
+<td>eye</td>
+<td>0.86</td>
+<td>✓</td>
+</tr>
+</tbody>
+</table>
+<p>Notable differences from production: IC6 and IC8 classified as <code>channel_noise</code> instead of <code>muscle</code>, IC23 classified as <code>channel_noise</code> (not excluded due to threshold).</p>
 </section>
 </section>
 <section id="bug-fixes-during-strip-integration" class="level2" data-number="12">
