@@ -923,6 +923,33 @@ Both modes correctly identify clear artifacts (muscle IC1, IC6, IC9, IC11) and c
 | Single | 4 | IC1 (muscle), IC8 (muscle), IC9 (muscle), IC11 (muscle) |
 | Strip | 5 | IC0 (eye), IC5 (muscle), IC6 (muscle), IC9 (muscle), IC11 (muscle) |
 
+### Strip Mode Classification Images
+
+The following images show the actual strip batches sent to the API for classification. Each strip contains up to 9 components arranged in rows, with 4 columns: Topography, Time Series, ERP, and PSD (1-45Hz).
+
+**Batch 1: Components IC0-IC8**
+
+![Strip Batch 0: Components IC0-IC8](images/strip_batch_0.png){width=100%}
+
+**Batch 2: Components IC9-IC17**
+
+![Strip Batch 1: Components IC9-IC17](images/strip_batch_1.png){width=100%}
+
+**Batch 3: Components IC18-IC23 (6 components)**
+
+![Strip Batch 2: Components IC18-IC23](images/strip_batch_2.png){width=100%}
+
+::: {.callout-tip}
+## Visual Review Guide
+
+When reviewing these strips, look for:
+
+1. **Eye artifacts**: Strong frontal topography, low-frequency dominated PSD, large slow deflections in time series
+2. **Muscle artifacts**: Edge/temporal focal topography, high-frequency dominated PSD (rising toward 45Hz)
+3. **Brain components**: Dipolar topography, clear alpha peak (8-12Hz) in PSD, 1/f spectral falloff
+4. **Channel noise**: Single focal spot in topography, flat/noisy spectrum
+:::
+
 ## Bug Fixes During Strip Integration
 
 ### PDF Report Panel Rendering (Fixed)

@@ -67,6 +67,7 @@ autoclean-pipeline source code (installed as a uv tool)
 /Users/ernie/sandbox/autocleaneeg-testing/autocleaneeg_pipeline
 
 please update figures of the top 20 with single vs. strip classification
+i need the actual figures in the doc s i can manuallly review
 
 post instruction hooks
 

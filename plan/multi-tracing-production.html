@@ -136,6 +136,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#performance-comparison" id="toc-performance-comparison" class="nav-link" data-scroll-target="#performance-comparison"><span class="header-section-number">11.1</span> Performance Comparison</a></li>
   <li><a href="#classification-agreement" id="toc-classification-agreement" class="nav-link" data-scroll-target="#classification-agreement"><span class="header-section-number">11.2</span> Classification Agreement</a></li>
   <li><a href="#exclusion-summary" id="toc-exclusion-summary" class="nav-link" data-scroll-target="#exclusion-summary"><span class="header-section-number">11.3</span> Exclusion Summary</a></li>
+  <li><a href="#strip-mode-classification-images" id="toc-strip-mode-classification-images" class="nav-link" data-scroll-target="#strip-mode-classification-images"><span class="header-section-number">11.4</span> Strip Mode Classification Images</a></li>
   </ul></li>
   <li><a href="#bug-fixes-during-strip-integration" id="toc-bug-fixes-during-strip-integration" class="nav-link" data-scroll-target="#bug-fixes-during-strip-integration"><span class="header-section-number">12</span> Bug Fixes During Strip Integration</a>
   <ul class="collapse">
@@ -2031,6 +2032,50 @@ Classification Differences Analysis
 </tr>
 </tbody>
 </table>
+</section>
+<section id="strip-mode-classification-images" class="level3" data-number="11.4">
+<h3 data-number="11.4" class="anchored" data-anchor-id="strip-mode-classification-images"><span class="header-section-number">11.4</span> Strip Mode Classification Images</h3>
+<p>The following images show the actual strip batches sent to the API for classification. Each strip contains up to 9 components arranged in rows, with 4 columns: Topography, Time Series, ERP, and PSD (1-45Hz).</p>
+<p><strong>Batch 1: Components IC0-IC8</strong></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/strip_batch_0.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption>Strip Batch 0: Components IC0-IC8</figcaption>
+</figure>
+</div>
+<p><strong>Batch 2: Components IC9-IC17</strong></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/strip_batch_1.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption>Strip Batch 1: Components IC9-IC17</figcaption>
+</figure>
+</div>
+<p><strong>Batch 3: Components IC18-IC23 (6 components)</strong></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/strip_batch_2.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption>Strip Batch 2: Components IC18-IC23</figcaption>
+</figure>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Visual Review Guide
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>When reviewing these strips, look for:</p>
+<ol type="1">
+<li><strong>Eye artifacts</strong>: Strong frontal topography, low-frequency dominated PSD, large slow deflections in time series</li>
+<li><strong>Muscle artifacts</strong>: Edge/temporal focal topography, high-frequency dominated PSD (rising toward 45Hz)</li>
+<li><strong>Brain components</strong>: Dipolar topography, clear alpha peak (8-12Hz) in PSD, 1/f spectral falloff</li>
+<li><strong>Channel noise</strong>: Single focal spot in topography, flat/noisy spectrum</li>
+</ol>
+</div>
+</div>
 </section>
 </section>
 <section id="bug-fixes-during-strip-integration" class="level2" data-number="12">
