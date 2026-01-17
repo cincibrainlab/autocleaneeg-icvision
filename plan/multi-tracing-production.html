@@ -138,6 +138,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#exclusion-summary" id="toc-exclusion-summary" class="nav-link" data-scroll-target="#exclusion-summary"><span class="header-section-number">11.3</span> Exclusion Summary</a></li>
   <li><a href="#strip-mode-classification-images" id="toc-strip-mode-classification-images" class="nav-link" data-scroll-target="#strip-mode-classification-images"><span class="header-section-number">11.4</span> Strip Mode Classification Images</a></li>
   <li><a href="#api-call-details" id="toc-api-call-details" class="nav-link" data-scroll-target="#api-call-details"><span class="header-section-number">11.5</span> API Call Details</a></li>
+  <li><a href="#low-reasoning-mode-comparison" id="toc-low-reasoning-mode-comparison" class="nav-link" data-scroll-target="#low-reasoning-mode-comparison"><span class="header-section-number">11.6</span> Low Reasoning Mode Comparison</a></li>
   </ul></li>
   <li><a href="#bug-fixes-during-strip-integration" id="toc-bug-fixes-during-strip-integration" class="nav-link" data-scroll-target="#bug-fixes-during-strip-integration"><span class="header-section-number">12</span> Bug Fixes During Strip Integration</a>
   <ul class="collapse">
@@ -2145,6 +2146,269 @@ Reasoning Mode for GPT-5.2
 <p>The model performs visual analysis on the strip image and returns structured JSON with reasoning explanations for each classification decision.</p>
 </div>
 </div>
+</section>
+<section id="low-reasoning-mode-comparison" class="level3" data-number="11.6">
+<h3 data-number="11.6" class="anchored" data-anchor-id="low-reasoning-mode-comparison"><span class="header-section-number">11.6</span> Low Reasoning Mode Comparison</h3>
+<p>Tested the <code>reasoning_effort='low'</code> parameter to evaluate potential speed/accuracy tradeoffs.</p>
+<p><strong>Test Configuration</strong>:</p>
+<ul>
+<li>Data: 24 ICA components (same test file)</li>
+<li>Model: gpt-5.2</li>
+<li>Endpoint: CLIProxy</li>
+</ul>
+<p><strong>Performance Comparison</strong>:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Default Reasoning</th>
+<th>Low Reasoning</th>
+<th>Difference</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Total Time</strong></td>
+<td>51.24s</td>
+<td>95.71s</td>
+<td>87% slower</td>
+</tr>
+<tr class="even">
+<td><strong>API Calls</strong></td>
+<td>3</td>
+<td>3</td>
+<td>Same</td>
+</tr>
+</tbody>
+</table>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Unexpected Result: Low Reasoning is Slower
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Counter-intuitively, <code>reasoning_effort='low'</code> resulted in <strong>longer</strong> processing times. This may be due to:</p>
+<ol type="1">
+<li><strong>Endpoint behavior</strong>: CLIProxy may not optimize for low reasoning the same way OpenAI does</li>
+<li><strong>Model characteristics</strong>: GPT-5.2 may have different reasoning overhead patterns</li>
+<li><strong>Network variability</strong>: Could be coincidental timing differences</li>
+</ol>
+<p><strong>Recommendation</strong>: Use default reasoning (no explicit <code>reasoning_effort</code> parameter) for best performance with this endpoint.</p>
+</div>
+</div>
+<p><strong>Classification Comparison (Low Reasoning vs Default)</strong>:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Component</th>
+<th>Default Label</th>
+<th>Conf</th>
+<th>Low Label</th>
+<th>Conf</th>
+<th>Match</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>IC0</td>
+<td>eye</td>
+<td>0.85</td>
+<td>eye</td>
+<td>0.90</td>
+<td>✓</td>
+</tr>
+<tr class="even">
+<td>IC1</td>
+<td>muscle</td>
+<td>0.75</td>
+<td>muscle</td>
+<td>0.75</td>
+<td>✓</td>
+</tr>
+<tr class="odd">
+<td>IC2</td>
+<td>brain</td>
+<td>0.90</td>
+<td>brain</td>
+<td>0.95</td>
+<td>✓</td>
+</tr>
+<tr class="even">
+<td>IC3</td>
+<td>brain</td>
+<td>0.70</td>
+<td>brain</td>
+<td>0.75</td>
+<td>✓</td>
+</tr>
+<tr class="odd">
+<td>IC4</td>
+<td>brain</td>
+<td>0.65</td>
+<td>brain</td>
+<td>0.80</td>
+<td>✓</td>
+</tr>
+<tr class="even">
+<td>IC5</td>
+<td>muscle</td>
+<td>0.80</td>
+<td>brain</td>
+<td>0.60</td>
+<td>✗</td>
+</tr>
+<tr class="odd">
+<td>IC6</td>
+<td>muscle</td>
+<td>0.85</td>
+<td>muscle</td>
+<td>0.85</td>
+<td>✓</td>
+</tr>
+<tr class="even">
+<td>IC7</td>
+<td>brain</td>
+<td>0.75</td>
+<td>brain</td>
+<td>0.85</td>
+<td>✓</td>
+</tr>
+<tr class="odd">
+<td>IC8</td>
+<td>muscle</td>
+<td>0.70</td>
+<td>muscle</td>
+<td>0.55</td>
+<td>✓</td>
+</tr>
+<tr class="even">
+<td>IC9</td>
+<td>muscle</td>
+<td>0.85</td>
+<td>muscle</td>
+<td>0.80</td>
+<td>✓</td>
+</tr>
+<tr class="odd">
+<td>IC10</td>
+<td>brain</td>
+<td>0.75</td>
+<td>brain</td>
+<td>0.75</td>
+<td>✓</td>
+</tr>
+<tr class="even">
+<td>IC11</td>
+<td>muscle</td>
+<td>0.80</td>
+<td>muscle</td>
+<td>0.80</td>
+<td>✓</td>
+</tr>
+<tr class="odd">
+<td>IC12</td>
+<td>brain</td>
+<td>0.70</td>
+<td>eye</td>
+<td>0.60</td>
+<td>✗</td>
+</tr>
+<tr class="even">
+<td>IC13</td>
+<td>brain</td>
+<td>0.75</td>
+<td>brain</td>
+<td>0.60</td>
+<td>✓</td>
+</tr>
+<tr class="odd">
+<td>IC14</td>
+<td>brain</td>
+<td>0.90</td>
+<td>brain</td>
+<td>0.85</td>
+<td>✓</td>
+</tr>
+<tr class="even">
+<td>IC15</td>
+<td>brain</td>
+<td>0.90</td>
+<td>brain</td>
+<td>0.80</td>
+<td>✓</td>
+</tr>
+<tr class="odd">
+<td>IC16</td>
+<td>brain</td>
+<td>0.85</td>
+<td>brain</td>
+<td>0.75</td>
+<td>✓</td>
+</tr>
+<tr class="even">
+<td>IC17</td>
+<td>brain</td>
+<td>0.70</td>
+<td>brain</td>
+<td>0.70</td>
+<td>✓</td>
+</tr>
+<tr class="odd">
+<td>IC18</td>
+<td>brain</td>
+<td>0.72</td>
+<td>brain</td>
+<td>0.72</td>
+<td>✓</td>
+</tr>
+<tr class="even">
+<td>IC19</td>
+<td>brain</td>
+<td>0.70</td>
+<td>brain</td>
+<td>0.70</td>
+<td>✓</td>
+</tr>
+<tr class="odd">
+<td>IC20</td>
+<td>brain</td>
+<td>0.68</td>
+<td>brain</td>
+<td>0.78</td>
+<td>✓</td>
+</tr>
+<tr class="even">
+<td>IC21</td>
+<td>channel_noise</td>
+<td>0.78</td>
+<td>eye</td>
+<td>0.86</td>
+<td>✗</td>
+</tr>
+<tr class="odd">
+<td>IC22</td>
+<td>brain</td>
+<td>0.74</td>
+<td>brain</td>
+<td>0.74</td>
+<td>✓</td>
+</tr>
+<tr class="even">
+<td>IC23</td>
+<td>brain</td>
+<td>0.66</td>
+<td>brain</td>
+<td>0.55</td>
+<td>✓</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Agreement: 21/24 (87.5%)</strong></p>
+<p>Three disagreements: IC5 (muscle→brain), IC12 (brain→eye), IC21 (channel_noise→eye). All on ambiguous components.</p>
 </section>
 </section>
 <section id="bug-fixes-during-strip-integration" class="level2" data-number="12">

@@ -291,6 +291,7 @@ def _call_openai_api(
     model_name: str,
     prompt: str,
     base64_image: str,
+    reasoning_effort: Optional[str] = None,
 ) -> Optional[str]:
     """Make a single API call to OpenAI. Extracted for testability.
 
@@ -299,13 +300,15 @@ def _call_openai_api(
         model_name: Model to use
         prompt: Text prompt
         base64_image: Base64-encoded image data
+        reasoning_effort: Optional reasoning effort level ('none', 'minimal', 'low', 'medium', 'high', 'xhigh')
 
     Returns:
         Message content string or None on failure
     """
-    response = client.responses.create(
-        model=model_name,
-        input=[
+    # Build API call parameters
+    api_params = {
+        "model": model_name,
+        "input": [
             {"role": "user", "content": prompt},
             {
                 "role": "user",
@@ -317,8 +320,15 @@ def _call_openai_api(
                 ],
             },
         ],
-        temperature=0.2,
-    )
+        "temperature": 0.2,
+    }
+
+    # Add reasoning effort if specified
+    if reasoning_effort:
+        api_params["reasoning"] = {"effort": reasoning_effort}
+        logger.debug("Using reasoning effort: %s", reasoning_effort)
+
+    response = client.responses.create(**api_params)
 
     # Parse response - find the message content
     message_content = None
@@ -346,6 +356,7 @@ def classify_strip_image(
     model_name: str = "gpt-5.2",
     base_url: Optional[str] = None,
     max_retries: int = 3,
+    reasoning_effort: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
     """Classify multiple ICA components from a single strip image.
 
@@ -360,6 +371,7 @@ def classify_strip_image(
         model_name: Model to use (default: gpt-5.2)
         base_url: Optional custom API base URL
         max_retries: Maximum number of retry attempts (default: 3)
+        reasoning_effort: Optional reasoning effort level ('none', 'minimal', 'low', 'medium', 'high', 'xhigh')
 
     Returns:
         List of classification results, each with keys:
@@ -431,7 +443,7 @@ def classify_strip_image(
                 n_components,
             )
 
-            message_content = _call_openai_api(client, model_name, prompt, base64_image)
+            message_content = _call_openai_api(client, model_name, prompt, base64_image, reasoning_effort)
 
             if message_content:
                 break  # Success
@@ -529,6 +541,7 @@ def classify_components_strip_batch(
     confidence_threshold: float = 0.8,
     auto_exclude: bool = True,
     labels_to_exclude: Optional[List[str]] = None,
+    reasoning_effort: Optional[str] = None,
 ) -> Tuple[pd.DataFrame, Dict[str, Any]]:
     """Classify ICA components using strip layout (batches of 9).
 
@@ -623,6 +636,7 @@ def classify_components_strip_batch(
             api_key,
             model_name=model_name,
             base_url=base_url,
+            reasoning_effort=reasoning_effort,
         )
 
         if batch_results:
@@ -680,6 +694,7 @@ def classify_components_strip_batch(
         "seconds_per_component": elapsed / n_total if n_total > 0 else 0,
         "model_name": model_name,
         "layout": "strip",
+        "reasoning_effort": reasoning_effort,
     }
 
     logger.info(
@@ -710,6 +725,7 @@ def classify_components_batch(
     base_url: Optional[str] = None,
     layout: str = "single",
     strip_size: int = 9,
+    reasoning_effort: Optional[str] = None,
 ) -> Tuple[pd.DataFrame, dict]:
     """
     Classifies ICA components in batches using OpenAI Vision API with parallel processing.
@@ -759,6 +775,7 @@ def classify_components_batch(
             confidence_threshold=confidence_threshold,
             auto_exclude=auto_exclude,
             labels_to_exclude=labels_to_exclude,
+            reasoning_effort=reasoning_effort,
         )
 
     # Original single-image classification logic

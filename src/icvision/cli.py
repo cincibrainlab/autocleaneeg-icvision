@@ -191,6 +191,14 @@ Examples:
         default=9,
         help="Number of components per strip image when --layout=strip (default: 9).",
     )
+    class_group.add_argument(
+        "--reasoning-effort",
+        type=str,
+        choices=["none", "minimal", "low", "medium", "high", "xhigh"],
+        default=None,
+        help="Reasoning effort level for GPT-5.x models. Options: none, minimal, low, medium, high, xhigh. "
+        "Lower values reduce cost/latency; higher values improve accuracy (default: model default).",
+    )
 
     # Output and Reporting
     output_group = parser.add_argument_group("Output and Reporting")
@@ -306,6 +314,7 @@ Examples:
             base_url=args.base_url,
             layout=args.layout,
             strip_size=args.strip_size,
+            reasoning_effort=args.reasoning_effort,
         )
 
         # Determine output path

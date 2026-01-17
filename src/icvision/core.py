@@ -52,6 +52,7 @@ def label_components(
     base_url: Optional[str] = None,
     layout: str = "single",
     strip_size: int = 9,
+    reasoning_effort: Optional[str] = None,
 ) -> Tuple[mne.io.Raw, mne.preprocessing.ICA, pd.DataFrame]:
     """
     Classify ICA components using OpenAI Vision API and apply artifact rejection.
@@ -217,6 +218,7 @@ def label_components(
             base_url=base_url,
             layout=layout,
             strip_size=strip_size,
+            reasoning_effort=reasoning_effort,
         )
         if isinstance(classification_result, tuple):
             results_df, cost_tracking = classification_result

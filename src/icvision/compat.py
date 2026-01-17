@@ -142,6 +142,7 @@ def label_components(
     base_url: Optional[str] = None,
     layout: str = "single",
     strip_size: int = 9,
+    reasoning_effort: Optional[str] = None,
 ) -> Dict[str, Union[np.ndarray, List[str]]]:
     """
     Drop-in replacement for mne_icalabel.label_components.
@@ -205,6 +206,7 @@ def label_components(
             base_url=base_url,  # Pass through custom API endpoint
             layout=layout,  # Pass through layout mode
             strip_size=strip_size,  # Pass through strip size
+            reasoning_effort=reasoning_effort,  # Pass through reasoning effort
         )
 
         # Extract classification results

@@ -455,3 +455,26 @@ def _apply_artifact_rejection(raw, ica):
 **Commit**: `6d64397`
 
 **Status**: API internals fully documented for transparency.
+
+---
+
+## 2026-01-16: Low Reasoning Mode Comparison
+
+**Document**: `multi-tracing-production.qmd` (updated)
+
+**Summary**: Tested `reasoning_effort='low'` parameter to evaluate potential speed/accuracy tradeoffs.
+
+**Results**:
+
+| Metric | Default | Low Reasoning |
+|--------|---------|---------------|
+| Time | 51.24s | 95.71s (+87%) |
+| Agreement | baseline | 87.5% vs default |
+
+**Unexpected finding**: Low reasoning was **slower** than default (95.71s vs 51.24s). This may be endpoint-specific behavior with CLIProxy.
+
+**Classification agreement**: 21/24 (87.5%) between default and low reasoning modes. Three disagreements on ambiguous components (IC5, IC12, IC21).
+
+**Recommendation**: Use default reasoning (no explicit `reasoning_effort` parameter) for best performance with CLIProxy endpoint.
+
+**Status**: Documented in RFC. Default reasoning recommended.

@@ -1019,6 +1019,68 @@ The API call uses **default reasoning behavior** with these characteristics:
 The model performs visual analysis on the strip image and returns structured JSON with reasoning explanations for each classification decision.
 :::
 
+### Low Reasoning Mode Comparison
+
+Tested the `reasoning_effort='low'` parameter to evaluate potential speed/accuracy tradeoffs.
+
+**Test Configuration**:
+
+- Data: 24 ICA components (same test file)
+- Model: gpt-5.2
+- Endpoint: CLIProxy
+
+**Performance Comparison**:
+
+| Metric | Default Reasoning | Low Reasoning | Difference |
+|--------|------------------|---------------|------------|
+| **Total Time** | 51.24s | 95.71s | 87% slower |
+| **API Calls** | 3 | 3 | Same |
+
+::: {.callout-warning}
+## Unexpected Result: Low Reasoning is Slower
+
+Counter-intuitively, `reasoning_effort='low'` resulted in **longer** processing times. This may be due to:
+
+1. **Endpoint behavior**: CLIProxy may not optimize for low reasoning the same way OpenAI does
+2. **Model characteristics**: GPT-5.2 may have different reasoning overhead patterns
+3. **Network variability**: Could be coincidental timing differences
+
+**Recommendation**: Use default reasoning (no explicit `reasoning_effort` parameter) for best performance with this endpoint.
+:::
+
+**Classification Comparison (Low Reasoning vs Default)**:
+
+| Component | Default Label | Conf | Low Label | Conf | Match |
+|-----------|---------------|------|-----------|------|-------|
+| IC0 | eye | 0.85 | eye | 0.90 | ✓ |
+| IC1 | muscle | 0.75 | muscle | 0.75 | ✓ |
+| IC2 | brain | 0.90 | brain | 0.95 | ✓ |
+| IC3 | brain | 0.70 | brain | 0.75 | ✓ |
+| IC4 | brain | 0.65 | brain | 0.80 | ✓ |
+| IC5 | muscle | 0.80 | brain | 0.60 | ✗ |
+| IC6 | muscle | 0.85 | muscle | 0.85 | ✓ |
+| IC7 | brain | 0.75 | brain | 0.85 | ✓ |
+| IC8 | muscle | 0.70 | muscle | 0.55 | ✓ |
+| IC9 | muscle | 0.85 | muscle | 0.80 | ✓ |
+| IC10 | brain | 0.75 | brain | 0.75 | ✓ |
+| IC11 | muscle | 0.80 | muscle | 0.80 | ✓ |
+| IC12 | brain | 0.70 | eye | 0.60 | ✗ |
+| IC13 | brain | 0.75 | brain | 0.60 | ✓ |
+| IC14 | brain | 0.90 | brain | 0.85 | ✓ |
+| IC15 | brain | 0.90 | brain | 0.80 | ✓ |
+| IC16 | brain | 0.85 | brain | 0.75 | ✓ |
+| IC17 | brain | 0.70 | brain | 0.70 | ✓ |
+| IC18 | brain | 0.72 | brain | 0.72 | ✓ |
+| IC19 | brain | 0.70 | brain | 0.70 | ✓ |
+| IC20 | brain | 0.68 | brain | 0.78 | ✓ |
+| IC21 | channel_noise | 0.78 | eye | 0.86 | ✗ |
+| IC22 | brain | 0.74 | brain | 0.74 | ✓ |
+| IC23 | brain | 0.66 | brain | 0.55 | ✓ |
+
+**Agreement: 21/24 (87.5%)**
+
+Three disagreements: IC5 (muscle→brain), IC12 (brain→eye), IC21 (channel_noise→eye). All on ambiguous components.
+
 ## Bug Fixes During Strip Integration
 
 ### PDF Report Panel Rendering (Fixed)

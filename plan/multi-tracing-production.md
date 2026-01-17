@@ -72,6 +72,8 @@ i need the actual figures in the doc s i can manuallly review
 Get down into the details when running the strip currently. What reasoning mode does it use for GPT 5.2?
 Can you print out the actual API call?
 
+try low reasoning
+
 post instruction hooks
 
 - always render the file
