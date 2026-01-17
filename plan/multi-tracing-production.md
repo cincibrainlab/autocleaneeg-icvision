@@ -66,6 +66,7 @@ workspace /Users/ernie/sandbox/Autoclean-EEG
 autoclean-pipeline source code (installed as a uv tool)
 /Users/ernie/sandbox/autocleaneeg-testing/autocleaneeg_pipeline
 
+please update figures of the top 20 with single vs. strip classification
 
 post instruction hooks
 

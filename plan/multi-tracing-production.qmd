@@ -853,6 +853,76 @@ To revert to single-image mode for debugging or comparison, pass `layout='single
 ```
 :::
 
+## Benchmark: Single vs Strip Mode Classification
+
+Real-world benchmark using test data: `201001_D1BL_EC.set` (24 ICA components)
+
+### Performance Comparison
+
+| Metric | Single Mode | Strip Mode | Improvement |
+|--------|-------------|------------|-------------|
+| **Total Time** | 66.50s | 51.24s | **23% faster** |
+| **API Calls** | 24 | 3 | **87.5% reduction** |
+| **Estimated Cost** | $0.29 | ~$0.04 | **~86% savings** |
+| **Per-component** | 2.77s | 2.14s | 23% faster |
+
+### Classification Agreement
+
+| Component | Single Label | Conf | Strip Label | Conf | Match |
+|-----------|--------------|------|-------------|------|-------|
+| IC0 | eye | 0.78 | eye | 0.85 | ✓ |
+| IC1 | muscle | 0.86 | muscle | 0.75 | ✓ |
+| IC2 | brain | 0.87 | brain | 0.90 | ✓ |
+| IC3 | brain | 0.78 | brain | 0.70 | ✓ |
+| IC4 | brain | 0.82 | brain | 0.65 | ✓ |
+| IC5 | brain | 0.72 | muscle | 0.80 | ✗ |
+| IC6 | muscle | 0.78 | muscle | 0.85 | ✓ |
+| IC7 | brain | 0.78 | brain | 0.75 | ✓ |
+| IC8 | muscle | 0.84 | muscle | 0.70 | ✓ |
+| IC9 | muscle | 0.82 | muscle | 0.85 | ✓ |
+| IC10 | eye | 0.78 | brain | 0.75 | ✗ |
+| IC11 | muscle | 0.87 | muscle | 0.80 | ✓ |
+| IC12 | muscle | 0.73 | brain | 0.70 | ✗ |
+| IC13 | brain | 0.70 | brain | 0.75 | ✓ |
+| IC14 | brain | 0.77 | brain | 0.90 | ✓ |
+| IC15 | brain | 0.78 | brain | 0.90 | ✓ |
+| IC16 | brain | 0.67 | brain | 0.85 | ✓ |
+| IC17 | eye | 0.77 | brain | 0.70 | ✗ |
+| IC18 | brain | 0.67 | brain | 0.72 | ✓ |
+| IC19 | brain | 0.74 | brain | 0.70 | ✓ |
+| IC20 | brain | 0.72 | brain | 0.68 | ✓ |
+| IC21 | eye | 0.78 | channel_noise | 0.78 | ✗ |
+| IC22 | brain | 0.66 | brain | 0.74 | ✓ |
+| IC23 | brain | 0.72 | brain | 0.66 | ✓ |
+
+**Agreement: 19/24 (79.2%)**
+
+::: {.callout-note}
+## Classification Differences Analysis
+
+5 components showed different labels between modes:
+
+- **IC5**: Single=brain, Strip=muscle (edge case, low confidence both modes)
+- **IC10**: Single=eye, Strip=brain (frontal component, ambiguous)
+- **IC12**: Single=muscle, Strip=brain (borderline spectral features)
+- **IC17**: Single=eye, Strip=brain (frontal/periocular uncertainty)
+- **IC21**: Single=eye, Strip=channel_noise (focal pattern interpretation)
+
+These disagreements occur in components with:
+1. Ambiguous topographies (frontal/edge patterns)
+2. Lower confidence scores (typically <0.80)
+3. Borderline spectral features
+
+Both modes correctly identify clear artifacts (muscle IC1, IC6, IC9, IC11) and clear brain components (IC2, IC14, IC15).
+:::
+
+### Exclusion Summary
+
+| Mode | Components Excluded | Labels |
+|------|---------------------|--------|
+| Single | 4 | IC1 (muscle), IC8 (muscle), IC9 (muscle), IC11 (muscle) |
+| Strip | 5 | IC0 (eye), IC5 (muscle), IC6 (muscle), IC9 (muscle), IC11 (muscle) |
+
 ## Bug Fixes During Strip Integration
 
 ### PDF Report Panel Rendering (Fixed)

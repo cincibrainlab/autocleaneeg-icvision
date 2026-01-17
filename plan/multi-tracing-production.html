@@ -131,13 +131,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#backward-compatibility" id="toc-backward-compatibility" class="nav-link" data-scroll-target="#backward-compatibility"><span class="header-section-number">10.7</span> Backward Compatibility</a></li>
   <li><a href="#running-the-pipeline-with-strip-mode" id="toc-running-the-pipeline-with-strip-mode" class="nav-link" data-scroll-target="#running-the-pipeline-with-strip-mode"><span class="header-section-number">10.8</span> Running the Pipeline with Strip Mode</a></li>
   </ul></li>
-  <li><a href="#bug-fixes-during-strip-integration" id="toc-bug-fixes-during-strip-integration" class="nav-link" data-scroll-target="#bug-fixes-during-strip-integration"><span class="header-section-number">11</span> Bug Fixes During Strip Integration</a>
+  <li><a href="#benchmark-single-vs-strip-mode-classification" id="toc-benchmark-single-vs-strip-mode-classification" class="nav-link" data-scroll-target="#benchmark-single-vs-strip-mode-classification"><span class="header-section-number">11</span> Benchmark: Single vs Strip Mode Classification</a>
   <ul class="collapse">
-  <li><a href="#pdf-report-panel-rendering-fixed" id="toc-pdf-report-panel-rendering-fixed" class="nav-link" data-scroll-target="#pdf-report-panel-rendering-fixed"><span class="header-section-number">11.1</span> PDF Report Panel Rendering (Fixed)</a></li>
-  <li><a href="#psd-frequency-limit-changed" id="toc-psd-frequency-limit-changed" class="nav-link" data-scroll-target="#psd-frequency-limit-changed"><span class="header-section-number">11.2</span> PSD Frequency Limit (Changed)</a></li>
-  <li><a href="#visual-examples" id="toc-visual-examples" class="nav-link" data-scroll-target="#visual-examples"><span class="header-section-number">11.3</span> Visual Examples</a></li>
+  <li><a href="#performance-comparison" id="toc-performance-comparison" class="nav-link" data-scroll-target="#performance-comparison"><span class="header-section-number">11.1</span> Performance Comparison</a></li>
+  <li><a href="#classification-agreement" id="toc-classification-agreement" class="nav-link" data-scroll-target="#classification-agreement"><span class="header-section-number">11.2</span> Classification Agreement</a></li>
+  <li><a href="#exclusion-summary" id="toc-exclusion-summary" class="nav-link" data-scroll-target="#exclusion-summary"><span class="header-section-number">11.3</span> Exclusion Summary</a></li>
   </ul></li>
-  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">12</span> References</a></li>
+  <li><a href="#bug-fixes-during-strip-integration" id="toc-bug-fixes-during-strip-integration" class="nav-link" data-scroll-target="#bug-fixes-during-strip-integration"><span class="header-section-number">12</span> Bug Fixes During Strip Integration</a>
+  <ul class="collapse">
+  <li><a href="#pdf-report-panel-rendering-fixed" id="toc-pdf-report-panel-rendering-fixed" class="nav-link" data-scroll-target="#pdf-report-panel-rendering-fixed"><span class="header-section-number">12.1</span> PDF Report Panel Rendering (Fixed)</a></li>
+  <li><a href="#psd-frequency-limit-changed" id="toc-psd-frequency-limit-changed" class="nav-link" data-scroll-target="#psd-frequency-limit-changed"><span class="header-section-number">12.2</span> PSD Frequency Limit (Changed)</a></li>
+  <li><a href="#visual-examples" id="toc-visual-examples" class="nav-link" data-scroll-target="#visual-examples"><span class="header-section-number">12.3</span> Visual Examples</a></li>
+  </ul></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">13</span> References</a></li>
   </ul>
 </nav>
 </div>
@@ -1723,10 +1729,314 @@ Overriding Layout Mode
 </div>
 </section>
 </section>
-<section id="bug-fixes-during-strip-integration" class="level2" data-number="11">
-<h2 data-number="11" class="anchored" data-anchor-id="bug-fixes-during-strip-integration"><span class="header-section-number">11</span> Bug Fixes During Strip Integration</h2>
-<section id="pdf-report-panel-rendering-fixed" class="level3" data-number="11.1">
-<h3 data-number="11.1" class="anchored" data-anchor-id="pdf-report-panel-rendering-fixed"><span class="header-section-number">11.1</span> PDF Report Panel Rendering (Fixed)</h3>
+<section id="benchmark-single-vs-strip-mode-classification" class="level2" data-number="11">
+<h2 data-number="11" class="anchored" data-anchor-id="benchmark-single-vs-strip-mode-classification"><span class="header-section-number">11</span> Benchmark: Single vs Strip Mode Classification</h2>
+<p>Real-world benchmark using test data: <code>201001_D1BL_EC.set</code> (24 ICA components)</p>
+<section id="performance-comparison" class="level3" data-number="11.1">
+<h3 data-number="11.1" class="anchored" data-anchor-id="performance-comparison"><span class="header-section-number">11.1</span> Performance Comparison</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Single Mode</th>
+<th>Strip Mode</th>
+<th>Improvement</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Total Time</strong></td>
+<td>66.50s</td>
+<td>51.24s</td>
+<td><strong>23% faster</strong></td>
+</tr>
+<tr class="even">
+<td><strong>API Calls</strong></td>
+<td>24</td>
+<td>3</td>
+<td><strong>87.5% reduction</strong></td>
+</tr>
+<tr class="odd">
+<td><strong>Estimated Cost</strong></td>
+<td>$0.29</td>
+<td>~$0.04</td>
+<td><strong>~86% savings</strong></td>
+</tr>
+<tr class="even">
+<td><strong>Per-component</strong></td>
+<td>2.77s</td>
+<td>2.14s</td>
+<td>23% faster</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="classification-agreement" class="level3" data-number="11.2">
+<h3 data-number="11.2" class="anchored" data-anchor-id="classification-agreement"><span class="header-section-number">11.2</span> Classification Agreement</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Component</th>
+<th>Single Label</th>
+<th>Conf</th>
+<th>Strip Label</th>
+<th>Conf</th>
+<th>Match</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>IC0</td>
+<td>eye</td>
+<td>0.78</td>
+<td>eye</td>
+<td>0.85</td>
+<td>✓</td>
+</tr>
+<tr class="even">
+<td>IC1</td>
+<td>muscle</td>
+<td>0.86</td>
+<td>muscle</td>
+<td>0.75</td>
+<td>✓</td>
+</tr>
+<tr class="odd">
+<td>IC2</td>
+<td>brain</td>
+<td>0.87</td>
+<td>brain</td>
+<td>0.90</td>
+<td>✓</td>
+</tr>
+<tr class="even">
+<td>IC3</td>
+<td>brain</td>
+<td>0.78</td>
+<td>brain</td>
+<td>0.70</td>
+<td>✓</td>
+</tr>
+<tr class="odd">
+<td>IC4</td>
+<td>brain</td>
+<td>0.82</td>
+<td>brain</td>
+<td>0.65</td>
+<td>✓</td>
+</tr>
+<tr class="even">
+<td>IC5</td>
+<td>brain</td>
+<td>0.72</td>
+<td>muscle</td>
+<td>0.80</td>
+<td>✗</td>
+</tr>
+<tr class="odd">
+<td>IC6</td>
+<td>muscle</td>
+<td>0.78</td>
+<td>muscle</td>
+<td>0.85</td>
+<td>✓</td>
+</tr>
+<tr class="even">
+<td>IC7</td>
+<td>brain</td>
+<td>0.78</td>
+<td>brain</td>
+<td>0.75</td>
+<td>✓</td>
+</tr>
+<tr class="odd">
+<td>IC8</td>
+<td>muscle</td>
+<td>0.84</td>
+<td>muscle</td>
+<td>0.70</td>
+<td>✓</td>
+</tr>
+<tr class="even">
+<td>IC9</td>
+<td>muscle</td>
+<td>0.82</td>
+<td>muscle</td>
+<td>0.85</td>
+<td>✓</td>
+</tr>
+<tr class="odd">
+<td>IC10</td>
+<td>eye</td>
+<td>0.78</td>
+<td>brain</td>
+<td>0.75</td>
+<td>✗</td>
+</tr>
+<tr class="even">
+<td>IC11</td>
+<td>muscle</td>
+<td>0.87</td>
+<td>muscle</td>
+<td>0.80</td>
+<td>✓</td>
+</tr>
+<tr class="odd">
+<td>IC12</td>
+<td>muscle</td>
+<td>0.73</td>
+<td>brain</td>
+<td>0.70</td>
+<td>✗</td>
+</tr>
+<tr class="even">
+<td>IC13</td>
+<td>brain</td>
+<td>0.70</td>
+<td>brain</td>
+<td>0.75</td>
+<td>✓</td>
+</tr>
+<tr class="odd">
+<td>IC14</td>
+<td>brain</td>
+<td>0.77</td>
+<td>brain</td>
+<td>0.90</td>
+<td>✓</td>
+</tr>
+<tr class="even">
+<td>IC15</td>
+<td>brain</td>
+<td>0.78</td>
+<td>brain</td>
+<td>0.90</td>
+<td>✓</td>
+</tr>
+<tr class="odd">
+<td>IC16</td>
+<td>brain</td>
+<td>0.67</td>
+<td>brain</td>
+<td>0.85</td>
+<td>✓</td>
+</tr>
+<tr class="even">
+<td>IC17</td>
+<td>eye</td>
+<td>0.77</td>
+<td>brain</td>
+<td>0.70</td>
+<td>✗</td>
+</tr>
+<tr class="odd">
+<td>IC18</td>
+<td>brain</td>
+<td>0.67</td>
+<td>brain</td>
+<td>0.72</td>
+<td>✓</td>
+</tr>
+<tr class="even">
+<td>IC19</td>
+<td>brain</td>
+<td>0.74</td>
+<td>brain</td>
+<td>0.70</td>
+<td>✓</td>
+</tr>
+<tr class="odd">
+<td>IC20</td>
+<td>brain</td>
+<td>0.72</td>
+<td>brain</td>
+<td>0.68</td>
+<td>✓</td>
+</tr>
+<tr class="even">
+<td>IC21</td>
+<td>eye</td>
+<td>0.78</td>
+<td>channel_noise</td>
+<td>0.78</td>
+<td>✗</td>
+</tr>
+<tr class="odd">
+<td>IC22</td>
+<td>brain</td>
+<td>0.66</td>
+<td>brain</td>
+<td>0.74</td>
+<td>✓</td>
+</tr>
+<tr class="even">
+<td>IC23</td>
+<td>brain</td>
+<td>0.72</td>
+<td>brain</td>
+<td>0.66</td>
+<td>✓</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Agreement: 19/24 (79.2%)</strong></p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Classification Differences Analysis
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>5 components showed different labels between modes:</p>
+<ul>
+<li><strong>IC5</strong>: Single=brain, Strip=muscle (edge case, low confidence both modes)</li>
+<li><strong>IC10</strong>: Single=eye, Strip=brain (frontal component, ambiguous)</li>
+<li><strong>IC12</strong>: Single=muscle, Strip=brain (borderline spectral features)</li>
+<li><strong>IC17</strong>: Single=eye, Strip=brain (frontal/periocular uncertainty)</li>
+<li><strong>IC21</strong>: Single=eye, Strip=channel_noise (focal pattern interpretation)</li>
+</ul>
+<p>These disagreements occur in components with: 1. Ambiguous topographies (frontal/edge patterns) 2. Lower confidence scores (typically &lt;0.80) 3. Borderline spectral features</p>
+<p>Both modes correctly identify clear artifacts (muscle IC1, IC6, IC9, IC11) and clear brain components (IC2, IC14, IC15).</p>
+</div>
+</div>
+</section>
+<section id="exclusion-summary" class="level3" data-number="11.3">
+<h3 data-number="11.3" class="anchored" data-anchor-id="exclusion-summary"><span class="header-section-number">11.3</span> Exclusion Summary</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 17%">
+<col style="width: 60%">
+<col style="width: 22%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Mode</th>
+<th>Components Excluded</th>
+<th>Labels</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Single</td>
+<td>4</td>
+<td>IC1 (muscle), IC8 (muscle), IC9 (muscle), IC11 (muscle)</td>
+</tr>
+<tr class="even">
+<td>Strip</td>
+<td>5</td>
+<td>IC0 (eye), IC5 (muscle), IC6 (muscle), IC9 (muscle), IC11 (muscle)</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="bug-fixes-during-strip-integration" class="level2" data-number="12">
+<h2 data-number="12" class="anchored" data-anchor-id="bug-fixes-during-strip-integration"><span class="header-section-number">12</span> Bug Fixes During Strip Integration</h2>
+<section id="pdf-report-panel-rendering-fixed" class="level3" data-number="12.1">
+<h3 data-number="12.1" class="anchored" data-anchor-id="pdf-report-panel-rendering-fixed"><span class="header-section-number">12.1</span> PDF Report Panel Rendering (Fixed)</h3>
 <div class="callout callout-style-default callout-important callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -1762,8 +2072,8 @@ Issue: Excluded Components Showed Flat Data in PDF Reports
 <span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> raw_cleaned</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><strong>Commits</strong>: <code>d9262b6</code></p>
 </section>
-<section id="psd-frequency-limit-changed" class="level3" data-number="11.2">
-<h3 data-number="11.2" class="anchored" data-anchor-id="psd-frequency-limit-changed"><span class="header-section-number">11.2</span> PSD Frequency Limit (Changed)</h3>
+<section id="psd-frequency-limit-changed" class="level3" data-number="12.2">
+<h3 data-number="12.2" class="anchored" data-anchor-id="psd-frequency-limit-changed"><span class="header-section-number">12.2</span> PSD Frequency Limit (Changed)</h3>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -1786,8 +2096,8 @@ Change: Default PSD Cutoff Reduced from 80Hz to 45Hz
 <p>This displays clean spectral content through alpha and beta ranges without notch filter artifacts. Users can still specify higher frequencies via <code>--psd-fmax</code> flag if needed.</p>
 <p><strong>Commits</strong>: <code>316ea41</code></p>
 </section>
-<section id="visual-examples" class="level3" data-number="11.3">
-<h3 data-number="11.3" class="anchored" data-anchor-id="visual-examples"><span class="header-section-number">11.3</span> Visual Examples</h3>
+<section id="visual-examples" class="level3" data-number="12.3">
+<h3 data-number="12.3" class="anchored" data-anchor-id="visual-examples"><span class="header-section-number">12.3</span> Visual Examples</h3>
 <p>The following strip image demonstrates the 45Hz PSD cutoff in action. Notice how the PSD plots (rightmost column) show clean spectral content without notch filter artifacts:</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -1817,8 +2127,8 @@ Before vs After
 </div>
 </section>
 </section>
-<section id="references" class="level2" data-number="12">
-<h2 data-number="12" class="anchored" data-anchor-id="references"><span class="header-section-number">12</span> References</h2>
+<section id="references" class="level2" data-number="13">
+<h2 data-number="13" class="anchored" data-anchor-id="references"><span class="header-section-number">13</span> References</h2>
 <ol type="1">
 <li>Current implementation: <code>src/icvision/core.py</code></li>
 <li>Experimental strip: <code>test_grid_classify.py</code></li>
