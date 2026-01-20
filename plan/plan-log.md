@@ -510,3 +510,36 @@ def _apply_artifact_rejection(raw, ica):
 **Recommendation**: Production with default reasoning for speed; local or production low/none for more aggressive artifact detection.
 
 **Status**: Both endpoints documented and compared in RFC.
+
+---
+
+## 2026-01-17: Final Reasoning Effort Analysis (Production Patched)
+
+**Document**: `multi-tracing-production.qmd` (updated)
+
+**Summary**: Completed comprehensive testing of reasoning effort parameter after CLIProxy production patch.
+
+**Final Results (Production, Patched)**:
+
+| Reasoning | Time | Artifacts | Notes |
+|-----------|------|-----------|-------|
+| `none` | **50.60s** | 7 | Fastest |
+| Default (→medium) | 56.11s | 5 | Proxy default |
+| `low` | 81.36s | 4 | Slowest |
+| `minimal` | ERROR | - | Not supported |
+
+**Key findings**:
+1. Supported values: `none`, `low`, `medium`, `high`, `xhigh`
+2. `minimal` is NOT supported by gpt-5.2
+3. `low` is paradoxically slower than `medium` (OpenAI API behavior)
+4. CLIProxy defaults to `medium` when no parameter provided
+5. `none` is fastest option (50.6s vs 56.1s default)
+
+**Root cause** (from CLIProxy team): Proxy translator always sets `reasoning.effort` - either from request or defaulting to `"medium"`. OpenAI appears to have optimized the `"medium"` path for vision tasks.
+
+**Recommendations**:
+- Fastest: `--reasoning-effort none`
+- Balanced: No parameter (proxy sends `medium`)
+- Avoid: `--reasoning-effort low`
+
+**Status**: Complete. RFC updated with final recommendations.

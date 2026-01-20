@@ -139,7 +139,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#strip-mode-classification-images" id="toc-strip-mode-classification-images" class="nav-link" data-scroll-target="#strip-mode-classification-images"><span class="header-section-number">11.4</span> Strip Mode Classification Images</a></li>
   <li><a href="#api-call-details" id="toc-api-call-details" class="nav-link" data-scroll-target="#api-call-details"><span class="header-section-number">11.5</span> API Call Details</a></li>
   <li><a href="#low-reasoning-mode-comparison" id="toc-low-reasoning-mode-comparison" class="nav-link" data-scroll-target="#low-reasoning-mode-comparison"><span class="header-section-number">11.6</span> Low Reasoning Mode Comparison</a></li>
-  <li><a href="#local-endpoint-test-vision-routing-fix" id="toc-local-endpoint-test-vision-routing-fix" class="nav-link" data-scroll-target="#local-endpoint-test-vision-routing-fix"><span class="header-section-number">11.7</span> Local Endpoint Test (Vision Routing Fix)</a></li>
+  <li><a href="#cliproxy-endpoint-testing-and-reasoning-effort-analysis" id="toc-cliproxy-endpoint-testing-and-reasoning-effort-analysis" class="nav-link" data-scroll-target="#cliproxy-endpoint-testing-and-reasoning-effort-analysis"><span class="header-section-number">11.7</span> CLIProxy Endpoint Testing and Reasoning Effort Analysis</a></li>
   </ul></li>
   <li><a href="#bug-fixes-during-strip-integration" id="toc-bug-fixes-during-strip-integration" class="nav-link" data-scroll-target="#bug-fixes-during-strip-integration"><span class="header-section-number">12</span> Bug Fixes During Strip Integration</a>
   <ul class="collapse">
@@ -2417,134 +2417,161 @@ Unexpected Result: Low Reasoning is Slower
 <p><strong>Agreement: 21/24 (87.5%)</strong></p>
 <p>Three disagreements: IC5 (muscle→brain), IC12 (brain→eye), IC21 (channel_noise→eye). All on ambiguous components.</p>
 </section>
-<section id="local-endpoint-test-vision-routing-fix" class="level3" data-number="11.7">
-<h3 data-number="11.7" class="anchored" data-anchor-id="local-endpoint-test-vision-routing-fix"><span class="header-section-number">11.7</span> Local Endpoint Test (Vision Routing Fix)</h3>
-<p>Tested a local endpoint (<code>http://localhost:28080/v1</code>) with a vision routing fix that prevents image requests from being routed to the wrong model.</p>
-<p><strong>Endpoint Comparison Summary</strong>:</p>
+<section id="cliproxy-endpoint-testing-and-reasoning-effort-analysis" class="level3" data-number="11.7">
+<h3 data-number="11.7" class="anchored" data-anchor-id="cliproxy-endpoint-testing-and-reasoning-effort-analysis"><span class="header-section-number">11.7</span> CLIProxy Endpoint Testing and Reasoning Effort Analysis</h3>
+<p>Extensive testing was performed to understand the behavior of different endpoints and reasoning effort settings.</p>
+<section id="reasoning-effort-parameter-behavior" class="level4" data-number="11.7.1">
+<h4 data-number="11.7.1" class="anchored" data-anchor-id="reasoning-effort-parameter-behavior"><span class="header-section-number">11.7.1</span> Reasoning Effort Parameter Behavior</h4>
+<p>The CLIProxy translates the <code>reasoning_effort</code> parameter to OpenAI’s <code>reasoning.effort</code> field. When no parameter is provided, the proxy defaults to <code>"medium"</code>.</p>
+<p><strong>Supported values for gpt-5.2</strong>: <code>none</code>, <code>low</code>, <code>medium</code>, <code>high</code>, <code>xhigh</code></p>
+<p><strong>Final Test Results (Production, Patched)</strong>:</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
-<th>Endpoint</th>
 <th>Reasoning</th>
 <th>Time</th>
 <th>Artifacts</th>
+<th>Notes</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td><strong>Production</strong></td>
-<td>Default</td>
-<td>51.24s</td>
+<td><code>none</code></td>
+<td><strong>50.60s</strong></td>
+<td>7</td>
+<td><strong>Fastest</strong></td>
+</tr>
+<tr class="even">
+<td>Default (→medium)</td>
+<td>56.11s</td>
 <td>5</td>
-</tr>
-<tr class="even">
-<td>Production</td>
-<td>Low</td>
-<td>81.85s</td>
-<td>7</td>
+<td>Proxy default</td>
 </tr>
 <tr class="odd">
-<td>Production</td>
-<td>None</td>
-<td>82.18s</td>
-<td>8</td>
+<td><code>low</code></td>
+<td>81.36s</td>
+<td>4</td>
+<td>Slowest (paradoxically)</td>
 </tr>
 <tr class="even">
-<td><strong>Local (fix)</strong></td>
-<td>Default</td>
-<td>68.54s</td>
-<td>7</td>
-</tr>
-<tr class="odd">
-<td>Local (fix)</td>
-<td>Low</td>
-<td>75.41s</td>
-<td>6</td>
+<td><code>minimal</code></td>
+<td>ERROR</td>
+<td>-</td>
+<td>Not supported by gpt-5.2</td>
 </tr>
 </tbody>
 </table>
-<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout callout-style-default callout-important callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Vision Routing Fix Analysis
+Key Finding: <code>low</code> Reasoning is Slower Than Default
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>The local endpoint with the vision routing fix shows:</p>
+<p>Counter-intuitively, <code>reasoning_effort='low'</code> results in <strong>slower</strong> API responses than the default (<code>medium</code>). This is not a bug but appears to be OpenAI API behavior:</p>
 <ol type="1">
-<li><strong>Timing</strong>: Between production default (51s) and production low/none (~82s)</li>
-<li><strong>Artifact count</strong>: Local default (7) matches production low (7)</li>
-<li><strong>Low reasoning on local</strong>: Slightly slower (75s) with fewer artifacts (6)</li>
+<li><strong>Proxy default</strong>: When no <code>reasoning_effort</code> is set, CLIProxy sends <code>reasoning.effort: "medium"</code> to OpenAI</li>
+<li><strong>OpenAI optimization</strong>: The <code>"medium"</code> path appears to be optimized for vision tasks</li>
+<li><strong><code>low</code> penalty</strong>: Explicitly requesting <code>"low"</code> may trigger a different, slower code path</li>
 </ol>
-<p><strong>Interpretation</strong>: The vision routing fix may be routing requests to a different model configuration. The “default” reasoning on local behaves more like “low” reasoning on production in terms of artifact detection aggressiveness.</p>
-<p><strong>Recommendation</strong>: For consistent artifact detection, use production endpoint with default reasoning. For more aggressive artifact detection, use local endpoint or production with low/none reasoning.</p>
+<p><strong>Root cause</strong> (from CLIProxy team): The proxy’s translator always sets reasoning.effort - either from your request or defaulting to <code>"medium"</code>. OpenAI’s Responses API appears to have optimized the <code>"medium"</code> path for Codex/vision workflows.</p>
 </div>
 </div>
-<p><strong>Local Endpoint Classifications (default reasoning)</strong>:</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Recommendations for Reasoning Effort
+</div>
+</div>
+<div class="callout-body-container callout-body">
 <table class="caption-top table">
+<colgroup>
+<col style="width: 34%">
+<col style="width: 31%">
+<col style="width: 34%">
+</colgroup>
 <thead>
 <tr class="header">
-<th>Component</th>
-<th>Label</th>
-<th>Confidence</th>
-<th>Exclude</th>
+<th>Use Case</th>
+<th>Setting</th>
+<th>Expected</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>IC0</td>
-<td>eye</td>
-<td>0.92</td>
-<td>✓</td>
+<td><strong>Fastest processing</strong></td>
+<td><code>--reasoning-effort none</code></td>
+<td>~50s, 7 artifacts</td>
 </tr>
 <tr class="even">
-<td>IC1</td>
-<td>muscle</td>
-<td>0.88</td>
-<td>✓</td>
+<td><strong>Balanced (default)</strong></td>
+<td>Don’t set parameter</td>
+<td>~56s, 5 artifacts</td>
 </tr>
 <tr class="odd">
-<td>IC2</td>
-<td>brain</td>
-<td>0.98</td>
-<td></td>
-</tr>
-<tr class="even">
-<td>IC6</td>
-<td>channel_noise</td>
-<td>0.90</td>
-<td>✓</td>
-</tr>
-<tr class="odd">
-<td>IC8</td>
-<td>channel_noise</td>
-<td>0.82</td>
-<td>✓</td>
-</tr>
-<tr class="even">
-<td>IC9</td>
-<td>muscle</td>
-<td>0.90</td>
-<td>✓</td>
-</tr>
-<tr class="odd">
-<td>IC11</td>
-<td>muscle</td>
-<td>0.90</td>
-<td>✓</td>
-</tr>
-<tr class="even">
-<td>IC21</td>
-<td>eye</td>
-<td>0.86</td>
-<td>✓</td>
+<td><strong>Avoid</strong></td>
+<td><code>--reasoning-effort low</code></td>
+<td>~81s, slowest</td>
 </tr>
 </tbody>
 </table>
-<p>Notable differences from production: IC6 and IC8 classified as <code>channel_noise</code> instead of <code>muscle</code>, IC23 classified as <code>channel_noise</code> (not excluded due to threshold).</p>
+<p>For production pipelines, either use <strong>no parameter</strong> (proxy default) or explicitly set <code>none</code> for maximum speed.</p>
+</div>
+</div>
+</section>
+<section id="endpoint-evolution" class="level4" data-number="11.7.2">
+<h4 data-number="11.7.2" class="anchored" data-anchor-id="endpoint-evolution"><span class="header-section-number">11.7.2</span> Endpoint Evolution</h4>
+<p>Testing revealed behavior changes as CLIProxy was patched:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Phase</th>
+<th>Endpoint</th>
+<th>Default Time</th>
+<th>Artifacts</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Initial</td>
+<td>Production</td>
+<td>51.24s</td>
+<td>5</td>
+</tr>
+<tr class="even">
+<td>Broken</td>
+<td>Production</td>
+<td>68.58s</td>
+<td>6</td>
+</tr>
+<tr class="odd">
+<td>Local fix v1</td>
+<td>localhost:28080</td>
+<td>68.54s</td>
+<td>7</td>
+</tr>
+<tr class="even">
+<td>Local fix v2</td>
+<td>localhost:28080</td>
+<td>49.55s</td>
+<td>7</td>
+</tr>
+<tr class="odd">
+<td><strong>Final (patched)</strong></td>
+<td><strong>Production</strong></td>
+<td><strong>56.11s</strong></td>
+<td><strong>5</strong></td>
+</tr>
+</tbody>
+</table>
+<p>The production endpoint is now stable with the vision routing fix deployed.</p>
+</section>
 </section>
 </section>
 <section id="bug-fixes-during-strip-integration" class="level2" data-number="12">

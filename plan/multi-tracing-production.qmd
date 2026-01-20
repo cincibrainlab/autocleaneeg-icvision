@@ -1082,48 +1082,62 @@ Counter-intuitively, `reasoning_effort='low'` resulted in **longer** processing 
 
 Three disagreements: IC5 (muscle→brain), IC12 (brain→eye), IC21 (channel_noise→eye). All on ambiguous components.
 
-### Local Endpoint Test (Vision Routing Fix)
+### CLIProxy Endpoint Testing and Reasoning Effort Analysis
 
-Tested a local endpoint (`http://localhost:28080/v1`) with a vision routing fix that prevents image requests from being routed to the wrong model.
+Extensive testing was performed to understand the behavior of different endpoints and reasoning effort settings.
 
-**Endpoint Comparison Summary**:
+#### Reasoning Effort Parameter Behavior
 
-| Endpoint | Reasoning | Time | Artifacts |
-|----------|-----------|------|-----------|
-| **Production** | Default | 51.24s | 5 |
-| Production | Low | 81.85s | 7 |
-| Production | None | 82.18s | 8 |
-| **Local (fix)** | Default | 68.54s | 7 |
-| Local (fix) | Low | 75.41s | 6 |
+The CLIProxy translates the `reasoning_effort` parameter to OpenAI's `reasoning.effort` field. When no parameter is provided, the proxy defaults to `"medium"`.
 
-::: {.callout-note}
-## Vision Routing Fix Analysis
+**Supported values for gpt-5.2**: `none`, `low`, `medium`, `high`, `xhigh`
 
-The local endpoint with the vision routing fix shows:
+**Final Test Results (Production, Patched)**:
 
-1. **Timing**: Between production default (51s) and production low/none (~82s)
-2. **Artifact count**: Local default (7) matches production low (7)
-3. **Low reasoning on local**: Slightly slower (75s) with fewer artifacts (6)
+| Reasoning | Time | Artifacts | Notes |
+|-----------|------|-----------|-------|
+| `none` | **50.60s** | 7 | **Fastest** |
+| Default (→medium) | 56.11s | 5 | Proxy default |
+| `low` | 81.36s | 4 | Slowest (paradoxically) |
+| `minimal` | ERROR | - | Not supported by gpt-5.2 |
 
-**Interpretation**: The vision routing fix may be routing requests to a different model configuration. The "default" reasoning on local behaves more like "low" reasoning on production in terms of artifact detection aggressiveness.
+::: {.callout-important}
+## Key Finding: `low` Reasoning is Slower Than Default
 
-**Recommendation**: For consistent artifact detection, use production endpoint with default reasoning. For more aggressive artifact detection, use local endpoint or production with low/none reasoning.
+Counter-intuitively, `reasoning_effort='low'` results in **slower** API responses than the default (`medium`). This is not a bug but appears to be OpenAI API behavior:
+
+1. **Proxy default**: When no `reasoning_effort` is set, CLIProxy sends `reasoning.effort: "medium"` to OpenAI
+2. **OpenAI optimization**: The `"medium"` path appears to be optimized for vision tasks
+3. **`low` penalty**: Explicitly requesting `"low"` may trigger a different, slower code path
+
+**Root cause** (from CLIProxy team): The proxy's translator always sets reasoning.effort - either from your request or defaulting to `"medium"`. OpenAI's Responses API appears to have optimized the `"medium"` path for Codex/vision workflows.
 :::
 
-**Local Endpoint Classifications (default reasoning)**:
+::: {.callout-tip}
+## Recommendations for Reasoning Effort
 
-| Component | Label | Confidence | Exclude |
-|-----------|-------|------------|---------|
-| IC0 | eye | 0.92 | ✓ |
-| IC1 | muscle | 0.88 | ✓ |
-| IC2 | brain | 0.98 | |
-| IC6 | channel_noise | 0.90 | ✓ |
-| IC8 | channel_noise | 0.82 | ✓ |
-| IC9 | muscle | 0.90 | ✓ |
-| IC11 | muscle | 0.90 | ✓ |
-| IC21 | eye | 0.86 | ✓ |
+| Use Case | Setting | Expected |
+|----------|---------|----------|
+| **Fastest processing** | `--reasoning-effort none` | ~50s, 7 artifacts |
+| **Balanced (default)** | Don't set parameter | ~56s, 5 artifacts |
+| **Avoid** | `--reasoning-effort low` | ~81s, slowest |
 
-Notable differences from production: IC6 and IC8 classified as `channel_noise` instead of `muscle`, IC23 classified as `channel_noise` (not excluded due to threshold).
+For production pipelines, either use **no parameter** (proxy default) or explicitly set `none` for maximum speed.
+:::
+
+#### Endpoint Evolution
+
+Testing revealed behavior changes as CLIProxy was patched:
+
+| Phase | Endpoint | Default Time | Artifacts |
+|-------|----------|--------------|-----------|
+| Initial | Production | 51.24s | 5 |
+| Broken | Production | 68.58s | 6 |
+| Local fix v1 | localhost:28080 | 68.54s | 7 |
+| Local fix v2 | localhost:28080 | 49.55s | 7 |
+| **Final (patched)** | **Production** | **56.11s** | **5** |
+
+The production endpoint is now stable with the vision routing fix deployed.
 
 ## Bug Fixes During Strip Integration
 
