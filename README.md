@@ -16,6 +16,8 @@ ICVision automates the tedious process of classifying ICA components from EEG da
 **Key Features**:
 - Automated classification of 7 component types (brain, eye, muscle, heart, line noise, channel noise, other)
 - **🔄 Drop-in replacement for MNE-ICALabel**: Same API, enhanced with OpenAI Vision
+- **⚡ Strip Layout Mode**: Batch 9 components per API call for **88% cost reduction**
+- **🌐 Custom Endpoint Support**: Use OpenAI-compatible APIs (e.g., CLIProxy, Azure OpenAI)
 - Multi-panel component plots (topography, time series, PSD, ERP-image)
 - MNE-Python integration with `.fif` and `.set` file support
 - **EEGLAB .set file auto-detection**: Single file input with automatic ICA detection
@@ -87,13 +89,56 @@ This command will:
 - **Clean logging output**: Professional, user-focused logging with optional verbose mode for debugging
 - **Better error messages**: Informative CLI output with suggested solutions
 
+### Strip Layout Mode (New in v0.3.0)
+
+Strip layout batches multiple ICA components into a single image, reducing API calls by ~88%:
+
+```bash
+# Single-image mode (default, 1 API call per component)
+autoclean-icvision data.set
+
+# Strip mode (9 components per API call, 88% fewer calls)
+autoclean-icvision data.set --layout strip
+```
+
+**Performance comparison** (24 components):
+
+| Mode | API Calls | Time | Cost |
+|------|-----------|------|------|
+| Single | 24 | ~85s | ~$0.29 |
+| Strip | 3 | ~50s | ~$0.04 |
+
+Strip mode is recommended for production pipelines. Classification accuracy is comparable to single-image mode.
+
+### Custom Endpoint Support (New in v0.2.1)
+
+Use OpenAI-compatible endpoints like CLIProxy or Azure OpenAI:
+
+```bash
+# Using environment variables (recommended)
+export OPENAI_BASE_URL="https://your-proxy.example.com/v1"
+export OPENAI_API_KEY="your-api-key"
+autoclean-icvision data.set --layout strip
+
+# Or via CLI flags
+autoclean-icvision data.set \
+    --base-url https://your-proxy.example.com/v1 \
+    --api-key your-api-key \
+    --model gpt-5.2 \
+    --layout strip
+```
+
 **Common Options (with defaults):**
 
 *   `--api-key YOUR_API_KEY`: Specify OpenAI API key (default: `OPENAI_API_KEY` env variable)
+*   `--base-url URL`: Custom API endpoint (default: OpenAI, or `OPENAI_BASE_URL` env variable)
 *   `--output-dir /path/to/output/`: Output directory (default: `./autoclean_icvision_results`)
-*   `--model MODEL_NAME`: OpenAI model (default: `gpt-4.1`)
+*   `--model MODEL_NAME`: OpenAI model (default: `gpt-4.1`, supports `gpt-5.2`)
+*   `--layout single|strip`: Classification layout mode (default: `single`)
+*   `--strip-size 9`: Components per strip image when `--layout=strip` (default: `9`)
+*   `--reasoning-effort none|low|medium|high`: Reasoning effort for gpt-5.x models (default: proxy default)
 *   `--confidence-threshold 0.8`: Confidence threshold for auto-exclusion (default: `0.8`)
-*   `--psd-fmax 40`: Maximum frequency for PSD plots in Hz (default: `80` or Nyquist)
+*   `--psd-fmax 45`: Maximum frequency for PSD plots in Hz (default: `45`)
 *   `--labels-to-exclude eye muscle heart`: Artifact labels to exclude (default: all non-brain types)
 *   `--batch-size 10`: Components per API request (default: `10`)
 *   `--max-concurrency 4`: Max parallel requests (default: `4`)
@@ -335,7 +380,12 @@ Other supported formats include:
 
 | Parameter | Default Value | Description |
 |-----------|---------------|-------------|
-| `model_name` | `"gpt-4.1"` | OpenAI model for classification |
+| `model_name` | `"gpt-4.1"` | OpenAI model for classification (also supports `gpt-5.2`) |
+| `base_url` | `None` | Custom API endpoint (uses `OPENAI_BASE_URL` env var if set) |
+| `layout` | `"single"` | Classification mode: `"single"` or `"strip"` |
+| `strip_size` | `9` | Components per strip image (when `layout="strip"`) |
+| `reasoning_effort` | `None` | Reasoning effort for gpt-5.x: `none`, `low`, `medium`, `high` |
+| `psd_fmax` | `45.0` | Maximum frequency for PSD plots (Hz) |
 | `confidence_threshold` | `0.8` | Minimum confidence for auto-exclusion |
 | `auto_exclude` | `True` | Automatically exclude artifact components |
 | `labels_to_exclude` | `["eye", "muscle", "heart", "line_noise", "channel_noise", "other_artifact"]` | Labels to exclude (all non-brain) |
