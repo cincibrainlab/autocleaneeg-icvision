@@ -134,6 +134,7 @@ autoclean-icvision data.set \
 *   `--base-url URL`: Custom API endpoint (default: OpenAI, or `OPENAI_BASE_URL` env variable)
 *   `--output-dir /path/to/output/`: Output directory (default: `./autoclean_icvision_results`)
 *   `--model MODEL_NAME`: OpenAI model (default: `gpt-4.1`, supports `gpt-5.2`)
+*   `--classification-mode human|mouse`: Prompt mode for species-specific heuristics (default: `human`)
 *   `--layout single|strip`: Classification layout mode (default: `single`)
 *   `--strip-size 9`: Components per strip image when `--layout=strip` (default: `9`)
 *   `--reasoning-effort none|low|medium|high`: Reasoning effort for gpt-5.x models (default: proxy default)
@@ -177,6 +178,15 @@ autoclean-icvision data/erp_study.set \
     --confidence-threshold 0.85 \
     --verbose
 ```
+
+Mouse prompt mode:
+```bash
+autoclean-icvision data/mouse_subject.set \
+    --classification-mode mouse \
+    --layout strip
+```
+
+`mouse` mode keeps the same output labels, reports, and exclusion plumbing as `human` mode, but swaps in mouse-specific prompts for both `single` and `strip` layouts. It is prompt-tuned rather than a separate trained classifier, so validate it on a mouse-labeled benchmark before trusting automated exclusion.
 
 Multi-file batch processing:
 ```bash
@@ -382,6 +392,7 @@ Other supported formats include:
 |-----------|---------------|-------------|
 | `model_name` | `"gpt-4.1"` | OpenAI model for classification (also supports `gpt-5.2`) |
 | `base_url` | `None` | Custom API endpoint (uses `OPENAI_BASE_URL` env var if set) |
+| `classification_mode` | `"human"` | Species-aware prompt mode: `"human"` or `"mouse"` |
 | `layout` | `"single"` | Classification mode: `"single"` or `"strip"` |
 | `strip_size` | `9` | Components per strip image (when `layout="strip"`) |
 | `reasoning_effort` | `None` | Reasoning effort for gpt-5.x: `none`, `low`, `medium`, `high` |

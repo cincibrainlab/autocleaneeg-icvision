@@ -52,6 +52,9 @@ Available Options
 
 **Classification Settings:**
 
+``--classification-mode``
+   Species-aware prompt mode: ``human`` (default) or ``mouse``
+
 ``--confidence-threshold``
    Minimum confidence for auto-exclusion (default: 0.8, range: 0.0-1.0)
 
@@ -115,6 +118,16 @@ Examples
    icvision data.set ica.fif \
        --prompt-file custom_prompt.txt \
        --output-dir custom_results/
+
+**Mouse Prompt Mode:**
+
+.. code-block:: bash
+
+   icvision data.set ica.fif \
+       --classification-mode mouse \
+       --layout strip
+
+``mouse`` mode keeps the same output schema as ``human`` mode but uses mouse-specific prompt heuristics. It is prompt-tuned, not a separate trained classifier.
 
 **Label Only (No Exclusion):**
 

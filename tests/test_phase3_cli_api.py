@@ -4,9 +4,10 @@ TDD Tests for Phase 3: CLI and API Surface
 Tests verify:
 1. CLI accepts --layout flag with 'single' and 'strip' values
 2. CLI accepts --strip-size flag
-3. label_components() accepts layout and strip_size parameters
-4. compat.label_components() accepts layout parameter
-5. Default is 'single' for backward compatibility
+3. CLI accepts --classification-mode with 'human' and 'mouse'
+4. label_components() accepts layout, strip_size, and classification_mode parameters
+5. compat.label_components() accepts layout and classification_mode parameters
+6. Defaults preserve backward compatibility
 """
 
 import subprocess
@@ -121,6 +122,28 @@ class TestCLIArgumentParsing:
         args = parser.parse_args(["test.set"])
         assert args.strip_size == 9
 
+    def test_cli_accepts_classification_mode_mouse(self):
+        """CLI must accept --classification-mode mouse."""
+        import argparse
+
+        parser = argparse.ArgumentParser()
+        parser.add_argument("raw_data_path")
+        parser.add_argument("--classification-mode", choices=["human", "mouse"], default="human")
+
+        args = parser.parse_args(["test.set", "--classification-mode", "mouse"])
+        assert args.classification_mode == "mouse"
+
+    def test_cli_classification_mode_default_is_human(self):
+        """CLI default classification mode must be 'human'."""
+        import argparse
+
+        parser = argparse.ArgumentParser()
+        parser.add_argument("raw_data_path")
+        parser.add_argument("--classification-mode", choices=["human", "mouse"], default="human")
+
+        args = parser.parse_args(["test.set"])
+        assert args.classification_mode == "human"
+
 
 # --- Test: label_components() API ---
 
@@ -202,6 +225,35 @@ class TestLabelComponentsAPI:
         assert layout_param is not None, "layout parameter must exist"
         assert layout_param.default == "single", "default must be 'single'"
 
+    def test_label_components_accepts_classification_mode_parameter(
+        self, dummy_raw_data: mne.io.Raw, dummy_ica_data: mne.preprocessing.ICA, temp_test_dir: Path
+    ):
+        """label_components() must accept classification_mode parameter."""
+        from icvision.core import label_components
+
+        mock_df = pd.DataFrame({
+            "component_index": [0, 1, 2, 3, 4],
+            "component_name": ["IC0", "IC1", "IC2", "IC3", "IC4"],
+            "label": ["brain"] * 5,
+            "confidence": [0.95] * 5,
+            "reason": ["Test"] * 5,
+            "mne_label": ["brain"] * 5,
+            "exclude_vision": [False] * 5,
+        }).set_index("component_index", drop=False)
+
+        with patch("icvision.core.classify_components_batch", return_value=(mock_df, {})):
+            with patch("icvision.core.generate_classification_report", return_value=None):
+                _, _, results_df = label_components(
+                    raw_data=dummy_raw_data,
+                    ica_data=dummy_ica_data,
+                    api_key="test-key",
+                    output_dir=temp_test_dir,
+                    generate_report=False,
+                    classification_mode="mouse",
+                )
+
+        assert results_df is not None
+
 
 # --- Test: compat.label_components() API ---
 
@@ -237,6 +289,36 @@ class TestCompatLabelComponentsAPI:
                 generate_report=False,
                 output_dir=str(temp_test_dir),
                 layout="strip",  # NEW parameter
+            )
+
+        assert result is not None
+
+    def test_compat_label_components_accepts_classification_mode_parameter(
+        self, dummy_raw_data: mne.io.Raw, dummy_ica_data: mne.preprocessing.ICA, temp_test_dir: Path
+    ):
+        """compat.label_components() must accept classification_mode parameter."""
+        from icvision.compat import label_components
+
+        mock_df = pd.DataFrame({
+            "component_index": [0, 1, 2, 3, 4],
+            "component_name": ["IC0", "IC1", "IC2", "IC3", "IC4"],
+            "label": ["brain"] * 5,
+            "confidence": [0.95] * 5,
+            "reason": ["Test"] * 5,
+            "mne_label": ["brain"] * 5,
+            "exclude_vision": [False] * 5,
+        }).set_index("component_index", drop=False)
+
+        with patch("icvision.compat.icvision_label_components") as mock_lc:
+            mock_lc.return_value = (dummy_raw_data, dummy_ica_data, mock_df)
+
+            result = label_components(
+                inst=dummy_raw_data,
+                ica=dummy_ica_data,
+                method="icvision",
+                generate_report=False,
+                output_dir=str(temp_test_dir),
+                classification_mode="mouse",
             )
 
         assert result is not None
@@ -281,3 +363,34 @@ class TestLayoutPassthrough:
         call_kwargs = mock_ccb.call_args.kwargs
         assert call_kwargs.get("layout") == "strip"
         assert call_kwargs.get("strip_size") == 12
+
+    def test_classify_components_batch_receives_classification_mode(
+        self, dummy_raw_data: mne.io.Raw, dummy_ica_data: mne.preprocessing.ICA, temp_test_dir: Path
+    ):
+        """classify_components_batch() must receive classification_mode from label_components()."""
+        from icvision.core import label_components
+
+        mock_df = pd.DataFrame({
+            "component_index": [0, 1, 2, 3, 4],
+            "component_name": ["IC0", "IC1", "IC2", "IC3", "IC4"],
+            "label": ["brain"] * 5,
+            "confidence": [0.95] * 5,
+            "reason": ["Test"] * 5,
+            "mne_label": ["brain"] * 5,
+            "exclude_vision": [False] * 5,
+        }).set_index("component_index", drop=False)
+
+        with patch("icvision.core.classify_components_batch", return_value=(mock_df, {})) as mock_ccb:
+            with patch("icvision.core.generate_classification_report", return_value=None):
+                label_components(
+                    raw_data=dummy_raw_data,
+                    ica_data=dummy_ica_data,
+                    api_key="test-key",
+                    output_dir=temp_test_dir,
+                    generate_report=False,
+                    classification_mode="mouse",
+                )
+
+        mock_ccb.assert_called_once()
+        call_kwargs = mock_ccb.call_args.kwargs
+        assert call_kwargs.get("classification_mode") == "mouse"

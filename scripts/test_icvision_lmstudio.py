@@ -43,6 +43,12 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--ica", type=Path, default=None, help="Optional ICA file if not embedded in raw data.")
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
+    parser.add_argument("--classification-mode", choices=["human", "mouse"], default="human")
+    parser.add_argument(
+        "--compare-modes",
+        action="store_true",
+        help="Run both classification modes back to back and write a comparison CSV.",
+    )
     parser.add_argument("--layout", choices=["single", "strip"], default="strip")
     parser.add_argument("--strip-size", type=int, default=9)
     parser.add_argument("--confidence-threshold", type=float, default=0.8)
@@ -204,9 +210,34 @@ def fit_ica(raw, n_components: int, method: str, random_state: int):
     return ica
 
 
-def run_icvision_job(args: argparse.Namespace) -> None:
+def _run_single_icvision_job(
+    args: argparse.Namespace,
+    raw_prepped,
+    ica,
+    *,
+    classification_mode: str,
+    output_dir: Path,
+):
+    """Run one ICVision job for a specific classification mode."""
     from icvision.core import label_components
 
+    raw_cleaned, ica_updated, results_df = label_components(
+        raw_data=raw_prepped,
+        ica_data=ica,
+        api_key=args.api_key,
+        model_name=args.model,
+        output_dir=output_dir,
+        generate_report=not args.no_report,
+        layout=args.layout,
+        strip_size=args.strip_size,
+        confidence_threshold=args.confidence_threshold,
+        base_url=args.base_url,
+        classification_mode=classification_mode,
+    )
+    return raw_cleaned, ica_updated, results_df
+
+
+def run_icvision_job(args: argparse.Namespace) -> None:
     raw_path = resolve_default_raw_path(args.raw)
     if not raw_path.exists():
         raise FileNotFoundError(f"Raw EEG file not found: {raw_path}")
@@ -226,18 +257,48 @@ def run_icvision_job(args: argparse.Namespace) -> None:
     print("  ica: fitted in script with MNE")
     print(f"  model: {args.model}")
     print(f"  output_dir: {args.output_dir}")
+    print(f"  classification_mode: {args.classification_mode}")
 
-    raw_cleaned, ica_updated, results_df = label_components(
-        raw_data=raw_prepped,
-        ica_data=ica,
-        api_key=args.api_key,
-        model_name=args.model,
+    if args.compare_modes:
+        import pandas as pd
+
+        mode_results = {}
+        for mode in ("human", "mouse"):
+            mode_output_dir = args.output_dir / mode
+            mode_output_dir.mkdir(parents=True, exist_ok=True)
+            raw_cleaned, ica_updated, results_df = _run_single_icvision_job(
+                args, raw_prepped, ica, classification_mode=mode, output_dir=mode_output_dir
+            )
+            mode_results[mode] = results_df[["component_index", "label", "confidence"]].copy()
+
+            print(f"\nICVision run complete for mode={mode}.")
+            print(f"  cleaned raw type: {type(raw_cleaned).__name__}")
+            print(f"  updated ICA type: {type(ica_updated).__name__}")
+            print(f"  classified components: {len(results_df)}")
+            print(f"  results dir: {mode_output_dir}")
+
+        comparison = mode_results["human"].merge(
+            mode_results["mouse"],
+            on="component_index",
+            suffixes=("_human", "_mouse"),
+        )
+        comparison["label_changed"] = comparison["label_human"] != comparison["label_mouse"]
+        comparison["confidence_delta"] = comparison["confidence_mouse"] - comparison["confidence_human"]
+        comparison_path = args.output_dir / "human_vs_mouse_comparison.csv"
+        comparison.to_csv(comparison_path, index=False)
+
+        print("\nComparison summary:")
+        print(f"  comparison csv: {comparison_path}")
+        print(f"  labels changed: {int(comparison['label_changed'].sum())} / {len(comparison)}")
+        print(comparison.head(10).to_string(index=False))
+        return
+
+    raw_cleaned, ica_updated, results_df = _run_single_icvision_job(
+        args,
+        raw_prepped,
+        ica,
+        classification_mode=args.classification_mode,
         output_dir=args.output_dir,
-        generate_report=not args.no_report,
-        layout=args.layout,
-        strip_size=args.strip_size,
-        confidence_threshold=args.confidence_threshold,
-        base_url=args.base_url,
     )
 
     print("\nICVision run complete.")

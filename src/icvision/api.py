@@ -21,7 +21,7 @@ from .config import (
     COMPONENT_LABELS,
     DEFAULT_CONFIG,
     ICVISION_TO_MNE_LABEL_MAP,
-    OPENAI_ICA_PROMPT,
+    get_single_prompt,
     get_strip_prompt,
 )
 from .plotting import create_strip_image, plot_components_batch
@@ -36,6 +36,7 @@ def classify_component_image_openai(
     model_name: str,
     custom_prompt: Optional[str] = None,
     base_url: Optional[str] = None,
+    classification_mode: str = "human",
 ) -> Tuple[str, float, str, Optional[Dict[str, Any]]]:
     """
     Sends a single component image to OpenAI Vision API for classification.
@@ -49,6 +50,7 @@ def classify_component_image_openai(
         model_name: OpenAI model to use (e.g., "gpt-4.1").
         custom_prompt: Optional custom prompt to use instead of default.
         base_url: Optional custom API base URL for OpenAI-compatible endpoints.
+        classification_mode: Species-aware classification prompt mode.
 
     Returns:
         Tuple: (label, confidence, reason, cost_info).
@@ -63,7 +65,7 @@ def classify_component_image_openai(
     function_start_time = time.time()
     logger.info("Starting classification for %s", image_path.name)
     
-    prompt_to_use = custom_prompt or OPENAI_ICA_PROMPT
+    prompt_to_use = custom_prompt or get_single_prompt(classification_mode)
 
     try:
         import time
@@ -269,15 +271,22 @@ def classify_component_image_openai(
 
 
 def _classify_single_component_wrapper(
-    args_tuple: Tuple[int, Optional[Path], str, str, Optional[str], Optional[str]],
+    args_tuple: Tuple[int, Optional[Path], str, str, Optional[str], Optional[str], str],
 ) -> Tuple[int, str, float, str, Optional[Dict[str, Any]]]:
     """Helper for parallel execution of classify_component_image_openai."""
-    comp_idx, image_path, api_key, model_name, custom_prompt, base_url = args_tuple
+    comp_idx, image_path, api_key, model_name, custom_prompt, base_url, classification_mode = args_tuple
     if image_path is None:
         return comp_idx, "other_artifact", 1.0, "Plotting failed for this component", None
 
     # Call the classification function and prepend component index to its result tuple
-    classification_result = classify_component_image_openai(image_path, api_key, model_name, custom_prompt, base_url)
+    classification_result = classify_component_image_openai(
+        image_path,
+        api_key,
+        model_name,
+        custom_prompt,
+        base_url,
+        classification_mode,
+    )
     return (comp_idx,) + classification_result
 
 
@@ -357,6 +366,7 @@ def classify_strip_image(
     base_url: Optional[str] = None,
     max_retries: int = 3,
     reasoning_effort: Optional[str] = None,
+    classification_mode: str = "human",
 ) -> List[Dict[str, Any]]:
     """Classify multiple ICA components from a single strip image.
 
@@ -372,6 +382,7 @@ def classify_strip_image(
         base_url: Optional custom API base URL
         max_retries: Maximum number of retry attempts (default: 3)
         reasoning_effort: Optional reasoning effort level ('none', 'minimal', 'low', 'medium', 'high', 'xhigh')
+        classification_mode: Species-aware classification prompt mode.
 
     Returns:
         List of classification results, each with keys:
@@ -424,7 +435,7 @@ def classify_strip_image(
         return []
 
     # Get prompt for this number of components
-    prompt = get_strip_prompt(n_components)
+    prompt = get_strip_prompt(n_components, classification_mode=classification_mode)
 
     # Create client
     client = openai.OpenAI(api_key=api_key, base_url=base_url)
@@ -542,6 +553,7 @@ def classify_components_strip_batch(
     auto_exclude: bool = True,
     labels_to_exclude: Optional[List[str]] = None,
     reasoning_effort: Optional[str] = None,
+    classification_mode: str = "human",
 ) -> Tuple[pd.DataFrame, Dict[str, Any]]:
     """Classify ICA components using strip layout (batches of 9).
 
@@ -561,6 +573,7 @@ def classify_components_strip_batch(
         confidence_threshold: Min confidence for auto-exclusion
         auto_exclude: If True, mark components for exclusion
         labels_to_exclude: Labels to exclude (default: all except brain)
+        classification_mode: Species-aware classification prompt mode.
 
     Returns:
         Tuple of (results_df, metadata_dict) with same schema as
@@ -637,6 +650,7 @@ def classify_components_strip_batch(
             model_name=model_name,
             base_url=base_url,
             reasoning_effort=reasoning_effort,
+            classification_mode=classification_mode,
         )
 
         if batch_results:
@@ -694,6 +708,7 @@ def classify_components_strip_batch(
         "seconds_per_component": elapsed / n_total if n_total > 0 else 0,
         "model_name": model_name,
         "layout": "strip",
+        "classification_mode": classification_mode,
         "reasoning_effort": reasoning_effort,
     }
 
@@ -726,6 +741,7 @@ def classify_components_batch(
     layout: str = "single",
     strip_size: int = 9,
     reasoning_effort: Optional[str] = None,
+    classification_mode: str = cast(str, DEFAULT_CONFIG["classification_mode"]),
 ) -> Tuple[pd.DataFrame, dict]:
     """
     Classifies ICA components in batches using OpenAI Vision API with parallel processing.
@@ -749,6 +765,7 @@ def classify_components_batch(
         layout: Classification layout - "single" (one image per component) or
             "strip" (multiple components per image). Default: "single".
         strip_size: Components per strip image when layout="strip". Default: 9.
+        classification_mode: Species-aware classification prompt mode.
 
     Returns:
         Tuple of (pd.DataFrame with classification results, dict with cost tracking information).
@@ -776,6 +793,7 @@ def classify_components_batch(
             auto_exclude=auto_exclude,
             labels_to_exclude=labels_to_exclude,
             reasoning_effort=reasoning_effort,
+            classification_mode=classification_mode,
         )
 
     # Original single-image classification logic
@@ -829,7 +847,9 @@ def classify_components_batch(
         component_plot_args = []
         for i in component_indices:
             image_path = plotting_results.get(i, None)
-            component_plot_args.append((i, image_path, api_key, model_name, custom_prompt, base_url))
+            component_plot_args.append(
+                (i, image_path, api_key, model_name, custom_prompt, base_url, classification_mode)
+            )
 
         processed_count = 0
         # Process in batches for concurrency management

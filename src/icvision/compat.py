@@ -143,6 +143,7 @@ def label_components(
     layout: str = "single",
     strip_size: int = 9,
     reasoning_effort: Optional[str] = None,
+    classification_mode: str = "human",
 ) -> Dict[str, Union[np.ndarray, List[str]]]:
     """
     Drop-in replacement for mne_icalabel.label_components.
@@ -165,6 +166,7 @@ def label_components(
         layout: Classification layout mode. 'single' processes one component per API call,
             'strip' batches multiple components (default: 'single').
         strip_size: Number of components per strip image when layout='strip' (default: 9).
+        classification_mode: Species-aware classification prompt mode.
 
     Returns:
         Dictionary with ICLabel-compatible structure:
@@ -207,6 +209,7 @@ def label_components(
             layout=layout,  # Pass through layout mode
             strip_size=strip_size,  # Pass through strip size
             reasoning_effort=reasoning_effort,  # Pass through reasoning effort
+            classification_mode=classification_mode,  # Pass through species-specific mode
         )
 
         # Extract classification results

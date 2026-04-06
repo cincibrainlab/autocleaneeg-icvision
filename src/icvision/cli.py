@@ -87,6 +87,9 @@ Examples:
   Adjusting classification parameters:
     autoclean-icvision raw.set -ct 0.7 --model gpt-4.1 --batch-size 5
 
+  Running mouse prompt mode:
+    autoclean-icvision raw.set --classification-mode mouse
+
   Using a custom prompt file:
     autoclean-icvision raw.set --prompt-file my_custom_prompt.txt
 
@@ -176,6 +179,14 @@ Examples:
         default=None,  # Uses default from core.py if None
         help="List of component labels to consider for auto-exclusion "
         "(e.g., eye muscle heart). Defaults to all non-brain types.",
+    )
+    class_group.add_argument(
+        "--classification-mode",
+        type=str,
+        choices=["human", "mouse"],
+        default=DEFAULT_CONFIG["classification_mode"],
+        help="Classification prompt mode. 'human' preserves the existing prompt behavior; "
+        "'mouse' uses mouse-specific prompt heuristics (default: human).",
     )
     class_group.add_argument(
         "--layout",
@@ -315,6 +326,7 @@ Examples:
             layout=args.layout,
             strip_size=args.strip_size,
             reasoning_effort=args.reasoning_effort,
+            classification_mode=args.classification_mode,
         )
 
         # Determine output path

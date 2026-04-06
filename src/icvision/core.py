@@ -53,6 +53,7 @@ def label_components(
     layout: str = "single",
     strip_size: int = 9,
     reasoning_effort: Optional[str] = None,
+    classification_mode: str = "human",
 ) -> Tuple[mne.io.Raw, mne.preprocessing.ICA, pd.DataFrame]:
     """
     Classify ICA components using OpenAI Vision API and apply artifact rejection.
@@ -92,6 +93,8 @@ def label_components(
         layout: Classification layout mode. 'single' processes one component per API call,
             'strip' batches multiple components (default: 'single' for backward compatibility).
         strip_size: Number of components per strip image when layout='strip' (default: 9).
+        classification_mode: Species-aware classification prompt mode. "human" preserves
+            current behavior; "mouse" uses mouse-specific prompt heuristics.
 
     Returns:
         Tuple containing:
@@ -219,6 +222,7 @@ def label_components(
             layout=layout,
             strip_size=strip_size,
             reasoning_effort=reasoning_effort,
+            classification_mode=classification_mode,
         )
         if isinstance(classification_result, tuple):
             results_df, cost_tracking = classification_result

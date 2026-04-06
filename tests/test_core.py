@@ -451,10 +451,11 @@ def test_label_components_custom_params(
     assert call_args.get("model_name") == custom_model
     assert call_args.get("custom_prompt") == custom_prompt_text
     assert call_args.get("labels_to_exclude") == custom_exclude
+    assert call_args.get("classification_mode") == "human"
 
-    # Check custom filenames
-    assert (output_subdir / "icvision_results.csv").exists()
-    assert (output_subdir / "icvision_classified_ica.fif").exists()
+    # Check filenames for object-based input (defaults to basename "icvision")
+    assert (output_subdir / "icvision_icvis_results.csv").exists()
+    assert (output_subdir / "icvision_icvis_classified_ica.fif").exists()
     assert (output_subdir / "classification_summary.txt").exists()
 
     # Check exclusion logic based on custom_exclude

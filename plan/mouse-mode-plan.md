@@ -42,6 +42,8 @@ Add a project-level classification mode switch:
 - `human` = current behavior
 - `mouse` = same pipeline, same output schema, different prompt heuristics for ICA morphology
 
+The repo should explicitly support both human and mouse use cases in the same codebase. Mouse mode is an addition, not a replacement for the existing human path, so the plan should preserve human behavior while adding a first-class mouse path.
+
 ### Design principle
 
 Keep everything downstream unchanged if possible:
@@ -50,6 +52,8 @@ Keep everything downstream unchanged if possible:
 - same JSON contract
 - same report generation
 - same exclusion logic
+
+Keep both species available through one shared implementation, with explicit mode selection rather than separate forks of the repo or an implicit prompt swap.
 
 Only the classification instructions should change first. That is the lowest-risk version.
 
@@ -116,6 +120,20 @@ Mouse mode should change the reasoning rules:
 - emphasize that mouse ICA topographies may be compressed, shifted, or less obviously “human dipolar”
 - make spectral and temporal cues carry more weight when topography is ambiguous
 
+### 4a. Encode the mouse heart-rate rules from issue #10 explicitly
+
+The plan should treat these as required prompt rules for `mouse` mode, not optional guidance:
+
+- mouse heart rate is usually about `7.5-12.5 Hz`
+- for `heart` detection, use the PSD as the primary evidence source
+- look for regularly spaced PSD peaks separated by about `7.5-12.5 Hz` across `1-55 Hz` and `65-100 Hz`
+- ignore the usually notched `55-65 Hz` band for this check
+- sometimes the heart-rate pattern is split across two ICs: one may carry the regularly spaced peaks in `1-50 Hz`, while another carries them in `65-100 Hz`
+- if an IC's PSD does not show regularly spaced heart-rate peaks, it is never `heart`
+- do not use the short top-right scrolling time-series window for heart detection
+
+These rules should appear in both the single-component and strip-layout mouse prompts so the layout choice does not silently change `heart` behavior.
+
 ### 5. Add tests at the prompt-selection layer
 
 Add unit tests that verify:
@@ -140,100 +158,193 @@ Update docs to say:
 - `mouse` is prompt-tuned, not yet a separately validated classifier
 - users should validate on a mouse-labeled benchmark set before trusting auto-exclusion
 
-## Suggested Rollout
+## Delivery Plan
 
-### Phase 1
+The work should be executed in phases with explicit exit criteria. A phase is not complete just because code exists; it is complete only when the checklist and exit criteria for that phase are satisfied.
 
-Prompt-only mode switch.
+## Verification Assets
 
-- add `--classification-mode`
-- add mouse prompts
-- no change to labels or exclusion logic
+These files are the required mouse-validation corpus for this project. They are not optional reference material.
 
-## Verification Assets To Use
-
-The newly added files should be treated as the mouse-validation corpus for this work, not as optional background material.
-
-### Ground-truth style review tables
+### Decision CSVs
 
 - [`autoclean_exclusion_decisions.csv`](/Users/sueo8x/Documents/Github/autocleaneeg-icvision/autoclean_exclusion_decisions.csv)
 - [`autoclean_exclusion_decisions_sentinel_Rest.csv`](/Users/sueo8x/Documents/Github/autocleaneeg-icvision/autoclean_exclusion_decisions_sentinel_Rest.csv)
 - [`autoclean_exclusion_decisions_sentinel_Rest2.csv`](/Users/sueo8x/Documents/Github/autocleaneeg-icvision/autoclean_exclusion_decisions_sentinel_Rest2.csv)
 
-These contain per-record review outcomes and notes that should be used to verify prompt decisions and tune wording. Important signals already visible in the CSVs:
+Use these to identify known HR-positive examples, non-HR controls, split-HR cases, and reviewer notes that justify prompt wording.
 
-- reviewer notes explicitly call out heart-rate ICs such as `IC3 clear HR.`, `IC6 clear heart rate`, and `5 and 9 clear heart rate`
-- the tables identify concrete datasets that should be sampled during prompt development
-- these CSVs can be used to build an evaluation set of known-positive HR examples and non-HR controls
-
-### ICA report corpora
+### ICA PDF Archives
 
 - [`sentinel_chirp_ICA_PDF_reports.zip`](/Users/sueo8x/Documents/Github/autocleaneeg-icvision/sentinel_chirp_ICA_PDF_reports.zip)
 - [`sentinel_rest_ICA_PDF_reports.zip`](/Users/sueo8x/Documents/Github/autocleaneeg-icvision/sentinel_rest_ICA_PDF_reports.zip)
 - [`sentinel_rest2_ICA_PDF_reports.zip`](/Users/sueo8x/Documents/Github/autocleaneeg-icvision/sentinel_rest2_ICA_PDF_reports.zip)
 
-These archives contain the actual ICA PDF report sets that should be used to visually verify the prompt heuristics. The counts are substantial enough to support prompt review rather than anecdotal tuning:
+Use these to visually verify that the PSD evidence in the actual reports matches the prompt rules.
 
-- `sentinel_rest_ICA_PDF_reports.zip`: 103 PDF reports
-- `sentinel_chirp_ICA_PDF_reports.zip`: 54 PDF reports
-- `sentinel_rest2_ICA_PDF_reports.zip`: 9 PDF reports
-
-### Reference images
+### Reference Images
 
 - [`mouse_HR.PNG`](/Users/sueo8x/Documents/Github/autocleaneeg-icvision/mouse_HR.PNG)
 - [`image (3).png`](/Users/sueo8x/Documents/Github/autocleaneeg-icvision/image%20(3).png)
 
-These should be referenced in the plan as visual examples when refining heart-rate prompt language, especially if they show the regularly spaced PSD-peak pattern you described.
+Use these as quick visual aids while editing prompt text, but do not treat them as a substitute for CSV-backed and PDF-backed verification.
 
-## How These Assets Should Change The Plan
+## Phase 0: Verification Set Assembly
 
-The project should not ship `Mouse` mode based only on prompt intuition. It should be verified against the added review corpus.
+### Goal
 
-### Add a validation-first workflow
+Create the evidence set that will drive prompt wording and later acceptance checks.
 
-Before finalizing prompt wording:
+### Checklist
 
-1. Use the decision CSVs to identify examples explicitly marked as heart-rate ICs and examples without HR notes.
-2. Open the matching ICA PDFs from the zip archives and confirm what the PSD actually looks like in those positive and negative cases.
-3. Verify that the proposed prompt language matches the reviewed examples:
-   - HR positive cases should show regularly spaced PSD peaks
-   - non-HR cases should not be classified as heart when those peaks are absent
-   - split-HR cases should be represented in the prompt and in the acceptance tests
-4. Use the example images as quick visual references when rewriting prompt language and documentation.
+- [x] Review the three decision CSVs and extract known HR-positive examples from reviewer notes.
+- [x] Extract a set of non-HR controls from the same datasets.
+- [x] Identify any split-HR examples mentioned in notes or visible in the reports.
+- [x] Map each selected example to its source dataset and matching PDF report.
+- [x] Confirm the review set includes examples from `rest`, `rest2`, and `chirp`.
+- [x] Create a durable review artifact, such as a markdown table or CSV, that records:
+  - dataset
+  - subject/report identifier
+  - IC identifier
+  - expected behavior
+  - source file
+  - reason the example is included
 
-### Add dataset-backed acceptance criteria
+### Exit Criteria
 
-Mouse mode should only be considered ready when the following checks are run against the newly added assets:
+- A review set exists on disk.
+- The review set covers HR-positive, non-HR, and split-HR cases.
+- The review set spans all three datasets.
+- Every example in the set is traceable to one of the verification assets above.
 
-- Known HR-positive examples from reviewer notes are classified as `heart` consistently.
-- Examples without regularly spaced PSD peaks are not classified as `heart`.
-- At least a sample from each archive (`rest`, `rest2`, `chirp`) is reviewed so prompt behavior is not tuned to a single recording context.
-- Split-HR examples are included in the review set and correctly handled by the prompt.
+## Phase 1: API And Prompt Plumbing
 
-### Add explicit artifact-to-source mapping
+### Goal
 
-The plan should state that each prompt revision must be justified with source examples from the new assets. In practice:
+Add `classification_mode` so the system can select human or mouse prompts without changing downstream outputs.
 
-- every wording change for `heart` should be traceable to reviewed ICA PDFs and/or notes in the decision CSVs
-- if a heuristic is not supported by the review corpus, it should be marked as provisional rather than treated as a settled rule
+### Checklist
 
-### Phase 2
+- [x] Add `classification_mode: str = "human"` to the public entry points in [`src/icvision/core.py`](/Users/sueo8x/Documents/Github/autocleaneeg-icvision/src/icvision/core.py), [`src/icvision/api.py`](/Users/sueo8x/Documents/Github/autocleaneeg-icvision/src/icvision/api.py), and [`src/icvision/cli.py`](/Users/sueo8x/Documents/Github/autocleaneeg-icvision/src/icvision/cli.py).
+- [x] Update [`src/icvision/compat.py`](/Users/sueo8x/Documents/Github/autocleaneeg-icvision/src/icvision/compat.py) if it mirrors the public API.
+- [x] Centralize prompt resolution in [`src/icvision/config.py`](/Users/sueo8x/Documents/Github/autocleaneeg-icvision/src/icvision/config.py).
+- [x] Ensure both `single` and `strip` layouts are mode-aware.
+- [x] Externalize strip prompts if needed so prompt ownership is explicit by species and layout.
+- [x] Preserve the existing labels, JSON schema, report generation, and exclusion plumbing.
 
-Evaluate on a mouse benchmark set.
+### Exit Criteria
 
-- compare human prompt vs mouse prompt
-- inspect confusion between `brain`, `muscle`, `channel_noise`, `other_artifact`, and `heart`
-- tune prompt wording based on actual failure cases
+- `human` and `mouse` are both valid classification modes.
+- Prompt selection is explicit for both layouts.
+- No downstream schema or label changes are required to run mouse mode.
 
-### Phase 3
+## Phase 2: Mouse Prompt Authoring
 
-Optional species-specific policy.
+### Goal
 
-Possible future changes if needed:
+Write mouse-specific prompts that encode the issue #10 rules and remove human-only assumptions.
 
-- different default confidence threshold for mouse
-- different default `labels_to_exclude`
-- optional mouse-specific labels if evidence shows the shared label set is insufficient
+### Checklist
+
+- [x] Create or revise `mouse` prompts for both `single` and `strip` layouts.
+- [x] Remove human-specific frontal/periocular assumptions where they do not apply to mouse data.
+- [x] Keep the output contract identical to the existing prompts.
+- [x] Encode the required mouse `heart` rules in both layouts:
+  - [x] use PSD as the primary evidence source
+  - [x] look for regularly spaced peaks separated by about `7.5-12.5 Hz`
+  - [x] inspect `1-55 Hz` and `65-100 Hz`
+  - [x] ignore the usually notched `55-65 Hz` band
+  - [x] account for split-HR cases across two ICs
+  - [x] forbid `heart` when regularly spaced heart-rate peaks are absent
+  - [x] do not rely on the short scrolling time-series window for heart detection
+- [x] Keep the prompts conservative when evidence is ambiguous.
+
+### Exit Criteria
+
+- Mouse prompts exist for both layouts.
+- Both prompts encode the same heart-detection policy.
+- Prompt text is aligned with evidence gathered in Phase 0 rather than intuition alone.
+
+## Phase 3: Automated Tests
+
+### Goal
+
+Lock in prompt-selection behavior and prevent regressions in mode plumbing.
+
+### Checklist
+
+- [x] Add tests for `human` single prompt loading.
+- [x] Add tests for `mouse` single prompt loading.
+- [x] Add tests for `human` strip prompt loading.
+- [x] Add tests for `mouse` strip prompt loading.
+- [x] Add tests for invalid `classification_mode`.
+- [x] Update any existing tests affected by the prompt-selection signature changes.
+
+### Exit Criteria
+
+- Automated tests cover prompt selection for both layouts and both modes.
+- Invalid modes fail clearly.
+- Existing behavior remains intact for `human` mode.
+
+## Phase 4: Corpus-Backed Prompt Verification
+
+### Goal
+
+Verify that the mouse prompt behavior is actually supported by the provided corpus.
+
+### Checklist
+
+- [ ] Use the review set from Phase 0 to inspect matching PDF reports and confirm the PSD behavior for each selected case.
+- [ ] Confirm known HR-positive examples show the regularly spaced PSD peaks the prompt describes.
+- [ ] Confirm non-HR controls do not get justified as `heart` when those peaks are absent.
+- [x] Confirm split-HR examples are represented and the prompt language covers them correctly.
+- [x] Review samples from `rest`, `rest2`, and `chirp` so the prompt is not tuned to one recording context.
+- [x] Re-check both `single` and `strip` layouts so heart logic does not diverge by layout.
+- [x] Record which prompt rules were confirmed, which remain provisional, and which examples justify each rule.
+
+### Exit Criteria
+
+- The prompt rules are traceable to reviewed examples from the verification corpus.
+- The issue #10 rule holds: if the PSD lacks regularly spaced heart-rate peaks, the component is not `heart`.
+- Verification results are documented in a durable artifact, not left as tribal knowledge.
+
+## Phase 5: Documentation And Release Readiness
+
+### Goal
+
+Document the feature honestly and declare what is and is not validated in v1.
+
+### Checklist
+
+- [x] Document `--classification-mode` in user-facing docs.
+- [x] State that `human` remains the default.
+- [x] State that `mouse` is prompt-tuned and corpus-checked, but not a new model or a fully separate classifier.
+- [x] Document the verification basis and the current limitations.
+- [x] Confirm again that v1 changes only prompt selection and heuristics, not labels, reports, or exclusion plumbing.
+
+### Exit Criteria
+
+- A user can discover and use mouse mode from the docs.
+- The docs accurately describe scope, caveats, and validation status.
+
+## Phase 6: Post-V1 Evaluation
+
+### Goal
+
+Decide whether prompt-only mouse mode is sufficient or whether the project needs mouse-specific policy changes.
+
+### Checklist
+
+- [ ] Compare `human` vs `mouse` prompts on a larger mouse benchmark set if available.
+- [ ] Inspect confusion among `brain`, `muscle`, `channel_noise`, `other_artifact`, and `heart`.
+- [ ] Decide whether mouse needs different confidence thresholds.
+- [ ] Decide whether mouse needs different default `labels_to_exclude`.
+- [ ] Decide whether the shared label set remains adequate.
+
+### Exit Criteria
+
+- The team has a clear decision on whether prompt-only adaptation is enough.
+- Any follow-on policy changes are captured as separate issues rather than folded into v1 by drift.
 
 ## Risks
 
@@ -241,6 +352,7 @@ Possible future changes if needed:
 2. If mouse topography differs enough, prompt changes alone may not be enough; classification errors may concentrate in `eye` vs `brain` and `muscle` vs `channel_noise`.
 3. If the plots themselves are optimized for human interpretation, prompt changes may underperform until visualization choices are also revisited.
 4. If the reviewed CSV notes and PDF examples are not used systematically, the prompt may overfit to assumptions rather than the available mouse evidence.
+5. If verification only happens on one layout, `single` and `strip` could diverge on `heart` detection even with the same nominal `classification_mode`.
 
 ## Recommendation On Prompt Style
 

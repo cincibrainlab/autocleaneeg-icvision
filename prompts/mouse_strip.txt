@@ -1,0 +1,57 @@
+Classify each of the {n} MOUSE EEG ICA components shown in this grid (labeled {labels}).
+
+Each component shows:
+- Topography map
+- Time series
+- Continuous-data / ERP-style image
+- Power spectrum
+
+Important context:
+- These are mouse ICA components, not human EEG components.
+- Do not rely on human-specific periocular geography such as Fp1/Fp2/F7/F8 rules.
+- Mouse topographies may be compressed, shifted, broad, asymmetric, or less obviously human-like.
+- When the map is ambiguous, weight the PSD and time-series evidence more heavily.
+- If evidence is mixed, prefer "other_artifact" over forcing a confident label.
+- In mouse EEG, be conservative about calling "eye". Human-style ocular labels are often overcalled in rodents.
+- In this mouse setting, also be conservative about calling "brain". Many artifactual ICs can look roughly dipolar or vaguely 1/f-like.
+- If a component could reasonably be explained by heart, muscle, or a mixed/unclear artifact, do NOT label it "eye".
+- If a component could reasonably be explained by heart, muscle, channel noise, or a mixed artifact, do NOT label it "brain".
+
+Mouse heart rules:
+- Mouse heart rate is usually about 7.5-12.5 Hz.
+- For "heart" detection, use the PSD as the primary evidence source.
+- Actively inspect each PSD for repeated, comb-like spacing before deciding on any other label.
+- Look for regularly spaced PSD peaks separated by about 7.5-12.5 Hz across 1-55 Hz and 65-100 Hz.
+- Ignore the usually notched 55-65 Hz band for this check.
+- Sometimes the heart-rate pattern is split across two ICs: one may show the regularly spaced peaks mainly in 1-50 Hz while another shows them mainly in 65-100 Hz.
+- Clear heart-rate spacing does NOT need to extend across the entire spectrum; partial but convincing repeated spacing can still justify "heart".
+- If a component's PSD does not show regularly spaced heart-rate peaks, it is never "heart".
+- Do not use the short scrolling time-series window as primary evidence for heart detection.
+
+Categories:
+- "brain": Reserve for unusually convincing neural components with a spatially coherent topography AND a clearly neural-looking spectrum and time series. A rough dipole or a generic 1/f falloff alone is not enough in mouse data.
+- "eye": Rare in this mouse setting. Reserve for unusually convincing ocular-like components that are clearly rostral/anterior AND dominated by very low frequencies with repeated slow deflections, step-like shifts, or blink-like transients. Anterior emphasis alone is not enough.
+- "muscle": Myogenic artifact, often with elevated high-frequency power, flatter or rising high-frequency spectrum, spiky or irregular time series, and focal or edge-adjacent topography.
+- "heart": PSD shows regularly spaced peaks consistent with mouse heart rate, typically separated by about 7.5-12.5 Hz, including split-HR cases across two ICs.
+- "line_noise": Narrow sharp spectral peak at mains frequency or harmonics, not just a filtering notch or dip.
+- "channel_noise": Extremely focal, implausible single-sensor hot spot or isolated sensor-dominated pattern, usually without a clean dipole and with noisy or unstable signal characteristics.
+- "other_artifact": Artifact or mixed component that does not cleanly fit the categories above, or any ambiguous component where classification is uncertain.
+
+Decision rules:
+- Do not require human-style frontal eye dipoles to call "eye", but still require strong positive ocular evidence.
+- Never call "eye" from weak anteriority, broad low-frequency drift, or map ambiguity alone.
+- If regularly spaced heart-rate PSD peaks are present, prefer "heart" over "eye".
+- If regularly spaced heart-rate PSD peaks are present, prefer "heart" over "brain".
+- If regularly spaced heart-rate PSD peaks are present, prefer "heart" over "other_artifact".
+- Do not demote a component to "other_artifact" just because the topography is imperfect if the PSD shows plausible mouse heart-rate spacing.
+- Mixed components are allowed to still be labeled "heart" when the heart-rate spacing is a dominant or clearly recognizable feature.
+- If elevated high-frequency power, spiky activity, or edge-adjacent/focal contamination is present, prefer "muscle" over "eye".
+- If the component looks artifactual but the case for "eye" is weak, mixed, or indirect, use "other_artifact" instead.
+- Do not call "brain" just because the map looks roughly dipolar or the PSD slopes downward.
+- Favor "brain" only when all three views support it together: coherent topography, convincingly neural time series, and a clearly neural PSD without strong competing artifact evidence.
+- If heart-rate spacing, focal contamination, spiky activity, diffuse noise, or any clear artifact cue is present, do not call "brain".
+- If uncertain between "brain" and any artifact class, prefer the artifact class or "other_artifact", not "brain".
+- Use "other_artifact" as a fallback for unclear artifacts, not as a substitute for plausible "heart".
+
+Respond with JSON array (one object per component):
+{json_example}

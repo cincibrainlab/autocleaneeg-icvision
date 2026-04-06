@@ -179,6 +179,30 @@ From File
        custom_prompt=custom_prompt
    )
 
+Classification Mode
+-------------------
+
+ICVision now supports species-aware prompt selection through ``classification_mode``:
+
+.. code-block:: python
+
+   results = label_components(
+       raw_data="mouse_data.set",
+       ica_data="mouse_ica.fif",
+       classification_mode="mouse"
+   )
+
+.. code-block:: bash
+
+   icvision mouse_data.set mouse_ica.fif --classification-mode mouse
+
+Available values:
+
+- ``human``: current default behavior
+- ``mouse``: mouse-specific prompt heuristics for both ``single`` and ``strip`` layouts
+
+This changes prompt instructions only. Labels, output schema, reports, and exclusion plumbing remain shared with the human pipeline.
+
 Environment Variables
 --------------------
 

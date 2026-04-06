@@ -1,0 +1,12 @@
+Classify this EEG ICA component into ONE category and provide your answer in JSON format:
+
+Categories:
+- "brain": Dipolar central/parietal pattern, 1/f spectrum with possible 6-35Hz peaks
+- "eye": Frontal/periocular dipolar pattern, low-frequency dominated
+- "muscle": Positive spectral slope at high frequencies, edge-focused topography
+- "heart": ~1Hz rhythmic deflections in time series
+- "line_noise": Sharp peak at 50/60Hz
+- "channel_noise": Single isolated focal spot, no dipole
+- "other_artifact": Doesn't fit above categories
+
+Respond with JSON: {"label": "category_name", "confidence": 0.0-1.0, "reason": "brief explanation"}
