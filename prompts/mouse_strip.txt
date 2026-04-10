@@ -9,20 +9,25 @@ Each component shows:
 Important context:
 - These are mouse ICA components, not human EEG components.
 - Mouse topographies may be compressed, shifted, broad, asymmetric, or less obviously human-like.
-- When the map is ambiguous, weight the PSD and time-series evidence more heavily.
+- Use the PSD as the main evidence source for the labels you are actively removing here, especially "heart" and "muscle".
+- Give more weight to the PSD when the topography is ambiguous.
+- Topography is still useful for identifying channel-noise-like patterns, but for heart and muscle the PSD should usually drive the label.
+- The short time-series panel shows only the first 2.5 seconds and should rarely determine the label by itself.
+- Use the time series only as weak supporting evidence, mainly after the PSD has already suggested a label.
 - Do not force a confident label from weak evidence, but do not demote a plausible cardiac component to "other_artifact" just because it is mixed or visually imperfect.
-- In mouse EEG, be extremely conservative about calling "eye". In this mouse corpus, eye-like components are essentially absent while heart and muscle are common.
+- In these skull-mounted mouse montages, never call a component "eye". Distinct ocular ICA components should not occur here, while heart and muscle are common.
+- Because the electrodes are implanted on top of the skull and the eyes are lateral, any eye-squeeze-related activity should be treated as facial muscle rather than as a distinct ocular ICA component.
 - In this mouse setting, also be conservative about calling "brain". Many artifactual ICs can look roughly dipolar or vaguely 1/f-like.
 - If a component could reasonably be explained by heart, muscle, or a mixed/unclear artifact, do NOT label it "eye".
 - If a component could reasonably be explained by heart, muscle, channel noise, or a mixed artifact, do NOT label it "brain".
 - When in doubt, the main mouse confusion to resolve is not brain-vs-eye. It is heart-vs-muscle-vs-brain.
 
 Mouse heart rules:
-- Mouse heart rate is usually about 7.5-12.5 Hz.
+- Mouse heart rate is usually about 7-15 Hz.
 - For "heart" detection, use the PSD as the primary evidence source.
 - Actively inspect each PSD for repeated, comb-like spacing before deciding on any other label.
 - Reviewer-confirmed mouse HR components repeatedly show comb-like PSD peaks at roughly regular spacing rather than a single neural band peak.
-- Look for regularly spaced PSD peaks separated by about 7.5-12.5 Hz across 1-55 Hz and 65-100 Hz.
+- Look for regularly spaced PSD peaks separated by about 7-15 Hz across 1-55 Hz and 65-100 Hz.
 - Ignore the usually notched 55-65 Hz band for this check.
 - Sometimes the heart-rate pattern is split across two ICs: one may show the regularly spaced peaks mainly in 1-50 Hz while another shows them mainly in 65-100 Hz.
 - Some debated brain-vs-HR mouse cases show the most useful HR evidence in 65-100 Hz rather than the lower band.
@@ -30,7 +35,7 @@ Mouse heart rules:
 - A convincing partial comb can be enough: if several peaks recur at roughly heart-rate spacing, that supports "heart" even without a perfect full-spectrum ladder.
 - If a component's PSD does not show regularly spaced heart-rate peaks, it is never "heart".
 - Strong HR examples can still have broad, asymmetric, lateralized, dipolar, or otherwise unhelpful topographies, so topography should not veto "heart" when the PSD comb is obvious.
-- If the PSD looks brain-like at first glance but also contains repeated near-regular heart-rate spacing, treat that as evidence for "heart", not "brain".
+- If the PSD shows a neural-looking overall slope but also contains repeated near-regular heart-rate spacing, treat that as evidence for "heart", not "brain".
 - Heart often shows a repeating spike train or regular sharp deflections in the short scrolling trace and repeating stripe-like structure in the continuous-data image. Use these as supporting evidence, but only after the PSD check.
 - Do not use the short scrolling time-series window as primary evidence for heart detection.
 - Strong mouse HR examples often look like repeated PSD bumps or peaks marching across the spectrum, not a single isolated neural rhythm.
@@ -38,18 +43,17 @@ Mouse heart rules:
 - Mixed HR-plus-muscle cases are common. In these, the PSD can still show clear heart-rate spacing even when the time series is noisy or spiky.
 
 Categories:
-- "brain": Reserve for unusually convincing neural components with a spatially coherent topography AND a clearly neural-looking spectrum and time series. Clear brain examples are better distinguished by limited-band rhythmic structure or specific neural peaks, not by generic dipoles plus a downward PSD slope.
-- "eye": Extremely rare in this mouse setting. Ocular labels appear essentially absent across this mouse corpus, so use this only as a last-resort label for unusually convincing ocular-like components with clear low-frequency blink-like or slow-shift morphology that is not better explained by heart, muscle, or mixed artifact. Anterior emphasis alone is not enough.
+- "brain": Reserve for unusually convincing neural components with a spatially coherent topography and a clearly neural-looking PSD. Clear brain examples are better distinguished by limited-band rhythmic structure or specific neural peaks, not by generic dipoles plus a downward PSD slope. Use the short time series only as secondary support.
+- "eye": Do not use this label for these skull-mounted mouse montages.
 - "muscle": Myogenic artifact, often with elevated high-frequency power, flatter or rising high-frequency spectrum, spiky or irregular time series, and focal or edge-adjacent topography.
-- "heart": PSD shows regularly spaced peaks consistent with mouse heart rate, typically separated by about 7.5-12.5 Hz, including split-HR cases across two ICs.
+- "heart": PSD shows regularly spaced peaks consistent with mouse heart rate, typically separated by about 7-15 Hz, including split-HR cases across two ICs.
 - "line_noise": Narrow sharp spectral peak at mains frequency or harmonics, not just a filtering notch or dip.
 - "channel_noise": Extremely focal, implausible single-sensor hot spot or isolated sensor-dominated pattern, usually without a clean dipole and with noisy or unstable signal characteristics.
 - "other_artifact": Artifact or mixed component that does not cleanly fit the categories above, or any ambiguous component where classification is uncertain.
 
 Decision rules:
-- Decide in this order for each component: first heart, then muscle/channel_noise, then brain, and only then eye if unusually compelling.
-- Never call "eye" from weak anteriority, broad low-frequency drift, or map ambiguity alone.
-- Only use "eye" when the ocular explanation is directly visible and clearly stronger than heart, muscle, channel noise, and mixed artifact. In this mouse corpus, that should be rare.
+- Decide in this order for each component: first heart, then muscle/channel_noise, then brain, and then other_artifact if needed.
+- Treat any plausible eyelid-squeeze or periocular-like activity as "muscle" rather than "eye".
 - If regularly spaced heart-rate PSD peaks are present, prefer "heart" over "eye".
 - If regularly spaced heart-rate PSD peaks are present, prefer "heart" over "brain".
 - If regularly spaced heart-rate PSD peaks are present, prefer "heart" over "other_artifact".
@@ -60,8 +64,9 @@ Decision rules:
 - If elevated high-frequency power, spiky activity, or edge-adjacent/focal contamination is present, prefer "muscle" over "eye".
 - If elevated high-frequency power is present but the PSD also shows a clear cardiac comb, choose "heart" rather than "muscle".
 - If the component looks artifactual but the case for "eye" is weak, mixed, or indirect, use "other_artifact" instead.
-- Do not call "brain" just because the map looks roughly dipolar or the PSD slopes downward.
-- Favor "brain" only when all three views support it together: coherent topography, convincingly neural time series, and a clearly neural PSD without strong competing artifact evidence.
+- Do not call "brain" just because the topography map looks roughly dipolar or the PSD slopes downward.
+- Do not let a messy or noisy first 2.5-second time-series segment override a strong PSD-based label.
+- Favor "brain" only when the PSD is convincingly neural and the topography is coherent, without strong competing artifact evidence. The short time series may support that judgment but should rarely decide it.
 - For mouse brain components, prefer single or limited-band neural peaks/rhythms (for example alpha-, theta-, or delta-like features) over repeated comb-like peaks. A repeated comb pattern is not brain.
 - If the PSD shows many similarly spaced peaks across a wide frequency range, that is evidence against "brain".
 - If a component sits on the brain-vs-heart boundary and the PSD has repeated near-regular spacing, break the tie toward "heart".

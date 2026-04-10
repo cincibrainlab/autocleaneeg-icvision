@@ -46,7 +46,7 @@ It combines:
 
 ### Still Provisional
 
-- Direct visual confirmation that each selected PSD shows regularly spaced peaks separated by about `7.5-12.5 Hz`.
+- Direct visual confirmation that each selected PSD shows regularly spaced peaks separated by about `7-15 Hz`.
 - Direct visual confirmation that the selected non-HR controls lack those regularly spaced peaks.
 - Direct model-vs-model benchmark results comparing `classification_mode="human"` against `classification_mode="mouse"` on the same corpus.
 
@@ -63,7 +63,7 @@ Additional PDF-by-PDF inspection of reviewer-backed examples reinforced the foll
 - Mixed HR-plus-muscle cases are common. In these, the PSD can still show clear heart-rate spacing even when the time series is noisy or spiky.
 - Some debated brain-vs-HR cases in `rest2` show the most useful HR evidence in `65-100Hz`, supporting the existing high-band mouse HR rule.
 - Clear brain examples are better distinguished by limited-band rhythmic structure or specific neural peaks, not by generic dipoles plus a downward PSD slope.
-- Ocular labels appear to be essentially absent from the human reviewer notes across the mouse corpus, which supports making `eye` a last-resort label.
+- For skull-mounted mouse montages like MEA-30, ocular ICA components should effectively not occur; if eyelid squeezing contributes signal, it is more likely to present as `muscle` than as a distinct `eye` component.
 
 Representative visual examples reviewed directly from the PDF archives:
 

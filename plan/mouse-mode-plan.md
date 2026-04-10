@@ -124,9 +124,9 @@ Mouse mode should change the reasoning rules:
 
 The plan should treat these as required prompt rules for `mouse` mode, not optional guidance:
 
-- mouse heart rate is usually about `7.5-12.5 Hz`
+- mouse heart rate is usually about `7-15 Hz`
 - for `heart` detection, use the PSD as the primary evidence source
-- look for regularly spaced PSD peaks separated by about `7.5-12.5 Hz` across `1-55 Hz` and `65-100 Hz`
+- look for regularly spaced PSD peaks separated by about `7-15 Hz` across `1-55 Hz` and `65-100 Hz`
 - ignore the usually notched `55-65 Hz` band for this check
 - sometimes the heart-rate pattern is split across two ICs: one may carry the regularly spaced peaks in `1-50 Hz`, while another carries them in `65-100 Hz`
 - if an IC's PSD does not show regularly spaced heart-rate peaks, it is never `heart`
@@ -251,7 +251,7 @@ Write mouse-specific prompts that encode the issue #10 rules and remove human-on
 - [x] Keep the output contract identical to the existing prompts.
 - [x] Encode the required mouse `heart` rules in both layouts:
   - [x] use PSD as the primary evidence source
-  - [x] look for regularly spaced peaks separated by about `7.5-12.5 Hz`
+  - [x] look for regularly spaced peaks separated by about `7-15 Hz`
   - [x] inspect `1-55 Hz` and `65-100 Hz`
   - [x] ignore the usually notched `55-65 Hz` band
   - [x] account for split-HR cases across two ICs
@@ -379,9 +379,9 @@ Important context:
 - Do NOT rely on human-specific electrode heuristics such as requiring classic Fp1/Fp2/F7/F8 periocular patterns.
 - Give more weight to the combination of time series, spectrum, and whether the spatial map looks biologically plausible, rather than expecting human-like scalp geometry.
 - If the pattern is ambiguous, prefer "other_artifact" over forcing a confident label.
-- Mouse heart rate is usually about 7.5-12.5 Hz (beats per second).
+- Mouse heart rate is usually about 7-15 Hz (beats per second).
 - For HEART detection, use the PSD as the primary evidence source.
-- In the PSD, look for regularly spaced peaks separated by about 7.5-12.5 Hz across the visible frequency range, especially within 1-55 Hz and 65-100 Hz. The 55-65 Hz region is often notched and should not be used.
+- In the PSD, look for regularly spaced peaks separated by about 7-15 Hz across the visible frequency range, especially within 1-55 Hz and 65-100 Hz. The 55-65 Hz region is often notched and should not be used.
 - Sometimes the heart pattern is split across 2 ICs: one IC may show regularly spaced heart-rate peaks mainly between 1-50 Hz, while another IC may show regularly spaced heart-rate peaks mainly between 65-100 Hz.
 - If an IC's PSD shows no signs of regularly spaced heart-rate peaks, it is NEVER a "heart" component.
 - Do NOT use the short top-right scrolling time-series window for heart detection because it only shows the first 2.5 seconds and can be misleading if the beginning of the file contains artifact.
@@ -390,7 +390,7 @@ Categories:
 - "brain": Spatially plausible neural topography with a smooth dipolar or distributed field pattern, and a generally 1/f-like spectrum that decreases with frequency. May show rhythmic structure rather than abrupt artifact transients.
 - "eye": Ocular-like component, usually strongest in anterior/rostral channels, often dominated by very low frequencies, with slow deflections, step-like shifts, or blink-like transients in the time series. Topography may be broad, asymmetric, or less classically dipolar than human eye ICs.
 - "muscle": Myogenic artifact, often with relatively elevated high-frequency power, flatter or rising high-frequency spectrum, spiky/irregular time series, and focal or edge/skull-adjacent topography. If high-frequency activity is the clearest feature, favor "muscle".
-- "heart": PSD shows regularly spaced peaks consistent with mouse heart rate, typically separated by about 7.5-12.5 Hz. This may appear in 1-55 Hz, 65-100 Hz, or be split across two different ICs. Do not require human-like ~1 Hz cardiac timing.
+- "heart": PSD shows regularly spaced peaks consistent with mouse heart rate, typically separated by about 7-15 Hz. This may appear in 1-55 Hz, 65-100 Hz, or be split across two different ICs. Do not require human-like ~1 Hz cardiac timing.
 - "line_noise": Narrow sharp spectral peak at mains frequency or harmonics, not just a notch or dip from filtering.
 - "channel_noise": Extremely focal, implausible single-channel hot spot or isolated sensor-dominated pattern, usually without a clean dipole and with noisy, erratic, or unstable signal characteristics.
 - "other_artifact": Artifact or mixed component that does not cleanly fit the categories above, or any ambiguous component where classification is uncertain.
@@ -426,9 +426,9 @@ Important context:
 - Do NOT depend on human periocular electrode-name rules.
 - Use spectrum and time-series evidence heavily when topography is ambiguous.
 - If a component is ambiguous, prefer "other_artifact" over a forced label.
-- Mouse heart rate is usually about 7.5-12.5 Hz.
+- Mouse heart rate is usually about 7-15 Hz.
 - For HEART detection, use the PSD as the primary evidence source.
-- Look for regularly spaced PSD peaks separated by about 7.5-12.5 Hz across 1-55 Hz and 65-100 Hz. The 55-65 Hz range is commonly notched and is not reliable for this check.
+- Look for regularly spaced PSD peaks separated by about 7-15 Hz across 1-55 Hz and 65-100 Hz. The 55-65 Hz range is commonly notched and is not reliable for this check.
 - Sometimes mouse heart activity is split across 2 ICs: one component may carry the regularly spaced peaks in 1-50 Hz, while another carries them in 65-100 Hz.
 - If a component's PSD does not show regularly spaced heart-rate peaks, it is NEVER "heart".
 - Do NOT use the short top-right scrolling time-series window for heart detection.
@@ -437,7 +437,7 @@ Categories:
 - "brain": Spatially coherent neural-looking field pattern with a generally 1/f-like spectrum and non-artifactual temporal behavior
 - "eye": Anterior/rostral ocular-like component with very low-frequency dominance and slow or blink-like deflections; may be broad or asymmetric
 - "muscle": High-frequency or flatter/rising high-frequency spectrum with spiky/irregular temporal activity, often focal or edge/skull-adjacent
-- "heart": PSD shows regularly spaced peaks consistent with mouse heart rate, typically separated by about 7.5-12.5 Hz; this may appear in 1-55 Hz, 65-100 Hz, or across two separate ICs
+- "heart": PSD shows regularly spaced peaks consistent with mouse heart rate, typically separated by about 7-15 Hz; this may appear in 1-55 Hz, 65-100 Hz, or across two separate ICs
 - "line_noise": Sharp narrow spectral peak at mains frequency or harmonics
 - "channel_noise": Extremely focal single-channel pattern with implausible topography and noisy/unstable signal
 - "other_artifact": Mixed, unclear, or uncategorizable artifact
