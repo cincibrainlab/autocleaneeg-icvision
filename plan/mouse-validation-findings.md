@@ -53,3 +53,22 @@ It combines:
 ## Current Conclusion
 
 The repo now has enough corpus-backed evidence to justify the mouse prompt rules and the separate `classification_mode="mouse"` path. The remaining open work is empirical benchmark validation with live model inference and deeper visual confirmation of PSD peak spacing across a broader set.
+
+## Deeper Visual Review Notes
+
+Additional PDF-by-PDF inspection of reviewer-backed examples reinforced the following prompt heuristics:
+
+- Reviewer-confirmed HR-positive components repeatedly show comb-like PSD peaks at roughly regular spacing rather than a single neural band peak.
+- Strong HR examples can still have broad, asymmetric, lateralized, or otherwise unhelpful topographies, so topography should not veto `heart` when the PSD comb is obvious.
+- Mixed HR-plus-muscle cases are common. In these, the PSD can still show clear heart-rate spacing even when the time series is noisy or spiky.
+- Some debated brain-vs-HR cases in `rest2` show the most useful HR evidence in `65-100Hz`, supporting the existing high-band mouse HR rule.
+- Clear brain examples are better distinguished by limited-band rhythmic structure or specific neural peaks, not by generic dipoles plus a downward PSD slope.
+- Ocular labels appear to be essentially absent from the human reviewer notes across the mouse corpus, which supports making `eye` a last-resort label.
+
+Representative visual examples reviewed directly from the PDF archives:
+
+- `chirp`: `allego_13__uid1030-15-47-37`, reviewer HR-positive `IC3`, reviewer mixed HR `IC11`
+- `rest`: `allego_12__uid0204-14-35-29`, reviewer HR-positive `IC2` and `IC12`
+- `rest`: `allego_12__uid0209-14-00-51`, reviewer HR/mixed examples `IC2`, `IC6`, `IC8`
+- `rest2`: `allego_12__uid1218-16-44-29`, reviewer HR-positive `IC5` and `IC9`
+- `rest2`: `allego_8__uid1218-15-44-10`, debated brain-vs-HR `IC0/1/3`, HR-positive `IC5`, mixed HR `IC18`
