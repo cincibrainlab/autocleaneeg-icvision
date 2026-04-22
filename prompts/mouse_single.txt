@@ -26,14 +26,18 @@ Mouse heart rules:
 - Some debated brain-vs-HR mouse cases show the most useful HR evidence in 65-100 Hz rather than the lower band.
 - Clear heart-rate spacing does NOT need to extend across the entire spectrum; partial but convincing repeated spacing can still justify "heart".
 - A convincing partial comb can be enough: if several peaks recur at roughly heart-rate spacing, that supports "heart" even without a perfect full-spectrum ladder.
+- Do NOT require a textbook full comb before using "heart". Subtle but repeated near-regular bumps at roughly 7-15 Hz spacing can still be heart, especially when several peaks line up.
+- Mouse HR can look weaker or blurrier than expected after preprocessing. If the spacing is still repeatedly visible, do not reject "heart" just because the peaks are small, broad, or imperfect.
 - If the PSD does not show regularly spaced heart-rate peaks, the component is never "heart".
 - Strong HR examples can still have broad, asymmetric, lateralized, dipolar, or otherwise unhelpful topographies, so topography should not veto "heart" when the PSD comb is obvious.
 - If the PSD shows a neural-looking overall slope but also contains repeated near-regular heart-rate spacing, treat that as evidence for "heart", not "brain".
 - Heart often shows a repeating spike train or regular sharp deflections in the short scrolling trace and repeating stripe-like structure in the continuous-data image. Use these as supporting evidence, but only after the PSD check.
+- Repeating horizontal stripe/band structure in the continuous-data image is important supporting evidence for heart, including mixed HR-plus-muscle cases. Do not ignore this just because the time series looks noisy.
 - Do not use the short scrolling time-series window as primary evidence for heart detection.
 - Strong mouse HR examples often look like repeated PSD bumps or peaks marching across the spectrum, not a single isolated neural rhythm.
 - A single isolated spectral bump or one dominant rhythm without repeated spacing is not enough for "heart".
 - Mixed HR-plus-muscle cases are common. In these, the PSD can still show clear heart-rate spacing even when the time series is noisy or spiky.
+- In mixed HR-plus-muscle cases, choose "heart" if repeated heart-rate spacing or stripe-like periodicity is still clearly recognizable. Do not default to "muscle" merely because high-frequency contamination is present too.
 
 Categories:
 - "brain": Reserve for unusually convincing neural components with a spatially coherent topography and a clearly neural-looking PSD. Clear brain examples are better distinguished by limited-band rhythmic structure or specific neural peaks, not by generic dipoles plus a downward PSD slope. Use the short time series only as secondary support.
@@ -51,9 +55,11 @@ Decision rules:
 - If regularly spaced heart-rate PSD peaks are present, prefer "heart" over "brain".
 - If regularly spaced heart-rate PSD peaks are present, prefer "heart" over "other_artifact".
 - If regularly spaced heart-rate PSD peaks are present, prefer "heart" over "muscle" unless broadband myogenic contamination clearly dominates and the HR comb is weak.
+- If repeated heart-rate spacing is present and the continuous-data image also shows periodic stripe/band structure, prefer "heart" over "muscle" even when there is some high-frequency contamination.
 - Do not demote a component to "other_artifact" just because the topography is imperfect if the PSD shows plausible mouse heart-rate spacing.
 - Mixed components are allowed to still be labeled "heart" when the heart-rate spacing is a dominant or clearly recognizable feature.
 - In this mouse corpus, many true HR components were previously mislabeled as "brain" or "muscle". Do not repeat that mistake when the PSD comb is obvious.
+- In this mouse corpus, many true HR components were previously mislabeled as "brain" or "muscle" because the HR evidence was partial rather than textbook. If the spacing is repeatedly suggested, break the tie toward "heart".
 - If elevated high-frequency power, spiky activity, or edge-adjacent/focal contamination is present, prefer "muscle" over "eye".
 - If elevated high-frequency power is present but the PSD also shows a clear cardiac comb, choose "heart" rather than "muscle".
 - If the component looks artifactual but the case for "eye" is weak, mixed, or indirect, use "other_artifact" instead.
