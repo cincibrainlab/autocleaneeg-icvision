@@ -6,6 +6,7 @@ the entire ICA component classification workflow using OpenAI Vision API.
 """
 
 import logging
+import os
 from pathlib import Path
 from typing import List, Optional, Tuple, Union
 
@@ -16,6 +17,11 @@ from .api import classify_components_batch
 from .config import DEFAULT_EXCLUDE_LABELS
 from .plotting import save_ica_data
 from .reports import generate_classification_report
+from .transport_policy import (
+    TransportPolicyError,
+    validate_raw_environment_policy,
+    validate_transport_policy,
+)
 from .utils import (
     check_eeglab_ica_availability,
     create_output_directory,
@@ -53,6 +59,8 @@ def label_components(
     layout: str = "single",
     strip_size: int = 9,
     reasoning_effort: Optional[str] = None,
+    transport: str = "sdk",
+    endpoint_profile: Optional[str] = None,
 ) -> Tuple[mne.io.Raw, mne.preprocessing.ICA, pd.DataFrame]:
     """
     Classify ICA components using OpenAI Vision API and apply artifact rejection.
@@ -131,9 +139,15 @@ def label_components(
         >>> print(f"Processed {len(results)} components")
         >>> print(f"Excluded {results['exclude_vision'].sum()} artifacts")
     """
-    logger.debug("Starting ICVision component classification workflow")
+    selection = validate_transport_policy(transport, base_url, endpoint_profile)
+    if selection.transport == "raw":
+        if api_key is not None:
+            raise TransportPolicyError("Raw transport does not accept api_key in Gate 0.")
+        validate_raw_environment_policy(os.environ)
+        raise RuntimeError("Raw transport is not enabled in Gate 0.")
 
     # Suppress MNE montage warnings for cleaner output
+    logger.debug("Starting ICVision component classification workflow")
     # These warnings about EOG channel positions don't affect ICA classification
     import warnings
 

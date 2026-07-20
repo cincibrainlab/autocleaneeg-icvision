@@ -1,7 +1,8 @@
-.PHONY: help install install-dev lint format test coverage clean build publish docs docs-clean docs-live
+.PHONY: help install install-dev lint format test test-openai-gate0 test-openai-compat test-openai-modernization coverage clean build publish docs docs-clean docs-live
 
 # Variables
 PYTHON = python3
+OPENAI_PYTHON = python
 PIP = $(PYTHON) -m pip
 VENV_DIR = .venv
 SRC_DIR = src/icvision
@@ -17,6 +18,9 @@ help:
 	@echo "  lint            Run linters (flake8, mypy)."
 	@echo "  format          Format code (black, isort)."
 	@echo "  test            Run tests (pytest)."
+	@echo "  test-openai-gate0 Run exact Gate 0 transport-policy tests."
+	@echo "  test-openai-compat Run affected legacy SDK/API compatibility tests."
+	@echo "  test-openai-modernization Run Gate 0 and compatibility tests."
 	@echo "  coverage        Run tests and generate a coverage report."
 	@echo "  clean           Remove build artifacts, bytecode, and cache files."
 	@echo "  build           Build the package (sdist and wheel)."
@@ -51,6 +55,16 @@ format:
 test:
 	@echo "Running tests..."
 	pytest $(TEST_DIR)
+
+
+test-openai-gate0:
+	$(OPENAI_PYTHON) -B -m pytest tests/test_transport_policy.py -q --maxfail=1 --no-cov -p no:cacheprovider
+
+test-openai-compat:
+	$(OPENAI_PYTHON) -B -m pytest tests/test_core.py tests/test_phase3_cli_api.py tests/test_phase4_retry.py tests/test_strip_compatibility.py --deselect=tests/test_core.py::test_label_components_custom_params -q --maxfail=1 --no-cov -p no:cacheprovider
+
+test-openai-modernization:
+	$(OPENAI_PYTHON) -B -m pytest tests/test_transport_policy.py tests/test_core.py tests/test_phase3_cli_api.py tests/test_phase4_retry.py tests/test_strip_compatibility.py --deselect=tests/test_core.py::test_label_components_custom_params -q --maxfail=1 --no-cov -p no:cacheprovider
 
 coverage: 
 	@echo "Running tests and generating coverage report..."

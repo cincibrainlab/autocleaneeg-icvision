@@ -8,6 +8,7 @@ classification parameters directly from the command line.
 
 import argparse
 import logging
+import os
 import sys
 from pathlib import Path
 
@@ -17,6 +18,11 @@ from . import __version__
 from .cli_formatter import CLIFormatter, print_error, print_info, print_success
 from .config import DEFAULT_CONFIG
 from .core import label_components
+from .transport_policy import (
+    TransportPolicyError,
+    validate_raw_environment_policy,
+    validate_transport_policy,
+)
 from .utils import format_summary_stats
 
 # Set up basic logging for CLI; can be overridden by verbose flag
@@ -145,6 +151,19 @@ Examples:
         "If not provided, uses OPENAI_BASE_URL env variable or OpenAI default.",
     )
 
+    api_group.add_argument(
+        "--transport",
+        type=str,
+        default="sdk",
+        help="Transport lane: sdk (default) or raw (Gate 0 validation only).",
+    )
+    api_group.add_argument(
+        "--endpoint-profile",
+        type=str,
+        default=None,
+        help="Named endpoint profile required by the raw transport lane.",
+    )
+
     # Classification parameters
     class_group = parser.add_argument_group("Classification Parameters")
     class_group.add_argument(
@@ -248,6 +267,16 @@ Examples:
     args = parser.parse_args()
 
     # Setup logging level based on verbose flag
+    try:
+        selection = validate_transport_policy(args.transport, args.base_url, args.endpoint_profile)
+        if selection.transport == "raw":
+            if args.api_key is not None:
+                parser.error("Raw transport does not accept --api-key in Gate 0.")
+            validate_raw_environment_policy(os.environ)
+            parser.error("Raw transport is not enabled in Gate 0.")
+    except TransportPolicyError as error:
+        parser.error(str(error))
+
     setup_cli_logging(args.verbose)
 
     # Load custom prompt if provided
@@ -315,6 +344,8 @@ Examples:
             layout=args.layout,
             strip_size=args.strip_size,
             reasoning_effort=args.reasoning_effort,
+            transport=args.transport,
+            endpoint_profile=args.endpoint_profile,
         )
 
         # Determine output path
