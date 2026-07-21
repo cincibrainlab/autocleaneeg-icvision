@@ -11,7 +11,7 @@ class TransportPolicyError(ValueError):
 
 @dataclass(frozen=True)
 class EndpointProfile:
-    """Reviewed immutable facts for one raw transport endpoint."""
+    """Reviewed immutable facts for the sole raw ICVision gateway."""
 
     name: str
     scheme: str
@@ -33,21 +33,24 @@ class TransportSelection:
     endpoint_profile: Optional[EndpointProfile] = None
 
 
-OPENAI_RESPONSES_PROFILE = EndpointProfile(
-    name="openai-responses",
+CLINCOG_RESPONSES_PROFILE = EndpointProfile(
+    name="clincog-responses",
     scheme="https",
-    host="api.openai.com",
+    host="ai.clincognition.com",
     port=443,
     path="/v1/responses",
-    credential_environment="OPENAI_API_KEY",
+    credential_environment="ICVISION_GATEWAY_CREDENTIAL",
     direct_connection=True,
     deny_redirects=True,
     require_system_ca=True,
     require_hostname_verification=True,
 )
 
+# Compatibility import name only; it does not identify an OpenAI endpoint.
+OPENAI_RESPONSES_PROFILE = CLINCOG_RESPONSES_PROFILE
+
 ENDPOINT_PROFILES: Mapping[str, EndpointProfile] = MappingProxyType(
-    {OPENAI_RESPONSES_PROFILE.name: OPENAI_RESPONSES_PROFILE}
+    {CLINCOG_RESPONSES_PROFILE.name: CLINCOG_RESPONSES_PROFILE}
 )
 
 
@@ -68,7 +71,7 @@ def validate_transport_policy(
     if base_url is not None:
         raise TransportPolicyError("Raw transport does not accept base_url.")
     if endpoint_profile is None:
-        raise TransportPolicyError("Raw transport requires endpoint_profile='openai-responses'.")
+        raise TransportPolicyError("Raw transport requires endpoint_profile='clincog-responses'.")
     if not isinstance(endpoint_profile, str) or endpoint_profile not in ENDPOINT_PROFILES:
         raise TransportPolicyError("Raw transport endpoint profile is not recognized.")
 
@@ -89,4 +92,23 @@ def raw_credential_environment(selection: TransportSelection) -> str:
         profile is reviewed_profile for reviewed_profile in ENDPOINT_PROFILES.values()
     ):
         raise TransportPolicyError("A validated raw transport selection is required.")
+    return profile.credential_environment
+
+
+def validate_raw_gateway_profile(
+    transport: object,
+    base_url: object,
+    endpoint_profile: object,
+) -> EndpointProfile:
+    """Validate and return the fixed raw gateway profile."""
+    selection = validate_transport_policy(transport, base_url, endpoint_profile)
+    if selection.transport != "raw" or selection.endpoint_profile is None:
+        raise TransportPolicyError("A validated raw transport selection is required.")
+    return selection.endpoint_profile
+
+
+def raw_gateway_credential_environment(profile: EndpointProfile) -> str:
+    """Expose only the reviewed injected credential variable."""
+    if profile is not CLINCOG_RESPONSES_PROFILE:
+        raise TransportPolicyError("A reviewed gateway profile is required.")
     return profile.credential_environment
