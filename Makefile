@@ -1,4 +1,4 @@
-.PHONY: help install install-dev lint format test coverage clean build publish docs docs-clean docs-live
+.PHONY: help install install-dev lint format test coverage clean build publish docs docs-clean docs-live reviewed-patch
 
 # Variables
 PYTHON = python3
@@ -24,6 +24,7 @@ help:
 	@echo "  docs            Build documentation with Sphinx."
 	@echo "  docs-clean      Clean documentation build files."
 	@echo "  docs-live       Start live documentation server with auto-reload."
+	@echo "  reviewed-patch  Safely apply one independently reviewed patch; this does not fix the Codex Windows sandbox."
 
 # Installation
 install:
@@ -98,4 +99,14 @@ docs-live:
 	else \
 		@echo "Error: docs directory or docs/Makefile not found."; \
 		exit 1; \
-	fi 
+	fi
+# Operational workaround only: this does not repair the Codex Windows split-root sandbox.
+# Usage: make reviewed-patch REPOSITORY="C:/path/to/repo" MANIFEST="C:/path/to/repo/candidate.json" PATCH="C:/path/to/repo/candidate.patch"
+# The canonical runner validates repository identity, patch hash, paths, clean state,
+# and git apply --check, then prompts for an independently delivered reviewer digest.
+PWSH ?= pwsh
+REVIEWED_PATCH_RUNNER ?= $(USERPROFILE)/.codex/skills/ameenahs-dev-team/scripts/invoke-reviewed-patch.ps1
+
+reviewed-patch:
+	@test -n "$(REPOSITORY)" && test -n "$(MANIFEST)" && test -n "$(PATCH)" || (echo "Usage: make reviewed-patch REPOSITORY=... MANIFEST=... PATCH=..."; exit 2)
+	$(PWSH) -NoProfile -File "$(REVIEWED_PATCH_RUNNER)" -RepositoryPath "$(REPOSITORY)" -ManifestPath "$(MANIFEST)" -PatchPath "$(PATCH)"
