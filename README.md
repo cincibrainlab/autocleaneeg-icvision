@@ -9,9 +9,33 @@ Automated ICA component classification for EEG data using OpenAI's Vision API.
 
 ## Overview
 
-ICVision automates the tedious process of classifying ICA components from EEG data by generating component visualizations and sending them to OpenAI's Vision API for intelligent artifact identification.
+ICVision classifies ICA components by rendering component visualizations and sending those images to a vision model. Classification is observational: it returns labels and supporting metadata without modifying the Raw EEG or fitted ICA objects.
 
-**Workflow**: Raw EEG + ICA → Generate component plots → OpenAI Vision classification → Automated artifact removal → Clean EEG data
+```mermaid
+flowchart LR
+    A["Existing Raw EEG + fitted ICA"] --> B["Render one IC image"]
+    B --> C["Classify with the governed model"]
+    C --> D["Validate the structured result"]
+    D --> E["Return label + confidence + provenance"]
+    A -. "read only" .-> E
+```
+
+Applying exclusions or producing cleaned EEG is a separate downstream decision. The legacy SDK workflow still supports that behavior for compatibility, but it is not part of the raw Responses classification contract.
+
+### Minimal delivery lifecycle
+
+```mermaid
+flowchart LR
+    A["Define observer-only contract"] --> B["Implement classifier"]
+    B --> C["Run offline tests"]
+    C --> D["Independent review"]
+    D --> E["Optional authorized live smoke test"]
+    E --> F["Merge"]
+    C -- "failure" --> B
+    D -- "defect" --> B
+```
+
+The classifier owns one image request, strict response validation, sanitized failures, and classification metadata. It does not own component exclusion, ICA mutation, EEG cleaning, report generation, or saving scientific data.
 
 **Key Features**:
 - Automated classification of 7 component types (brain, eye, muscle, heart, line noise, channel noise, other)

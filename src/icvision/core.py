@@ -102,6 +102,11 @@ def _label_components_raw_review_only(
     component_indices: List[int],
     psd_fmax: Optional[float],
 ) -> Tuple[object, object, pd.DataFrame]:
+    """Classify one component without changing Raw EEG or fitted ICA state.
+
+    The returned Raw and ICA objects preserve the legacy ``label_components``
+    tuple shape. They are pass-through references, not classification outputs.
+    """
     started = time.monotonic()
     component_index = component_indices[0]
 
@@ -183,9 +188,14 @@ def label_components(
     transport: str = "sdk",
 ) -> Tuple[mne.io.Raw, mne.preprocessing.ICA, pd.DataFrame]:
     """
-    Classify ICA components using OpenAI Vision API and apply artifact rejection.
+    Classify ICA components using an observer-only or legacy workflow.
 
-    This is the main function of ICVision that orchestrates the entire workflow:
+    ``transport="raw"`` is observer-only: it renders one component, returns a
+    validated classification, and never changes Raw EEG or fitted ICA state.
+    ``transport="sdk"`` preserves the legacy behavior described below,
+    including optional exclusion, saving, and reporting.
+
+    The legacy SDK workflow:
     1. Load raw EEG and ICA data from files or objects
     2. Generate component visualizations
     3. Classify components using OpenAI Vision API
@@ -222,10 +232,10 @@ def label_components(
         strip_size: Number of components per strip image when layout='strip' (default: 9).
 
     Returns:
-        Tuple containing:
-        - raw_cleaned: Raw data with artifacts removed
-        - ica_updated: ICA object with component labels and exclusions
-        - results_df: DataFrame with classification results
+        Tuple containing the Raw object, ICA object, and classification results.
+        For ``transport="raw"``, the first two values are unchanged pass-through
+        objects and the results are review-only. For ``transport="sdk"``, the
+        first two values retain the legacy cleaned/updated behavior.
 
     Raises:
         FileNotFoundError: If input files don't exist.
