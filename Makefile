@@ -57,16 +57,16 @@ test:
 	pytest $(TEST_DIR)
 
 test-responses-transport:
-	$(PYTHON) -B -m pytest tests/test_clincog_client.py -q --maxfail=1 --no-cov -p no:cacheprovider --basetemp=.pytest-$@-$(shell $(PYTHON) -c "import uuid; print(uuid.uuid4().hex)")
+	$(PYTHON) -B -m pytest tests/test_responses_transport.py -q --maxfail=1 --no-cov -p no:cacheprovider --basetemp=.pytest-$@-$(shell $(PYTHON) -c "import uuid; print(uuid.uuid4().hex)")
 
 test-responses-runtime:
-	$(PYTHON) -B -m pytest tests/test_responses_classifier.py -q --maxfail=1 --no-cov -p no:cacheprovider --basetemp=.pytest-$@-$(shell $(PYTHON) -c "import uuid; print(uuid.uuid4().hex)")
+	$(PYTHON) -B -m pytest tests/test_responses_runtime.py tests/test_responses_classifier.py -q --maxfail=1 --no-cov -p no:cacheprovider --basetemp=.pytest-$@-$(shell $(PYTHON) -c "import uuid; print(uuid.uuid4().hex)")
 
 test-responses-integration:
 	$(PYTHON) -B -m pytest tests/test_responses_raw_integration.py -q --maxfail=1 --no-cov -p no:cacheprovider --basetemp=.pytest-$@-$(shell $(PYTHON) -c "import uuid; print(uuid.uuid4().hex)")
 
 test-gate3:
-	$(PYTHON) -B -m pytest tests/test_clincog_client.py tests/test_responses_classifier.py tests/test_responses_raw_integration.py -q --maxfail=1 --no-cov -p no:cacheprovider --basetemp=.pytest-$@-$(shell $(PYTHON) -c "import uuid; print(uuid.uuid4().hex)")
+	$(PYTHON) -B -m pytest tests/test_responses_transport.py tests/test_responses_runtime.py tests/test_responses_classifier.py tests/test_responses_raw_integration.py -q --maxfail=1 --no-cov -p no:cacheprovider --basetemp=.pytest-$@-$(shell $(PYTHON) -c "import uuid; print(uuid.uuid4().hex)")
 
 coverage: 
 	@echo "Running tests and generating coverage report..."

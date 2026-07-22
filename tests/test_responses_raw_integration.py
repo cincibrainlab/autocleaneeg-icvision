@@ -5,6 +5,7 @@ from mne import create_info
 
 from icvision import core
 from icvision.responses_classifier import RawClassification
+from icvision.responses_transport import NormalizedUsage
 
 
 def test_raw_preflight_rejects_legacy_options_before_loading(monkeypatch):
@@ -52,16 +53,17 @@ def test_raw_success_is_review_only_and_never_mutates_or_saves(tmp_path, monkeyp
     monkeypatch.setattr(core.tempfile, "TemporaryDirectory", lambda **_: _TemporaryDirectory(tmp_path))
     monkeypatch.setattr(core, "plot_component_for_classification", lambda *_args, **_kwargs: tmp_path / "component.webp")
     monkeypatch.setattr(
-        core, "classify_image_with_clincog",
+        core, "classify_image_with_responses",
         lambda _: RawClassification(
             "brain",
             0.9,
             "Synthetic fixture.",
             "classified",
             None,
-            model="gpt-5.6-terra",
-            request_id="synthetic-request-id",
+            model="gpt-5.4",
             elapsed_seconds=0.25,
+            usage=NormalizedUsage(3, 2, 1),
+            prompt_sha256="a" * 64,
             artifact_inventory=("temporary_component_webp",),
         ),
     )
@@ -81,13 +83,12 @@ def test_raw_success_is_review_only_and_never_mutates_or_saves(tmp_path, monkeyp
     assert not bool(row["exclude_vision"])
     assert not bool(row["apply_to_ica"])
     assert bool(row["review_required"])
-    assert row["model"] == "gpt-5.6-terra"
-    assert row["request_id"] == "synthetic-request-id"
+    assert row["model"] == "gpt-5.4"
     assert row["elapsed_seconds"] == 0.25
-    assert row["input_tokens"] is None
-    assert row["output_tokens"] is None
-    assert row["cached_tokens"] is None
-    assert row["prompt_sha256"] is None
+    assert row["input_tokens"] == 3
+    assert row["output_tokens"] == 2
+    assert row["cached_tokens"] == 1
+    assert row["prompt_sha256"] == "a" * 64
     assert row["artifact_inventory"] == ("temporary_component_webp",)
 
 
@@ -115,7 +116,7 @@ def test_observer_component_consumer_renders_once_and_preserves_supplied_objects
         return RawClassification("brain", 0.9, "Synthetic fixture.", "classified", None)
 
     monkeypatch.setattr(core, "plot_component_for_classification", render)
-    monkeypatch.setattr(core, "classify_image_with_clincog", classify)
+    monkeypatch.setattr(core, "classify_image_with_responses", classify)
 
     result = core.classify_ica_component_review_only(raw, ica, 0)
 
@@ -145,7 +146,7 @@ def test_observer_component_consumer_sanitizes_failure_and_cleans_temporary_imag
         raise _MarkerError("SYNTHETIC_PROTECTED_MARKER")
 
     monkeypatch.setattr(core, "plot_component_for_classification", render)
-    monkeypatch.setattr(core, "classify_image_with_clincog", fail)
+    monkeypatch.setattr(core, "classify_image_with_responses", fail)
 
     result = core.classify_ica_component_review_only(raw, ica, 0)
 
@@ -170,7 +171,7 @@ def test_observer_component_consumer_sanitizes_renderer_exception_and_cleans_tem
     monkeypatch.setattr(core, "plot_component_for_classification", render)
     monkeypatch.setattr(
         core,
-        "classify_image_with_clincog",
+        "classify_image_with_responses",
         lambda *_: pytest.fail("classifier must not run after renderer failure"),
     )
 
@@ -214,7 +215,7 @@ def test_raw_unavailable_result_remains_review_only(tmp_path, monkeypatch):
     monkeypatch.setattr(core, "plot_component_for_classification", lambda *_args, **_kwargs: tmp_path / "component.webp")
     monkeypatch.setattr(
         core,
-        "classify_image_with_clincog",
+        "classify_image_with_responses",
         lambda _: RawClassification(None, None, "Synthetic unavailable.", "unavailable", "transport_failure"),
     )
 
