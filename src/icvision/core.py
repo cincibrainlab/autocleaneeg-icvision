@@ -20,8 +20,7 @@ from .plotting import plot_component_for_classification, save_ica_data
 from .reports import generate_classification_report
 from .responses_classifier import (
     RawClassification,
-    classify_image_with_responses,
-    resolve_governed_model,
+    classify_image_with_clincog,
 )
 from .utils import (
     check_eeglab_ica_availability,
@@ -74,6 +73,7 @@ def _raw_result(component_index: int, classification: RawClassification) -> pd.D
         "failure_category": classification.failure_category,
         "review_required": True,
         "model": classification.model,
+        "request_id": classification.request_id,
         "elapsed_seconds": classification.elapsed_seconds,
         "input_tokens": usage.input_tokens if usage is not None else None,
         "output_tokens": usage.output_tokens if usage is not None else None,
@@ -91,7 +91,6 @@ def _raw_unavailable(category: str, started: float) -> RawClassification:
         "Classification unavailable; human review required.",
         "unavailable",
         category,
-        model=resolve_governed_model(),
         elapsed_seconds=time.monotonic() - started,
     )
 
@@ -124,7 +123,7 @@ def classify_ica_component_review_only(
             if not isinstance(image_path, Path):
                 raise ValueError
             try:
-                return classify_image_with_responses(image_path)
+                return classify_image_with_clincog(image_path)
             except Exception:
                 return _raw_unavailable("classification_failure", started)
     except Exception:
