@@ -1,7 +1,9 @@
-.PHONY: help install install-dev lint format test coverage clean build publish docs docs-clean docs-live reviewed-patch
+.PHONY: help install install-dev lint format test coverage clean build publish docs docs-clean docs-live reviewed-patch test-responses-transport test-responses-runtime test-responses-integration test-gate3
 
 # Variables
-PYTHON = python3
+PYTHON ?= python3
+PYTHONPATH ?= src
+export PYTHONPATH
 PIP = $(PYTHON) -m pip
 VENV_DIR = .venv
 SRC_DIR = src/icvision
@@ -17,6 +19,7 @@ help:
 	@echo "  lint            Run linters (flake8, mypy)."
 	@echo "  format          Format code (black, isort)."
 	@echo "  test            Run tests (pytest)."
+	@echo "  test-gate3      Run the complete offline Gate 3 suite."
 	@echo "  coverage        Run tests and generate a coverage report."
 	@echo "  clean           Remove build artifacts, bytecode, and cache files."
 	@echo "  build           Build the package (sdist and wheel)."
@@ -52,6 +55,18 @@ format:
 test:
 	@echo "Running tests..."
 	pytest $(TEST_DIR)
+
+test-responses-transport:
+	$(PYTHON) -B -m pytest tests/test_responses_transport.py -q --maxfail=1 --no-cov -p no:cacheprovider --basetemp=.pytest-$@-$(shell $(PYTHON) -c "import uuid; print(uuid.uuid4().hex)")
+
+test-responses-runtime:
+	$(PYTHON) -B -m pytest tests/test_responses_runtime.py tests/test_responses_classifier.py -q --maxfail=1 --no-cov -p no:cacheprovider --basetemp=.pytest-$@-$(shell $(PYTHON) -c "import uuid; print(uuid.uuid4().hex)")
+
+test-responses-integration:
+	$(PYTHON) -B -m pytest tests/test_responses_raw_integration.py -q --maxfail=1 --no-cov -p no:cacheprovider --basetemp=.pytest-$@-$(shell $(PYTHON) -c "import uuid; print(uuid.uuid4().hex)")
+
+test-gate3:
+	$(PYTHON) -B -m pytest tests/test_responses_transport.py tests/test_responses_runtime.py tests/test_responses_classifier.py tests/test_responses_raw_integration.py -q --maxfail=1 --no-cov -p no:cacheprovider --basetemp=.pytest-$@-$(shell $(PYTHON) -c "import uuid; print(uuid.uuid4().hex)")
 
 coverage: 
 	@echo "Running tests and generating coverage report..."

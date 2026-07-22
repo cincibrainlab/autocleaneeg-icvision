@@ -6,6 +6,8 @@ the entire ICA component classification workflow using OpenAI Vision API.
 """
 
 import logging
+import tempfile
+import time
 from pathlib import Path
 from typing import List, Optional, Tuple, Union
 
@@ -14,8 +16,13 @@ import pandas as pd
 
 from .api import classify_components_batch
 from .config import DEFAULT_EXCLUDE_LABELS
-from .plotting import save_ica_data
+from .plotting import plot_component_for_classification, save_ica_data
 from .reports import generate_classification_report
+from .responses_classifier import (
+    RawClassification,
+    classify_image_with_responses,
+    resolve_governed_model,
+)
 from .utils import (
     check_eeglab_ica_availability,
     create_output_directory,
@@ -32,6 +39,126 @@ from .utils import (
 
 # Set up logging for the module
 logger = logging.getLogger("icvision.core")
+
+
+def _validate_raw_transport_options(
+    api_key: Optional[str],
+    base_url: Optional[str],
+    custom_prompt: Optional[str],
+    layout: str,
+    generate_report: bool,
+    component_indices: Optional[List[int]],
+    model_name: str,
+) -> None:
+    if api_key is not None or base_url is not None or custom_prompt is not None:
+        raise ValueError("Raw transport accepts runtime credentials and governed prompt/profile only.")
+    if layout != "single" or generate_report:
+        raise ValueError("Raw transport supports one component and report generation is not yet available.")
+    if component_indices is None or len(component_indices) != 1:
+        raise ValueError("Raw transport requires exactly one component index.")
+    if model_name != "gpt-4.1":
+        raise ValueError("Raw transport uses the governed model selection only.")
+
+
+def _raw_result(component_index: int, classification: RawClassification) -> pd.DataFrame:
+    usage = classification.usage
+    row = {
+        "component_index": component_index,
+        "component_name": f"IC{component_index:03d}",
+        "label": classification.label,
+        "confidence": classification.confidence,
+        "reason": classification.reason,
+        "exclude_vision": False,
+        "apply_to_ica": False,
+        "outcome_status": classification.outcome_status,
+        "failure_category": classification.failure_category,
+        "review_required": True,
+        "model": classification.model,
+        "elapsed_seconds": classification.elapsed_seconds,
+        "input_tokens": usage.input_tokens if usage is not None else None,
+        "output_tokens": usage.output_tokens if usage is not None else None,
+        "cached_tokens": usage.cached_tokens if usage is not None else None,
+        "prompt_sha256": classification.prompt_sha256,
+        "artifact_inventory": classification.artifact_inventory,
+    }
+    return pd.DataFrame([row]).set_index("component_index")
+
+
+def _raw_unavailable(category: str, started: float) -> RawClassification:
+    return RawClassification(
+        None,
+        None,
+        "Classification unavailable; human review required.",
+        "unavailable",
+        category,
+        model=resolve_governed_model(),
+        elapsed_seconds=time.monotonic() - started,
+    )
+
+
+def _label_components_raw_review_only(
+    raw_data: Union[str, Path, mne.io.Raw],
+    ica_data: Optional[Union[str, Path, mne.preprocessing.ICA]],
+    component_indices: List[int],
+    psd_fmax: Optional[float],
+) -> Tuple[object, object, pd.DataFrame]:
+    started = time.monotonic()
+    component_index = component_indices[0]
+
+    try:
+        raw = load_raw_data(raw_data)
+    except (OSError, RuntimeError, TypeError, ValueError):
+        return raw_data, ica_data, _raw_result(
+            component_index,
+            _raw_unavailable("raw_load_failure", started),
+        )
+
+    try:
+        resolved_ica_data = ica_data
+        if resolved_ica_data is None:
+            if (
+                not isinstance(raw_data, (str, Path))
+                or Path(raw_data).suffix.lower() != ".set"
+            ):
+                raise ValueError
+            raw_path = Path(raw_data)
+            if not check_eeglab_ica_availability(raw_path):
+                raise ValueError
+            resolved_ica_data = raw_path
+        ica = load_ica_data(resolved_ica_data)
+    except (OSError, RuntimeError, TypeError, ValueError):
+        return raw, ica_data, _raw_result(
+            component_index,
+            _raw_unavailable("ica_load_failure", started),
+        )
+
+    try:
+        validate_inputs(raw, ica)
+        if not 0 <= component_index < ica.n_components_:
+            raise ValueError
+    except (AttributeError, RuntimeError, TypeError, ValueError):
+        return raw, ica, _raw_result(
+            component_index,
+            _raw_unavailable("validation_failure", started),
+        )
+
+    try:
+        with tempfile.TemporaryDirectory(prefix="icvision_raw_") as directory:
+            image_path = plot_component_for_classification(
+                ica,
+                raw,
+                component_index,
+                Path(directory),
+                psd_fmax=psd_fmax,
+            )
+            if not isinstance(image_path, Path):
+                classification = _raw_unavailable("plot_failure", started)
+            else:
+                classification = classify_image_with_responses(image_path)
+    except (OSError, RuntimeError, TypeError, ValueError):
+        classification = _raw_unavailable("plot_failure", started)
+
+    return raw, ica, _raw_result(component_index, classification)
 
 
 def label_components(
@@ -53,6 +180,7 @@ def label_components(
     layout: str = "single",
     strip_size: int = 9,
     reasoning_effort: Optional[str] = None,
+    transport: str = "sdk",
 ) -> Tuple[mne.io.Raw, mne.preprocessing.ICA, pd.DataFrame]:
     """
     Classify ICA components using OpenAI Vision API and apply artifact rejection.
@@ -132,6 +260,12 @@ def label_components(
         >>> print(f"Excluded {results['exclude_vision'].sum()} artifacts")
     """
     logger.debug("Starting ICVision component classification workflow")
+
+    if transport not in {"sdk", "raw"}:
+        raise ValueError("transport must be either 'sdk' or 'raw'.")
+    if transport == "raw":
+        _validate_raw_transport_options(api_key, base_url, custom_prompt, layout, generate_report, component_indices, model_name)
+        return _label_components_raw_review_only(raw_data, ica_data, component_indices, psd_fmax)
 
     # Suppress MNE montage warnings for cleaner output
     # These warnings about EOG channel positions don't affect ICA classification
