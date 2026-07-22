@@ -157,6 +157,30 @@ def test_observer_component_consumer_sanitizes_failure_and_cleans_temporary_imag
     assert not rendered[0].exists()
 
 
+def test_observer_component_consumer_redacts_real_renderer_internal_exception(caplog):
+    raw = _synthetic_raw()
+
+    class MarkerICA(_ICA):
+        def get_sources(self, _raw):
+            raise _MarkerError("SYNTHETIC_PROTECTED_MARKER")
+
+    ica = MarkerICA()
+    raw_before = raw.get_data().copy()
+    labels_before = {name: values.copy() for name, values in ica.labels_.items()}
+    exclude_before = ica.exclude.copy()
+
+    with caplog.at_level("ERROR", logger="icvision.plotting"):
+        result = core.classify_ica_component_review_only(raw, ica, 0)
+
+    assert result.outcome_status == "unavailable"
+    assert result.failure_category == "plot_failure"
+    assert "SYNTHETIC_PROTECTED_MARKER" not in caplog.text
+    assert "Failed to get ICA sources for IC0." in caplog.text
+    assert raw.get_data().tolist() == raw_before.tolist()
+    assert ica.labels_ == labels_before
+    assert ica.exclude == exclude_before
+
+
 def test_observer_component_consumer_sanitizes_renderer_exception_and_cleans_temporary_image(monkeypatch):
     raw = _synthetic_raw()
     ica = _ICA()

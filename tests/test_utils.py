@@ -197,7 +197,7 @@ def test_validate_inputs_channel_mismatch(
 
 def test_create_output_directory_none(temp_utils_test_dir: Path) -> None:
     """Test creating output directory when None is passed (should use default)."""
-    default_dir_name = "icvision_results"
+    default_dir_name = "autoclean_icvision_results"
     # Temporarily change CWD for this test to isolate default dir creation
     original_cwd = Path.cwd()
     os.chdir(temp_utils_test_dir)
@@ -265,7 +265,7 @@ def test_save_results(temp_utils_test_dir: Path) -> None:
     results_df = pd.DataFrame(results_data)
     output_filename = "test_results.csv"
 
-    file_path = save_results(results_df, temp_utils_test_dir, output_filename)
+    file_path = save_results(results_df, temp_utils_test_dir, filename=output_filename)
 
     assert file_path.exists(), "CSV file was not created"
     assert file_path.name == output_filename, "CSV file has incorrect name"
@@ -280,7 +280,7 @@ def test_save_results_empty(temp_utils_test_dir: Path) -> None:
     empty_df = pd.DataFrame()
     output_filename = "empty_results.csv"
 
-    file_path = save_results(empty_df, temp_utils_test_dir, output_filename)
+    file_path = save_results(empty_df, temp_utils_test_dir, filename=output_filename)
     assert file_path.exists(), "CSV file for empty results was not created"
     loaded_df = pd.read_csv(file_path)
     assert len(loaded_df) == 0, "Empty CSV should have zero rows"

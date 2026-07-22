@@ -36,6 +36,7 @@ def plot_component_for_classification(
     source_filename: Optional[str] = None,
     psd_fmax: Optional[float] = None,
     precomputed_sources: Optional[mne.io.Raw] = None,
+    redact_errors: bool = False,
 ) -> Union[Path, plt.Figure, None]:
     """
     Creates a standardized plot for an ICA component.
@@ -56,6 +57,7 @@ def plot_component_for_classification(
         classification_reason: Vision API reason (for PDF report).
         return_fig_object: If True, returns matplotlib Figure object instead of saving.
         precomputed_sources: Optional precomputed ICA sources to speed up plotting.
+        redact_errors: If True, omit internal exception details from logs.
 
     Returns:
         Path to saved image file (if return_fig_object is False).
@@ -123,7 +125,10 @@ def plot_component_for_classification(
             return None
 
     except Exception as e:
-        logger.error("Failed to get ICA sources for IC%d: %s", component_idx, e)
+        if redact_errors:
+            logger.error("Failed to get ICA sources for IC%d.", component_idx)
+        else:
+            logger.error("Failed to get ICA sources for IC%d: %s", component_idx, e)
         plt.close(fig)
         return None
 
@@ -146,7 +151,10 @@ def plot_component_for_classification(
         ax_topo.set_xticks([])
         ax_topo.set_yticks([])
     except Exception as e:
-        logger.error("Error plotting topography for IC%d: %s", component_idx, e)
+        if redact_errors:
+            logger.error("Error plotting topography for IC%d.", component_idx)
+        else:
+            logger.error("Error plotting topography for IC%d: %s", component_idx, e)
         ax_topo.text(0.5, 0.5, "Topography plot failed", ha="center", va="center")
 
     # 2. Scrolling IC Activity (Time Series)
@@ -169,7 +177,10 @@ def plot_component_for_classification(
         ax_ts_scroll.grid(True, linestyle=":", alpha=0.6)
         ax_ts_scroll.tick_params(axis="both", which="major", labelsize=8)
     except Exception as e:
-        logger.error("Error plotting scrolling IC activity for IC%d: %s", component_idx, e)
+        if redact_errors:
+            logger.error("Error plotting scrolling IC activity for IC%d.", component_idx)
+        else:
+            logger.error("Error plotting scrolling IC activity for IC%d: %s", component_idx, e)
         ax_ts_scroll.text(0.5, 0.5, "Time series plot failed", ha="center", va="center")
 
     # 3. Continuous Data (EEGLAB-style ERP image)
@@ -259,7 +270,10 @@ def plot_component_for_classification(
         cbar_cont.set_label("Activation (a.u.)", fontsize=8)
         cbar_cont.ax.tick_params(labelsize=7)
     except Exception as e_cont:
-        logger.error("Error plotting continuous data for IC%d: %s", component_idx, e_cont)
+        if redact_errors:
+            logger.error("Error plotting continuous data for IC%d.", component_idx)
+        else:
+            logger.error("Error plotting continuous data for IC%d: %s", component_idx, e_cont)
         ax_cont_data.text(0.5, 0.5, "Continuous data plot failed", ha="center", va="center")
 
     # 4. IC Activity Power Spectrum
@@ -315,7 +329,10 @@ def plot_component_for_classification(
         ax_psd.grid(True, linestyle="--", alpha=0.5)
         ax_psd.tick_params(axis="both", which="major", labelsize=8)
     except Exception as e_psd:
-        logger.error("Error plotting PSD for IC%d: %s", component_idx, e_psd)
+        if redact_errors:
+            logger.error("Error plotting PSD for IC%d.", component_idx)
+        else:
+            logger.error("Error plotting PSD for IC%d: %s", component_idx, e_psd)
         ax_psd.text(0.5, 0.5, "PSD plot failed", ha="center", va="center")
 
     if return_fig_object and classification_label is not None and classification_confidence is not None:
@@ -404,7 +421,10 @@ def plot_component_for_classification(
             plt.savefig(filepath, format="webp", bbox_inches="tight", pad_inches=0.1)
             logger.debug("Saved component plot for API to %s", filepath)
         except Exception as e_save:
-            logger.error("Error saving API figure for IC%d: %s", component_idx, e_save)
+            if redact_errors:
+                logger.error("Error saving API figure for IC%d.", component_idx)
+            else:
+                logger.error("Error saving API figure for IC%d: %s", component_idx, e_save)
             plt.close(fig)
             return None
         finally:

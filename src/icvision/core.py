@@ -120,6 +120,7 @@ def classify_ica_component_review_only(
                 component_index,
                 Path(directory),
                 psd_fmax=psd_fmax,
+                redact_errors=True,
             )
             if not isinstance(image_path, Path):
                 raise ValueError
