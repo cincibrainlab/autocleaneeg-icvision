@@ -1,4 +1,7 @@
+import numpy as np
 import pytest
+from mne.io import RawArray
+from mne import create_info
 
 from icvision import core
 from icvision.responses_classifier import RawClassification
@@ -18,6 +21,18 @@ class _ICA:
     n_components_ = 1
     labels_ = {"brain": []}
     exclude = []
+
+
+class _MarkerError(Exception):
+    pass
+
+
+def _synthetic_raw():
+    return RawArray(
+        np.array([[0.0, 0.1, -0.1, 0.2]], dtype=float),
+        create_info(["EEG 001"], 100.0, "eeg"),
+        verbose=False,
+    )
 
 
 class _TemporaryDirectory:
@@ -75,6 +90,98 @@ def test_raw_success_is_review_only_and_never_mutates_or_saves(tmp_path, monkeyp
     assert row["cached_tokens"] == 1
     assert row["prompt_sha256"] == "a" * 64
     assert row["artifact_inventory"] == ("temporary_component_webp",)
+
+
+def test_observer_component_consumer_renders_once_and_preserves_supplied_objects(monkeypatch):
+    raw = _synthetic_raw()
+    ica = _ICA()
+    raw_before = raw.get_data().copy()
+    labels_before = {name: values.copy() for name, values in ica.labels_.items()}
+    exclude_before = ica.exclude.copy()
+    rendered = []
+    classified = []
+
+    def render(actual_ica, actual_raw, component_index, output_dir, **_kwargs):
+        assert actual_raw is raw
+        assert actual_ica is ica
+        assert component_index == 0
+        image = output_dir / "component.webp"
+        image.write_bytes(b"RIFF\x04\x00\x00\x00WEBP")
+        rendered.append(image)
+        return image
+
+    def classify(image):
+        assert image.exists()
+        classified.append(image)
+        return RawClassification("brain", 0.9, "Synthetic fixture.", "classified", None)
+
+    monkeypatch.setattr(core, "plot_component_for_classification", render)
+    monkeypatch.setattr(core, "classify_image_with_responses", classify)
+
+    result = core.classify_ica_component_review_only(raw, ica, 0)
+
+    assert result.label == "brain"
+    assert result.review_required
+    assert not result.apply_to_ica
+    assert not result.exclude_vision
+    assert len(rendered) == len(classified) == 1
+    assert not rendered[0].exists()
+    assert raw.get_data().tolist() == raw_before.tolist()
+    assert ica.labels_ == labels_before
+    assert ica.exclude == exclude_before
+
+
+def test_observer_component_consumer_sanitizes_failure_and_cleans_temporary_image(monkeypatch):
+    raw = _synthetic_raw()
+    ica = _ICA()
+    rendered = []
+
+    def render(_ica, _raw, _component_index, output_dir, **_kwargs):
+        image = output_dir / "component.webp"
+        image.write_bytes(b"RIFF\x04\x00\x00\x00WEBP")
+        rendered.append(image)
+        return image
+
+    def fail(_image):
+        raise _MarkerError("SYNTHETIC_PROTECTED_MARKER")
+
+    monkeypatch.setattr(core, "plot_component_for_classification", render)
+    monkeypatch.setattr(core, "classify_image_with_responses", fail)
+
+    result = core.classify_ica_component_review_only(raw, ica, 0)
+
+    assert result.outcome_status == "unavailable"
+    assert result.failure_category == "classification_failure"
+    assert "SYNTHETIC_PROTECTED_MARKER" not in result.reason
+    assert len(rendered) == 1
+    assert not rendered[0].exists()
+
+
+def test_observer_component_consumer_sanitizes_renderer_exception_and_cleans_temporary_image(monkeypatch):
+    raw = _synthetic_raw()
+    ica = _ICA()
+    rendered = []
+
+    def render(_ica, _raw, _component_index, output_dir, **_kwargs):
+        image = output_dir / "component.webp"
+        image.write_bytes(b"RIFF\x04\x00\x00\x00WEBP")
+        rendered.append(image)
+        raise _MarkerError("SYNTHETIC_PROTECTED_MARKER")
+
+    monkeypatch.setattr(core, "plot_component_for_classification", render)
+    monkeypatch.setattr(
+        core,
+        "classify_image_with_responses",
+        lambda *_: pytest.fail("classifier must not run after renderer failure"),
+    )
+
+    result = core.classify_ica_component_review_only(raw, ica, 0)
+
+    assert result.outcome_status == "unavailable"
+    assert result.failure_category == "plot_failure"
+    assert "SYNTHETIC_PROTECTED_MARKER" not in result.reason
+    assert len(rendered) == 1
+    assert not rendered[0].exists()
 
 @pytest.mark.parametrize(
     "override",

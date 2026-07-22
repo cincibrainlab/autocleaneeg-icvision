@@ -96,6 +96,41 @@ def _raw_unavailable(category: str, started: float) -> RawClassification:
     )
 
 
+def classify_ica_component_review_only(
+    raw: mne.io.Raw,
+    ica: mne.preprocessing.ICA,
+    component_index: int,
+    *,
+    psd_fmax: Optional[float] = None,
+) -> RawClassification:
+    """Classify one rendered component without changing the supplied EEG objects."""
+
+    started = time.monotonic()
+    try:
+        if (
+            not isinstance(component_index, int)
+            or isinstance(component_index, bool)
+            or not 0 <= component_index < ica.n_components_
+        ):
+            raise ValueError
+        with tempfile.TemporaryDirectory(prefix="icvision_raw_") as directory:
+            image_path = plot_component_for_classification(
+                ica,
+                raw,
+                component_index,
+                Path(directory),
+                psd_fmax=psd_fmax,
+            )
+            if not isinstance(image_path, Path):
+                raise ValueError
+            try:
+                return classify_image_with_responses(image_path)
+            except Exception:
+                return _raw_unavailable("classification_failure", started)
+    except Exception:
+        return _raw_unavailable("plot_failure", started)
+
+
 def _label_components_raw_review_only(
     raw_data: Union[str, Path, mne.io.Raw],
     ica_data: Optional[Union[str, Path, mne.preprocessing.ICA]],
@@ -147,21 +182,12 @@ def _label_components_raw_review_only(
             _raw_unavailable("validation_failure", started),
         )
 
-    try:
-        with tempfile.TemporaryDirectory(prefix="icvision_raw_") as directory:
-            image_path = plot_component_for_classification(
-                ica,
-                raw,
-                component_index,
-                Path(directory),
-                psd_fmax=psd_fmax,
-            )
-            if not isinstance(image_path, Path):
-                classification = _raw_unavailable("plot_failure", started)
-            else:
-                classification = classify_image_with_responses(image_path)
-    except (OSError, RuntimeError, TypeError, ValueError):
-        classification = _raw_unavailable("plot_failure", started)
+    classification = classify_ica_component_review_only(
+        raw,
+        ica,
+        component_index,
+        psd_fmax=psd_fmax,
+    )
 
     return raw, ica, _raw_result(component_index, classification)
 
