@@ -45,7 +45,7 @@ def resolve_runtime_authorization(profile: object = "clincog") -> RuntimeAuthori
     if selected_profile is None:
         return RuntimeAuthorization(RuntimeCredentialOutcome.INVALID_CONFIGURATION)
 
-    authorization = os.environ.get("OPENAI_API_KEY")
+    authorization = os.environ.get("CLINCOG_API_KEY")
     if not _is_valid_authorization(authorization):
         return RuntimeAuthorization(
             RuntimeCredentialOutcome.MISSING_OR_INVALID_CREDENTIAL,

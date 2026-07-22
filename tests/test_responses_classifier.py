@@ -180,7 +180,7 @@ def test_non_webp_image_is_review_only_and_never_sent(tmp_path, monkeypatch):
 def test_missing_runtime_credential_is_review_only_without_socket(tmp_path, monkeypatch):
     image_path = tmp_path / "component.webp"
     image_path.write_bytes(_webp())
-    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.delenv("CLINCOG_API_KEY", raising=False)
 
     result = responses_classifier.classify_image_with_responses(image_path)
 

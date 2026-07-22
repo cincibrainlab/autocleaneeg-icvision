@@ -47,9 +47,9 @@ def test_unknown_or_url_shaped_profile_fails_before_environment_lookup(monkeypat
 )
 def test_missing_or_invalid_credential_is_sanitized_and_opens_no_socket(monkeypatch, credential):
     if credential is None:
-        monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+        monkeypatch.delenv("CLINCOG_API_KEY", raising=False)
     else:
-        monkeypatch.setenv("OPENAI_API_KEY", credential)
+        monkeypatch.setenv("CLINCOG_API_KEY", credential)
 
     result = runtime.resolve_runtime_authorization()
 
@@ -59,9 +59,9 @@ def test_missing_or_invalid_credential_is_sanitized_and_opens_no_socket(monkeypa
     assert SECRET_MARKER not in repr(result)
 
 
-def test_reads_only_injected_openai_key_at_call_time_and_redacts_repr(monkeypatch):
+def test_reads_only_injected_clincog_key_at_call_time_and_redacts_repr(monkeypatch):
     monkeypatch.setenv("UNRELATED_CREDENTIAL", SECRET_MARKER)
-    monkeypatch.setenv("OPENAI_API_KEY", SECRET_MARKER)
+    monkeypatch.setenv("CLINCOG_API_KEY", SECRET_MARKER)
 
     result = runtime.resolve_runtime_authorization()
 
@@ -75,9 +75,9 @@ def test_reads_only_injected_openai_key_at_call_time_and_redacts_repr(monkeypatc
 
 
 def test_environment_is_read_at_each_call_not_import_time(monkeypatch):
-    monkeypatch.setenv("OPENAI_API_KEY", "first")
+    monkeypatch.setenv("CLINCOG_API_KEY", "first")
     first = runtime.resolve_runtime_authorization()
-    monkeypatch.setenv("OPENAI_API_KEY", "second")
+    monkeypatch.setenv("CLINCOG_API_KEY", "second")
     second = runtime.resolve_runtime_authorization()
 
     assert first.authorization == "first"
