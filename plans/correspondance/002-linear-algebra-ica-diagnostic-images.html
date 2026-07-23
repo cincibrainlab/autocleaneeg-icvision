@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Correspondence 056 — From EEG Matrix to ICA Diagnostic Image</title>
+  <style>
+    :root { color-scheme: light; --ink:#18212f; --muted:#5b6675; --line:#d8dee8; --paper:#fff; --wash:#f4f7fb; --accent:#244f87; --warn:#8a3b12; --good:#25613b; }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--wash); color:var(--ink); font:16px/1.62 Georgia,"Times New Roman",serif; }
+    main { width:min(980px,calc(100% - 32px)); margin:32px auto; padding:48px; background:var(--paper); border:1px solid var(--line); box-shadow:0 12px 36px rgba(20,35,55,.08); }
+    h1,h2,h3 { font-family:Inter,"Segoe UI",sans-serif; line-height:1.2; }
+    h1 { margin:0 0 8px; font-size:2rem; color:var(--accent); }
+    h2 { margin-top:2.2rem; padding-bottom:.35rem; border-bottom:1px solid var(--line); font-size:1.35rem; }
+    h3 { margin-top:1.4rem; font-size:1.05rem; }
+    .subtitle,.note { color:var(--muted); }
+    dl { display:grid; grid-template-columns:190px 1fr; gap:.35rem 1rem; padding:1rem; background:var(--wash); border-left:4px solid var(--accent); }
+    dt { font-weight:700; font-family:Inter,"Segoe UI",sans-serif; }
+    dd { margin:0; }
+    code,pre { font-family:Consolas,"SFMono-Regular",monospace; }
+    pre { overflow-x:auto; padding:1rem; background:#111827; color:#f8fafc; border-radius:6px; }
+    .callout { margin:1.25rem 0; padding:1rem 1.15rem; border:1px solid var(--line); border-left:5px solid var(--accent); background:#f9fbfe; }
+    .warning { border-left-color:var(--warn); background:#fff8f3; }
+    .success { border-left-color:var(--good); background:#f4fbf6; }
+    table { width:100%; border-collapse:collapse; margin:1rem 0; }
+    th,td { border:1px solid var(--line); padding:.7rem; text-align:left; vertical-align:top; }
+    th { background:var(--wash); font-family:Inter,"Segoe UI",sans-serif; }
+    a { color:#1556a3; }
+    footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); color:var(--muted); font-size:.92rem; }
+    @media (max-width:680px) { main { padding:24px; } dl { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>From EEG Matrix to ICA Diagnostic Image</h1>
+    <p class="subtitle">A first-principles guide to rank, dimensionality, ICA factorization, component evidence, and the role of linear algebra in ICVision</p>
+  </header>
+
+  <dl>
+    <dt>From</dt><dd>Codex side-conversation assistant — PI-requested educational synthesis; no specialist consultation claimed</dd>
+    <dt>To</dt><dd>Human Owner / Principal Investigator and AmeenahsDevTeam engineering archive</dd>
+    <dt>Date</dt><dd>July 23, 2026</dd>
+    <dt>Re</dt><dd>How linear algebra turns multichannel EEG into ICA components and auditable diagnostic images</dd>
+    <dt>Correspondence No.</dt><dd>056</dd>
+    <dt>Source Thread</dt><dd>PI side conversation; identifier withheld from public record</dd>
+    <dt>Work ID</dt><dd>T-2026-07-23-001</dd>
+    <dt>Role Thread</dt><dd>Local PI-facing educational synthesis; no worker or specialist response claimed</dd>
+    <dt>Status</dt><dd>Published educational explainer; scientific validation and automated EEG modification remain gated</dd>
+    <dt>Record Type</dt><dd>EEG methods, linear-algebra, and pipeline interpretation explainer</dd>
+  </dl>
+
+  <section>
+    <h2>Request Summary</h2>
+    <p><strong>Originating request:</strong> explain whether rank is the same concept as dimension in linear algebra and show where linear algebra is used throughout the ICVision pipeline, while connecting that mathematics to the component-level diagnostic image.</p>
+    <p><strong>Desired outcome:</strong> give the PI a durable, meeting-ready mental model that connects channels, rank, covariance, PCA, whitening, ICA components, scalp maps, time courses, spectra, model review, and eventual EEG reconstruction.</p>
+    <p><strong>Non-goals:</strong> this record does not interpret a participant recording, select preprocessing or rejection thresholds, certify ICA quality, validate a classifier, authorize component removal, make a clinical claim, or replace EEG-methods review.</p>
+    <p><strong>Constraints and approval:</strong> publication was explicitly requested. The record contains no participant identifier, EEG value, component image, credential, private endpoint, provider request, provider output, or machine-local path.</p>
+  </section>
+
+  <section>
+    <h2>Execution Update</h2>
+    <p>The side-conversation assistant converted the educational discussion into a public-safe standalone HTML record. It distinguishes direct mathematical definitions from methodological interpretation, uses only generic matrix shapes and examples, and preserves the boundary between classification advice and data-changing EEG reconstruction.</p>
+  </section>
+
+  <section>
+    <h2>Executive Answer</h2>
+    <div class="callout success">
+      <strong>Yes: rank has its standard linear-algebra meaning.</strong> It is the number of linearly independent dimensions represented by the EEG data matrix. ICVision sits downstream of a sequence of linear-algebra operations: EEG is represented as a channels-by-time matrix, preprocessing transforms that matrix, covariance/PCA/whitening characterize its usable subspace, ICA factorizes it into component time courses and scalp projections, and plotting converts those quantities into one auditable evidence image per component.
+    </div>
+    <pre>recorded channels → usable ranked subspace → ICA components
+        → scalp + time + frequency evidence → diagnostic image
+        → review-only model suggestion → human decision</pre>
+  </section>
+
+  <section>
+    <h2>1. EEG as a Matrix</h2>
+    <p>A continuous EEG recording can be represented as a matrix <code>X</code>:</p>
+    <pre>X ∈ R^(C × T)
+
+C = number of channels
+T = number of time samples
+X[c,t] = voltage at channel c and time t</pre>
+    <p>Each row is one channel's time series. Each column is a snapshot of all channels at one moment. The matrix does not contain isolated sources: every scalp channel is generally a mixture of neural activity, eye activity, muscle, cardiac activity, electrode behavior, environmental interference, and residual noise.</p>
+  </section>
+
+  <section>
+    <h2>2. Rank and Effective Dimensionality</h2>
+    <p>The rank of <code>X</code> is the number of linearly independent directions in the data. A recording can have more channel rows than independent dimensions.</p>
+    <pre>Channel A = independent signal
+Channel B = independent signal
+Channel C = Channel A + Channel B
+
+three channel rows, but rank two</pre>
+    <p>Channel C is still a real row in the matrix, but it adds no new independent direction because it can be calculated from A and B. In geometric language, the data may be written in a nominally high-dimensional coordinate system while actually occupying a lower-dimensional subspace.</p>
+    <div class="callout">
+      <strong>Effective rank</strong> recognizes that numerical data may contain directions with extremely small rather than exactly zero variance. Software therefore uses mathematical and numerical tolerances to decide which dimensions are meaningfully usable.
+    </div>
+  </section>
+
+  <section>
+    <h2>3. How Preprocessing Changes Rank</h2>
+    <h3>Re-referencing</h3>
+    <p>EEG voltages are relative. Re-referencing applies a linear transformation:</p>
+    <pre>X_ref = R X</pre>
+    <p>Average referencing subtracts the channel average from every channel. Afterward, channel values obey a linear constraint: their sum is zero at each time point. That commonly reduces rank by at least one.</p>
+
+    <h3>Bad-channel interpolation</h3>
+    <p>An interpolated channel is estimated from neighboring sensors:</p>
+    <pre>x_bad = w1 x1 + w2 x2 + ... + wk xk</pre>
+    <p>The repaired value may restore spatial coverage and improve visualization, but it does not restore an independent measurement. The new row was constructed from existing rows.</p>
+
+    <h3>Other linear dependencies</h3>
+    <p>Channel removal, projections, reference choices, and some preprocessing transformations can also alter the usable subspace. Therefore, the number of ICA components should be compared with effective rank, not assumed to equal the original electrode count.</p>
+  </section>
+
+  <section>
+    <h2>4. Covariance, Eigenvectors, and PCA</h2>
+    <p>Channel relationships are summarized by a covariance matrix:</p>
+    <pre>Cx = (1/T) X Xᵀ</pre>
+    <p>For <code>C</code> channels, <code>Cx</code> is a <code>C × C</code> matrix. It describes which channel patterns vary together. Its eigendecomposition is:</p>
+    <pre>Cx = V Λ Vᵀ</pre>
+    <p>The columns of <code>V</code> are orthogonal directions in channel space. The diagonal values in <code>Λ</code> quantify variance along those directions. Zero or near-zero eigenvalues identify redundant or numerically negligible dimensions.</p>
+    <p>Principal component analysis uses these eigenvectors to express the data in uncorrelated coordinates, often retaining only the ranked subspace before ICA.</p>
+    <div class="callout warning">
+      <strong>PCA and ICA are not the same.</strong> PCA finds orthogonal, uncorrelated directions ordered by variance. ICA seeks directions whose activation distributions are statistically independent under stronger assumptions. Uncorrelated does not generally imply independent.
+    </div>
+  </section>
+
+  <section>
+    <h2>5. Whitening</h2>
+    <p>ICA algorithms commonly whiten the retained data:</p>
+    <pre>Z = Q X
+Cov(Z) = I</pre>
+    <p>Whitening removes pairwise covariance and rescales retained dimensions to unit variance. Geometrically, it turns an elongated covariance cloud into a sphere. ICA then searches for statistically independent orientations inside that whitened space.</p>
+  </section>
+
+  <section>
+    <h2>6. ICA as Matrix Factorization</h2>
+    <p>ICA models the recorded EEG as mixtures of latent component activations:</p>
+    <pre>X ≈ A S
+
+X = channel-by-time EEG matrix
+A = channel-by-component mixing matrix
+S = component-by-time activation matrix</pre>
+    <p>The algorithm estimates an unmixing matrix <code>W</code>:</p>
+    <pre>S = W X
+W ≈ inverse of A within the retained subspace</pre>
+    <p>Each row of <code>S</code> is one component time course. Each column of <code>A</code> is the corresponding component's projection across the electrodes. Those two objects are the primary mathematical ingredients of an ICVision diagnostic image.</p>
+    <p>An ICA component is therefore not an electrode. A channel describes where a mixture was measured; a component is an estimated source-like coordinate contributing across channels.</p>
+  </section>
+
+  <section>
+    <h2>7. Important ICA Ambiguities</h2>
+    <h3>Sign ambiguity</h3>
+    <pre>A[:,j] S[j,:] = (-A[:,j]) (-S[j,:])</pre>
+    <p>Reversing both the scalp projection and time course reconstructs the same EEG contribution. Red and blue topographic polarity therefore have no inherent good/bad meaning.</p>
+    <h3>Scale ambiguity</h3>
+    <p>Multiplying a component's scalp map by a constant and dividing its time course by the same constant also preserves reconstruction. Absolute component amplitude must be interpreted in the context of the ICA representation.</p>
+    <h3>Permutation ambiguity</h3>
+    <p>Component numbering is an identifier, not a biological rank. IC0 is not automatically the most neural, and the final component is not automatically the worst artifact.</p>
+    <h3>Model ambiguity</h3>
+    <p>ICA components are useful mathematical estimates, not guaranteed pure biological generators. One artifact may be split across components, and one component may contain mixed neural and artifactual activity.</p>
+  </section>
+
+  <section>
+    <h2>8. From Component Matrices to the Diagnostic Image</h2>
+    <p>ICVision renders several complementary views so a researcher and a vision-capable model can inspect the same evidence.</p>
+    <table>
+      <thead><tr><th>Panel</th><th>Linear-algebra or signal source</th><th>What it supports</th><th>What it cannot prove</th></tr></thead>
+      <tbody>
+        <tr><td>Scalp topography</td><td>One column of the mixing matrix, associated with electrode coordinates and spatially interpolated between measured sensor locations.</td><td>Frontal, temporal-edge, focal, broad, or dipolar projection patterns.</td><td>Exact cortical location, biological purity, or meaningful sign.</td></tr>
+        <tr><td>Short activation trace</td><td>Samples from one row of the component activation matrix.</td><td>Slow deflections, sharp transients, bursts, clipping, and approximate periodicity.</td><td>Behavior across the whole recording when only a short excerpt is shown.</td></tr>
+        <tr><td>Segmented activity image</td><td>The component time course reshaped into consecutive windows and displayed as color-coded rows.</td><td>Repeated texture, intermittent bursts, temporal drift, or a few dominant events.</td><td>True event-related or trial-aligned structure unless windows are explicitly aligned to events.</td></tr>
+        <tr><td>Power spectrum</td><td>Fourier-domain coefficients summarized with Welch averaging and converted to power.</td><td>Low-frequency emphasis, oscillatory peaks, broad high-frequency activity, or narrow interference within the displayed range.</td><td>When an event occurred, causal origin, or frequencies omitted from the display.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <strong>Interpolated topography:</strong> electrode values are measured or mathematically derived at discrete sensor positions; colors between sensors are spatial estimates. The smooth map does not create additional measurements.
+    </div>
+  </section>
+
+  <section>
+    <h2>9. Why One Image Represents One Component</h2>
+    <p>Each ICA component has its own time course and scalp projection, so each receives a separate evidence panel:</p>
+    <pre>IC0   → image 0   → suggested label 0   → human decision 0
+IC1   → image 1   → suggested label 1   → human decision 1
+...
+ICN   → image N   → suggested label N   → human decision N</pre>
+    <p>A dataset with many components is still one recording or decomposition. The number counts estimated source-like coordinates, not participants, electrodes, diagnoses, or separate experiments.</p>
+  </section>
+
+  <section>
+    <h2>10. Where the Vision Model Enters</h2>
+    <p>The model does not calculate ICA and does not receive the matrix factorization directly in the present image-based design. It receives a locally rendered component image plus a classification rubric and returns a structured recommendation such as a broad label, confidence field, and short explanation.</p>
+    <p>The image is an interface between mathematical signal processing and visual review:</p>
+    <pre>numerical component evidence
+        ↓ local deterministic rendering
+auditable visual summary
+        ↓ model interpretation
+review-only recommendation
+        ↓ researcher judgment
+accepted, rejected, or corrected decision</pre>
+    <p>A model can only interpret what the renderer exposes. Incorrect electrode geometry, misleading scales, unrepresentative excerpts, boundary discontinuities, or hidden frequency evidence can produce a representation failure even if the model behaves consistently.</p>
+  </section>
+
+  <section>
+    <h2>11. Reconstruction and Why Classification Is Not Cleaning</h2>
+    <p>The component model can reconstruct EEG:</p>
+    <pre>X ≈ A S</pre>
+    <p>If a later approved workflow rejects component <code>j</code>, it sets or omits that component's activation during back-projection:</p>
+    <pre>S'[j,:] = 0
+X_clean = A S'</pre>
+    <p>This subtracts the rejected component's estimated contribution across channels and time. It can remove structured artifact, but it can also remove neural activity contained in a mixed or incorrectly rejected component.</p>
+    <div class="callout warning">
+      <strong>Classification and cleaning are different risk levels.</strong> “This resembles eye activity” is an advisory interpretation. Removing that component changes the EEG and requires explicit human approval, separate validation, and preservation checks for the downstream scientific measures that matter.
+    </div>
+  </section>
+
+  <section>
+    <h2>12. The Diagnostic Image Claim Boundary</h2>
+    <table>
+      <thead><tr><th>Supported statement</th><th>Unsupported without dedicated evidence</th></tr></thead>
+      <tbody>
+        <tr><td>The image summarizes one ICA component's spatial, temporal, and spectral evidence.</td><td>The image is a clinical diagnostic scan.</td></tr>
+        <tr><td>The topography visualizes a component projection across the sensor layout.</td><td>The topography identifies an exact cortical generator.</td></tr>
+        <tr><td>The model can propose a broad review label from visible evidence.</td><td>The model has established biological truth or a calibrated probability.</td></tr>
+        <tr><td>Rank describes independent dimensions in the processed data matrix.</td><td>A lower rank automatically means damaged data or deleted electrodes.</td></tr>
+        <tr><td>ICA supplies a useful coordinate system for artifact review.</td><td>Every component is a pure or anatomically independent source.</td></tr>
+        <tr><td>Human-approved component removal can reconstruct a modified EEG.</td><td>Automatic rejection is safe merely because classification confidence is high.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>13. Meeting-Ready Explanation</h2>
+    <div class="callout success">
+      <p>“The EEG is represented as a channels-by-time matrix. Rank has its standard linear-algebra meaning: the number of linearly independent dimensions in that matrix. Re-referencing and interpolation can introduce dependencies, so the usable rank may be lower than the channel count. PCA and whitening identify and normalize that usable subspace, and ICA factorizes it into component time courses and scalp projections. ICVision turns those quantities into one diagnostic image per component so a researcher and a vision model can review the same spatial, temporal, and frequency evidence. The model recommends a label; it does not modify EEG. Any later component removal is a separate, human-approved reconstruction step.”</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Evidence</h2>
+    <ul>
+      <li><a href="https://github.com/cincibrainlab/autocleaneeg-icvision/blob/main/src/icvision/plotting.py">Public ICVision plotting implementation</a>.</li>
+      <li><a href="https://github.com/cincibrainlab/autocleaneeg-icvision/blob/main/src/icvision/core.py">Public ICVision orchestration implementation</a>.</li>
+      <li><a href="https://github.com/cincibrainlab/autocleaneeg-icvision/blob/main/src/icvision/utils.py">Public ICVision EEG and ICA loading implementation</a>.</li>
+      <li><a href="https://pubmed.ncbi.nlm.nih.gov/10946390/">Hyvärinen and Oja (2000), Independent Component Analysis: Algorithms and Applications</a>.</li>
+      <li><a href="https://eeglab.org/tutorials/06_RejectArtifacts/RunICA.html">EEGLAB ICA and artifact-removal tutorial</a>.</li>
+      <li><a href="https://mne.tools/stable/generated/mne.preprocessing.ICA.html">MNE ICA documentation</a>.</li>
+    </ul>
+    <p class="note">Matrix definitions and factorization identities are standard linear algebra and ICA methodology. Statements about what a panel may suggest are bounded methodological interpretations, not participant-level findings.</p>
+  </section>
+
+  <section>
+    <h2>Scope Limits</h2>
+    <p>No participant recording, component image, channel coordinate file, preprocessing log, rank calculation, model response, private endpoint, credential, or research result was inspected for this public record. The record does not establish the rank of a specific dataset, the cause of any rank reduction, the correctness of a particular ICA decomposition, or the accuracy of any classifier. It does not authorize preprocessing, exclusion, cleaning, model migration, or release.</p>
+  </section>
+
+  <section>
+    <h2>Conflict Status</h2>
+    <p><strong>Flag:</strong> none for the educational explanation. <strong>Respond:</strong> the record explicitly distinguishes channels from components, PCA from ICA, interpolated display values from measurements, and classification from EEG modification. <strong>Decide:</strong> dataset-specific interpretation, validation thresholds, and release decisions remain with the PI and routed EEG experts. <strong>Document:</strong> this correspondence is the durable public teaching record.</p>
+  </section>
+
+  <section>
+    <h2>Execution Decision</h2>
+    <p><strong>Disposition: Accept for publication as an educational explainer.</strong> Owner: PI-requested side-conversation assistant for drafting; archive integration owner for publication. Rationale: the record improves shared understanding without changing product behavior or exposing protected material. Remaining gate: specialist review is required before treating it as a formal EEG validation protocol.</p>
+  </section>
+
+  <section>
+    <h2>Verification</h2>
+    <p><strong>Checker:</strong> side-conversation assistant self-check; no independent EEG specialist or QA response is claimed.</p>
+    <p><strong>Checks:</strong> required correspondence sections, standalone HTML structure, generic equations and examples, public durable links, absence of participant identifiers, credentials, local profile paths, private service details, provider bodies, and derived research images. Archive verification, JavaScript syntax, Git publication, and production readback are required before status is reported as published.</p>
+    <p><strong>Known gaps:</strong> no independent EEG-methods review was performed. Publication verifies document delivery, not scientific validation.</p>
+  </section>
+
+  <section>
+    <h2>Next Actions</h2>
+    <ol>
+      <li><strong>Owner: PI.</strong> Use the meeting-ready explanation as a conceptual briefing, not as participant interpretation. Stop condition: any dataset-specific claim requires direct evidence and appropriate domain review.</li>
+      <li><strong>Owner: Wave or another routed EEG expert.</strong> Review the mathematical-to-methodological language before this becomes a formal training or validation protocol. Expected artifact: bounded methods review.</li>
+      <li><strong>Owner: ICVision modernization team after approval.</strong> Keep image validation, classifier validation, and EEG reconstruction validation as separate gates. Expected artifacts: visual acceptance record, expert-labeled evaluation, and signal-preservation test.</li>
+    </ol>
+  </section>
+
+  <section data-publication-addendum="true">
+    <h2>Publication Boundary</h2>
+    <p><strong>Sensitivity:</strong> public-safe mathematical and methodological explanation. No participant-level, credential-bearing, proprietary, private-provider, or machine-local content is included.</p>
+    <p><strong>Synthetic-versus-real label:</strong> generic educational examples only. No synthetic or real EEG/model experiment was executed for this record.</p>
+    <p><strong>Safety warning:</strong> do not append participant files, component images, local paths, keys, gateway configuration, provider responses, or dataset-specific interpretations to the public artifact. This record does not authorize unattended classification or EEG modification.</p>
+  </section>
+
+  <footer>
+    Originating canonical artifact: <code>plans/correspondance/002-linear-algebra-ica-diagnostic-images.html</code>. Archive artifact: <code>plans/correspondance/056-linear-algebra-ica-diagnostic-images.html</code>. Publication status requires verified deployment.
+  </footer>
+</main>
+</body>
+</html>
