@@ -145,7 +145,7 @@ def test_fixed_post_tls_headers_single_send_and_normalized_success(monkeypatch):
     assert len(created) == 1
     connection = created[0]
     assert connection.args[:2] == ("ai.clincognition.com", 443)
-    assert connection.kwargs["timeout"] == 5.0
+    assert connection.kwargs["timeout"] == 60.0
     context = connection.kwargs["context"]
     assert context.check_hostname is True
     assert context.verify_mode == ssl.CERT_REQUIRED

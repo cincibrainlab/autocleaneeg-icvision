@@ -43,13 +43,13 @@ def test_success_uses_governed_model_fixed_prompt_and_ordered_input(tmp_path, mo
     assert result.review_required is True
     assert result.apply_to_ica is False
     assert result.exclude_vision is False
-    assert result.model == "gpt-5.4"
+    assert result.model == "gpt-5.6-terra"
     assert result.elapsed_seconds >= 0.0
     assert result.usage == NormalizedUsage(3, 2, 1)
     assert result.prompt_sha256 is not None and len(result.prompt_sha256) == 64
     assert result.artifact_inventory == ("temporary_component_webp",)
     payload = captured["payload"]
-    assert payload["model"] == "gpt-5.4"
+    assert payload["model"] == "gpt-5.6-terra"
     assert payload["store"] is False
     assert payload["max_output_tokens"] == 1024
     assert payload["text"]["format"] == {
@@ -93,7 +93,7 @@ def test_invalid_structured_output_is_review_only_unavailable(tmp_path, monkeypa
     assert result.apply_to_ica is False
     assert result.exclude_vision is False
     assert result.failure_category == ResponsesOutcome.MALFORMED_RESPONSE.value
-    assert result.model == "gpt-5.4"
+    assert result.model == "gpt-5.6-terra"
 
 
 def test_transport_failure_is_review_only_unavailable(tmp_path, monkeypatch):
@@ -121,7 +121,7 @@ def test_oversized_image_is_not_read_or_sent(tmp_path, monkeypatch):
     assert result.failure_category == ResponsesOutcome.INVALID_REQUEST.value
 
 
-@pytest.mark.parametrize("model", ["gpt-5.4"])
+@pytest.mark.parametrize("model", ["gpt-5.6-terra"])
 def test_reviewed_model_override_is_serialized_and_retained(tmp_path, monkeypatch, model):
     image_path = tmp_path / "component.webp"
     image_path.write_bytes(_webp())
@@ -173,7 +173,7 @@ def test_non_webp_image_is_review_only_and_never_sent(tmp_path, monkeypatch):
 
     assert result.outcome_status == "unavailable"
     assert result.failure_category == ResponsesOutcome.INVALID_REQUEST.value
-    assert result.model == "gpt-5.4"
+    assert result.model == "gpt-5.6-terra"
     assert result.artifact_inventory == ()
 
 
@@ -186,6 +186,6 @@ def test_missing_runtime_credential_is_review_only_without_socket(tmp_path, monk
 
     assert result.outcome_status == "unavailable"
     assert result.failure_category == ResponsesOutcome.INVALID_AUTHORIZATION.value
-    assert result.model == "gpt-5.4"
+    assert result.model == "gpt-5.6-terra"
     assert result.prompt_sha256 is not None
     assert result.artifact_inventory == ("temporary_component_webp",)

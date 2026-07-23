@@ -60,7 +60,7 @@ def test_raw_success_is_review_only_and_never_mutates_or_saves(tmp_path, monkeyp
             "Synthetic fixture.",
             "classified",
             None,
-            model="gpt-5.4",
+            model="gpt-5.6-terra",
             elapsed_seconds=0.25,
             usage=NormalizedUsage(3, 2, 1),
             prompt_sha256="a" * 64,
@@ -83,7 +83,7 @@ def test_raw_success_is_review_only_and_never_mutates_or_saves(tmp_path, monkeyp
     assert not bool(row["exclude_vision"])
     assert not bool(row["apply_to_ica"])
     assert bool(row["review_required"])
-    assert row["model"] == "gpt-5.4"
+    assert row["model"] == "gpt-5.6-terra"
     assert row["elapsed_seconds"] == 0.25
     assert row["input_tokens"] == 3
     assert row["output_tokens"] == 2

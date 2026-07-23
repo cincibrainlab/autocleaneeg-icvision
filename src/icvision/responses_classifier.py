@@ -17,8 +17,8 @@ from .responses_runtime import send_runtime_responses_request
 from .responses_transport import NormalizedUsage, ResponsesOutcome, prepare_responses_request
 
 
-_DEFAULT_GOVERNED_MODEL = "gpt-5.4"
-_ALLOWED_GOVERNED_MODELS = frozenset({"gpt-5.4"})
+_DEFAULT_GOVERNED_MODEL = "gpt-5.6-terra"
+_ALLOWED_GOVERNED_MODELS = frozenset({"gpt-5.6-terra"})
 _MAX_IMAGE_BYTES = 5 * 1024 * 1024
 _MAX_REASON_CHARS = 1_000
 _MAX_OUTPUT_TOKENS = 1_024
