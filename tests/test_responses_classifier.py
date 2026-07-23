@@ -66,18 +66,19 @@ def test_success_uses_governed_model_fixed_prompt_and_ordered_input(tmp_path, mo
 
 
 @pytest.mark.parametrize(
-    "output_text",
+    ("output_text", "parse_failure_stage"),
     [
-        '{"label":"brain","confidence":0.9}',
-        '{"label":"brain","confidence":true,"reason":"Synthetic fixture."}',
-        '{"label":"not-a-label","confidence":0.9,"reason":"Synthetic fixture."}',
-        '{"label":"brain","confidence":1.1,"reason":"Synthetic fixture."}',
-        '{"label":"brain","confidence":NaN,"reason":"Synthetic fixture."}',
-        '{"label":"brain","confidence":0.9,"reason":"Synthetic\\nfixture."}',
-        '{"label":"brain","confidence":0.9,"reason":"Synthetic fixture.","extra":1}',
+        ('{"label":"brain","confidence":0.9}', "wrong_keys"),
+        ('{"label":"brain","confidence":true,"reason":"Synthetic fixture."}', "invalid_confidence"),
+        ('{"label":"not-a-label","confidence":0.9,"reason":"Synthetic fixture."}', "invalid_label"),
+        ('{"label":"brain","confidence":1.1,"reason":"Synthetic fixture."}', "invalid_confidence"),
+        ('{"label":"brain","confidence":NaN,"reason":"Synthetic fixture."}', "invalid_confidence"),
+        ('{"label":"brain","confidence":0.9,"reason":"Synthetic\\nfixture."}', "invalid_reason"),
+        ('{"label":"brain","confidence":0.9,"reason":"Synthetic fixture.","extra":1}', "wrong_keys"),
+        ("not json", "json_decode"),
     ],
 )
-def test_invalid_structured_output_is_review_only_unavailable(tmp_path, monkeypatch, output_text):
+def test_invalid_structured_output_is_review_only_unavailable(tmp_path, monkeypatch, output_text, parse_failure_stage):
     image_path = tmp_path / "component.webp"
     image_path.write_bytes(_webp())
     monkeypatch.setattr(
@@ -93,8 +94,83 @@ def test_invalid_structured_output_is_review_only_unavailable(tmp_path, monkeypa
     assert result.apply_to_ica is False
     assert result.exclude_vision is False
     assert result.failure_category == ResponsesOutcome.MALFORMED_RESPONSE.value
+    assert result.parse_failure_stage == parse_failure_stage
     assert result.model == "gpt-5.6-terra"
 
+
+def test_malformed_first_response_retries_once_and_returns_success(tmp_path, monkeypatch):
+    image_path = tmp_path / "component.webp"
+    image_path.write_bytes(_webp())
+    responses = [
+        ResponsesResult(outcome=ResponsesOutcome.SUCCESS, output_text="not json", usage=NormalizedUsage(10, 4, 0)),
+        ResponsesResult(
+            outcome=ResponsesOutcome.SUCCESS,
+            output_text='{"label":"eye","confidence":0.86,"reason":"Synthetic fixture."}',
+            usage=NormalizedUsage(11, 5, 0),
+        ),
+    ]
+
+    def fake_send(request):
+        return responses.pop(0)
+
+    monkeypatch.setattr(responses_classifier, "send_runtime_responses_request", fake_send)
+
+    result = responses_classifier.classify_image_with_responses(image_path)
+
+    assert responses == []
+    assert result.outcome_status == "classified"
+    assert result.label == "eye"
+    assert result.confidence == 0.86
+    assert result.failure_category is None
+    assert result.parse_failure_stage is None
+    assert result.usage == NormalizedUsage(11, 5, 0)
+
+
+def test_transport_failure_is_not_retried(tmp_path, monkeypatch):
+    image_path = tmp_path / "component.webp"
+    image_path.write_bytes(_webp())
+    calls = []
+
+    def fake_send(request):
+        calls.append(request)
+        return ResponsesResult(outcome=ResponsesOutcome.TIMEOUT)
+
+    monkeypatch.setattr(responses_classifier, "send_runtime_responses_request", fake_send)
+
+    result = responses_classifier.classify_image_with_responses(image_path)
+
+    assert len(calls) == 1
+    assert result.outcome_status == "unavailable"
+    assert result.failure_category == ResponsesOutcome.TIMEOUT.value
+    assert result.parse_failure_stage is None
+
+
+def test_classification_schema_bounds_confidence_and_reason():
+    schema = responses_classifier._classification_schema()
+
+    assert schema["properties"]["confidence"]["minimum"] == 0.0
+    assert schema["properties"]["confidence"]["maximum"] == 1.0
+    assert schema["properties"]["reason"]["minLength"] == 1
+    assert schema["properties"]["reason"]["maxLength"] == responses_classifier._MAX_REASON_CHARS
+
+
+def test_transport_malformed_response_is_not_retried(tmp_path, monkeypatch):
+    image_path = tmp_path / "component.webp"
+    image_path.write_bytes(_webp())
+    calls = []
+
+    def fake_send(request):
+        calls.append(request)
+        return ResponsesResult(outcome=ResponsesOutcome.MALFORMED_RESPONSE)
+
+    monkeypatch.setattr(responses_classifier, "send_runtime_responses_request", fake_send)
+
+    result = responses_classifier.classify_image_with_responses(image_path)
+
+    assert len(calls) == 1
+    assert result.outcome_status == "unavailable"
+    assert result.failure_category == ResponsesOutcome.MALFORMED_RESPONSE.value
+    assert result.parse_failure_stage is None
 
 def test_transport_failure_is_review_only_unavailable(tmp_path, monkeypatch):
     image_path = tmp_path / "component.webp"

@@ -42,6 +42,7 @@ class RawClassification:
     usage: Optional[NormalizedUsage] = None
     prompt_sha256: Optional[str] = None
     artifact_inventory: Tuple[str, ...] = ()
+    parse_failure_stage: Optional[str] = None
 
 
 def _unavailable(
@@ -52,6 +53,7 @@ def _unavailable(
     usage: Optional[NormalizedUsage] = None,
     prompt_sha256: Optional[str] = None,
     artifact_inventory: Tuple[str, ...] = (),
+    parse_failure_stage: Optional[str] = None,
 ) -> RawClassification:
     return RawClassification(
         None,
@@ -64,6 +66,7 @@ def _unavailable(
         usage=usage,
         prompt_sha256=prompt_sha256,
         artifact_inventory=artifact_inventory,
+        parse_failure_stage=parse_failure_stage,
     )
 
 
@@ -102,8 +105,8 @@ def _classification_schema() -> dict:
         "type": "object",
         "properties": {
             "label": {"type": "string", "enum": sorted(COMPONENT_LABELS)},
-            "confidence": {"type": "number"},
-            "reason": {"type": "string"},
+            "confidence": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+            "reason": {"type": "string", "minLength": 1, "maxLength": _MAX_REASON_CHARS},
         },
         "required": ["label", "confidence", "reason"],
         "additionalProperties": False,
@@ -159,6 +162,7 @@ def _parse_classification(
             usage=usage,
             prompt_sha256=prompt_sha256,
             artifact_inventory=artifact_inventory,
+            parse_failure_stage="json_decode",
         )
     if not isinstance(payload, dict) or set(payload) != {"label", "confidence", "reason"}:
         return _unavailable(
@@ -168,17 +172,24 @@ def _parse_classification(
             usage=usage,
             prompt_sha256=prompt_sha256,
             artifact_inventory=artifact_inventory,
+            parse_failure_stage="wrong_keys",
         )
     label, confidence, reason = payload["label"], payload["confidence"], payload["reason"]
+    if label not in COMPONENT_LABELS:
+        return _unavailable(
+            ResponsesOutcome.MALFORMED_RESPONSE.value,
+            model,
+            elapsed_seconds=elapsed_seconds,
+            usage=usage,
+            prompt_sha256=prompt_sha256,
+            artifact_inventory=artifact_inventory,
+            parse_failure_stage="invalid_label",
+        )
     if (
-        label not in COMPONENT_LABELS
-        or not isinstance(confidence, (int, float))
+        not isinstance(confidence, (int, float))
         or isinstance(confidence, bool)
         or not math.isfinite(confidence)
         or not 0.0 <= float(confidence) <= 1.0
-        or not isinstance(reason, str)
-        or not 0 < len(reason) <= _MAX_REASON_CHARS
-        or not all(" " <= character <= "~" for character in reason)
     ):
         return _unavailable(
             ResponsesOutcome.MALFORMED_RESPONSE.value,
@@ -187,6 +198,19 @@ def _parse_classification(
             usage=usage,
             prompt_sha256=prompt_sha256,
             artifact_inventory=artifact_inventory,
+            parse_failure_stage="invalid_confidence",
+        )
+    if not isinstance(reason, str) or not 0 < len(reason) <= _MAX_REASON_CHARS or not all(
+        " " <= character <= "~" for character in reason
+    ):
+        return _unavailable(
+            ResponsesOutcome.MALFORMED_RESPONSE.value,
+            model,
+            elapsed_seconds=elapsed_seconds,
+            usage=usage,
+            prompt_sha256=prompt_sha256,
+            artifact_inventory=artifact_inventory,
+            parse_failure_stage="invalid_reason",
         )
     return RawClassification(
         label,
@@ -241,6 +265,28 @@ def classify_image_with_responses(image_path: Path) -> RawClassification:
             prompt_sha256=prompt_sha256,
             artifact_inventory=artifacts,
         )
+    parsed = _parse_classification(
+        result.output_text,
+        model,
+        elapsed_seconds=elapsed_seconds,
+        usage=result.usage,
+        prompt_sha256=prompt_sha256,
+        artifact_inventory=artifacts,
+    )
+    if parsed.failure_category != ResponsesOutcome.MALFORMED_RESPONSE.value:
+        return parsed
+
+    result = send_runtime_responses_request(request)
+    elapsed_seconds = time.monotonic() - started
+    if result.outcome is not ResponsesOutcome.SUCCESS:
+        return _unavailable(
+            result.outcome.value,
+            model,
+            elapsed_seconds=elapsed_seconds,
+            usage=result.usage,
+            prompt_sha256=prompt_sha256,
+            artifact_inventory=artifacts,
+        )
     return _parse_classification(
         result.output_text,
         model,
@@ -249,3 +295,4 @@ def classify_image_with_responses(image_path: Path) -> RawClassification:
         prompt_sha256=prompt_sha256,
         artifact_inventory=artifacts,
     )
+
