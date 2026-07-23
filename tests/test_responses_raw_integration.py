@@ -90,6 +90,7 @@ def test_raw_success_is_review_only_and_never_mutates_or_saves(tmp_path, monkeyp
     assert row["cached_tokens"] == 1
     assert row["prompt_sha256"] == "a" * 64
     assert row["artifact_inventory"] == ("temporary_component_webp",)
+    assert row["parse_failure_stage"] is None
 
 
 def test_observer_component_consumer_renders_once_and_preserves_supplied_objects(monkeypatch):

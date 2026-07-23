@@ -80,6 +80,7 @@ def _raw_result(component_index: int, classification: RawClassification) -> pd.D
         "cached_tokens": usage.cached_tokens if usage is not None else None,
         "prompt_sha256": classification.prompt_sha256,
         "artifact_inventory": classification.artifact_inventory,
+        "parse_failure_stage": classification.parse_failure_stage,
     }
     return pd.DataFrame([row]).set_index("component_index")
 
