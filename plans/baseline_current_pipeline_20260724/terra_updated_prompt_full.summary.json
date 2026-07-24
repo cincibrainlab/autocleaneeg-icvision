@@ -1,0 +1,67 @@
+{
+  "total_rows": 679,
+  "completed_rows": 679,
+  "failed_rows": 0,
+  "accuracy_completed_rows": 0.49337260677466865,
+  "correct_completed_rows": 335,
+  "accuracy_all_rows": 0.49337260677466865,
+  "label_distribution_true": {
+    "channel_noise": 29,
+    "other_artifact": 123,
+    "brain": 224,
+    "muscle": 200,
+    "eye": 86,
+    "heart": 17
+  },
+  "label_distribution_predicted": {
+    "channel_noise": 176,
+    "brain": 199,
+    "other_artifact": 90,
+    "muscle": 176,
+    "line_noise": 20,
+    "eye": 18
+  },
+  "confusion": {
+    "channel_noise->channel_noise": 24,
+    "other_artifact->channel_noise": 45,
+    "brain->brain": 134,
+    "channel_noise->other_artifact": 4,
+    "muscle->muscle": 128,
+    "eye->brain": 29,
+    "muscle->channel_noise": 54,
+    "other_artifact->other_artifact": 34,
+    "other_artifact->muscle": 21,
+    "brain->muscle": 21,
+    "brain->other_artifact": 28,
+    "muscle->line_noise": 7,
+    "muscle->other_artifact": 7,
+    "brain->line_noise": 7,
+    "other_artifact->brain": 18,
+    "brain->channel_noise": 32,
+    "eye->channel_noise": 21,
+    "eye->eye": 15,
+    "other_artifact->line_noise": 5,
+    "eye->other_artifact": 17,
+    "heart->brain": 14,
+    "eye->muscle": 3,
+    "muscle->brain": 4,
+    "eye->line_noise": 1,
+    "heart->muscle": 2,
+    "heart->eye": 1,
+    "brain->eye": 2,
+    "channel_noise->muscle": 1
+  },
+  "failure_types": {},
+  "tokens_completed_rows": {
+    "input_tokens": 838565,
+    "output_tokens": 124512,
+    "total_tokens": 963077,
+    "mean_total_tokens": 1418.376
+  },
+  "latency_seconds_completed_rows": {
+    "sum": 3973.596,
+    "mean": 5.852,
+    "min": 2.617,
+    "max": 24.289
+  }
+}
