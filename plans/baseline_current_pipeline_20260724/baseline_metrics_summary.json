@@ -1,0 +1,37 @@
+{
+  "gpt4_turbo_reconstructed": {
+    "attempted_rows": 679,
+    "successful_rows": 307,
+    "failed_rows": 372,
+    "correct_successful_rows": 64,
+    "successful_subset_accuracy": 0.20846905537459284,
+    "correct_over_all_attempted_rows": 0.09425625920471281,
+    "latency_seconds_successful_only": {
+      "count": 307,
+      "sum_serial_call_time": 2663.342,
+      "mean": 8.675,
+      "median": 7.272,
+      "min": 4.426,
+      "max": 31.3,
+      "p95": 17.452
+    },
+    "tokens_successful_only": {
+      "prompt_tokens": 364102,
+      "completion_tokens": 36350,
+      "total_tokens": 400452,
+      "mean_prompt_tokens_per_success": 1186.0,
+      "mean_completion_tokens_per_success": 118.4,
+      "mean_total_tokens_per_success": 1304.4
+    }
+  },
+  "iclabel_from_saved_eeglab_ica": {
+    "rows": 679,
+    "successful_rows": 679,
+    "failed_rows": 0,
+    "correct_rows": 448,
+    "accuracy": 0.6597938144329897,
+    "wall_seconds_recorded": 134.7,
+    "mean_seconds_per_row": 0.198379970544919,
+    "tokens": 0
+  }
+}
