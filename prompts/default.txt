@@ -1,12 +1,39 @@
-Classify this EEG ICA component into ONE category and provide your answer in JSON format:
+Classify this EEG ICA component into ONE category using the diagnostic image panels:
+scalp topography, component activity/time series, continuous data segments or ERP-like image,
+and power spectrum. Weigh converging evidence across panels; do not rely on one panel alone.
 
-Categories:
-- "brain": Dipolar central/parietal pattern, 1/f spectrum with possible 6-35Hz peaks
-- "eye": Frontal/periocular dipolar pattern, low-frequency dominated
-- "muscle": Positive spectral slope at high frequencies, edge-focused topography
-- "heart": ~1Hz rhythmic deflections in time series
-- "line_noise": Sharp peak at 50/60Hz
-- "channel_noise": Single isolated focal spot, no dipole
-- "other_artifact": Doesn't fit above categories
+Valid labels and distinguishing cues:
+- "brain": Scalp map is roughly dipolar and not eye/edge focused, often central/parietal/temporal.
+  Spectrum usually falls with frequency (1/f-like) and may show peaks around 5-30 Hz, especially
+  alpha near 10 Hz. Time series is usually smoother/rhythmic rather than blink-like, step-like,
+  or high-frequency bursting. A visible ERP/consistent segment pattern can support brain but is
+  not sufficient if the scalp map is non-dipolar or artifact-like.
+- "eye": Scalp map is frontal/periocular. Blinks often show strong bilateral frontal activity,
+  large slow spikes/deflections, and power concentrated below about 5 Hz. Horizontal eye movement
+  often shows left-right frontal polarity and step-like activity with stable intervals separated
+  by fast saccade transitions.
+- "muscle": Power spectrum is the leading clue: broad high-frequency power, often above 20 Hz,
+  with a flat or rising high-frequency profile rather than clean 1/f decay. Scalp map may look
+  shallow, edge-focused, temporal/jaw/frontal, or locally dipolar near muscle areas. Activity may
+  appear spiky, erratic, or bursty.
+- "heart": Look for regular ECG/QRS-like deflections about once per second in the time series or
+  repeated bands in the segment image. Scalp map is often a broad near-linear gradient from a far
+  source. Spectrum is usually not the main evidence.
+- "line_noise": A sharp narrow peak at 50 or 60 Hz is decisive when that frequency is visible.
+  Do not call line_noise for a notch/dip at 50/60 Hz or for a component that merely has mild line
+  noise mixed into another clearer source.
+- "channel_noise": Scalp map is extremely focal, dominated by one isolated electrode with little
+  or no opposite pole. It can be confused with muscle; prefer channel_noise when the spectrum is
+  still 1/f-like rather than broad high-frequency EMG. Activations may be large, random, flat, or
+  dominated by one channel's bad contact/artifact.
+- "other_artifact": Use when evidence is mixed, non-dipolar, splotchy/multipolar, contradictory,
+  very late/low-variance-looking, or does not clearly fit the categories above. Weak alpha or an
+  ERP-like pattern alone should not force a brain label if topology is not plausible.
 
-Respond with JSON: {"label": "category_name", "confidence": 0.0-1.0, "reason": "brief explanation"}
+Confidence guidance:
+- Use high confidence only when multiple panels agree or one decisive cue is present
+  (clear blink/saccade, clear QRS rhythm, sharp 50/60 Hz peak, or isolated bad channel).
+- Use lower confidence when cues conflict, the source looks mixed, or the component could plausibly
+  be confused with another class.
+
+Respond with ONLY valid JSON: {"label": "category_name", "confidence": 0.0-1.0, "reason": "brief explanation"}
