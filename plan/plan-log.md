@@ -78,6 +78,29 @@ Distinct task (binary reject/keep, not 7-category) and distinct methodology (ful
 
 6. **Tightened prompt made identifiable**: committed as `prompts/tightened_v1.txt` (exact byte-for-byte copy from `terra/integration` branch commit `c3a804a`, SHA-256 `c4420d34...`), alongside `prompts/README.md` documenting the provenance, SHA-256, and live/retired/experimental status of every file in that directory. Neither `tightened_v1.txt` nor `combined_v1.txt` is wired into any code path — both were tested via the strip-mode prompt adapter described in Section 3.
 
+### Second addendum (same day): deeper audit — findings that materially change how confident to be in the numbers above
+
+These were found by going back and interrogating the ground truth itself, not the code. Unlike the first addendum, at least one of these (subject clustering) changes the actual statistical confidence that should be placed in every comparative claim made in this document, not just how it's presented.
+
+1. **True independent sample size is ~12, not 679.** All 679 components come from only 12 unique recordings. Computed real per-subject accuracy for the two full-679 results already reported above:
+
+   | Config | Pooled accuracy (n=679) | Per-subject range (n=12) | Per-subject mean | Subject-clustered 95% CI |
+   |---|---|---|---|---|
+   | `gpt-5.6-terra` + tightened | 57.14% | 45.6% – 78.3% | 60.5% | **[52.6%, 68.3%]** |
+   | `gpt-4.1` production baseline | 40.5% | 23.1% – 84.8% | 44.0% | **[32.0%, 56.0%]** |
+
+   Two consequences that overturn how this document's headline claims should be read: (a) the two configs' subject-clustered intervals **overlap** (52.6%–56.0%) — under proper uncertainty, "terra beats the gpt-4.1 baseline" is no longer a safely settled claim, only a naive per-component calculation made it look that way; (b) terra's upper bound (68.3%) **exceeds ICLabel's 65.98%** — "terra loses to ICLabel by 8.8 points" is similarly not a settled fact once subject clustering is accounted for. Caveat on the caveat: a t-based interval with only 12 clusters is a rough approximation, not precision (normal-distribution assumptions get shaky at this n, especially given how skewed the gpt-4.1 per-subject values are) — but the qualitative direction (real uncertainty is much larger than the pooled numbers implied) is robust.
+
+2. **Grace's 679-set is not exhaustive per file, and the selection process is undocumented.** Every source file except the smallest has real gaps in its component-number sequence (e.g. `0604_vdaudio`: components numbered 1-115, only 103 labeled, 12 missing). We do not know whether omitted components were skipped for being too ambiguous to call, technically excluded, or some other reason. If ambiguous cases were systematically omitted, every accuracy number in this document — including ICLabel's 65.98% reference — is measured on an easier-than-representative sample. This needs to be resolved by asking whoever built `updated_master_file.csv` how components were selected, not something closeable from the data alone.
+
+3. **Zero `line_noise` examples anywhere in the ground truth.** Label distribution across all 679 rows: `{eye: 86, brain: 224, muscle: 200, heart: 17, channel: 29, other: 123}` — no `line_noise` at all. Every number in this document is silently untested on one of the 7 categories every classifier discussed here is actually asked to predict.
+
+4. **Selection effect in choosing the tightened prompt as "the sound candidate."** Its *text* was written independently, before this investigation and not informed by this eval data — that part genuinely escapes the train/test contamination concern in item 1 of the original entry. But *choosing to report it* as the leading candidate happened only after observing it outperform every other tested configuration on this same data, out of roughly 8 tried. That is a real, if smaller, selection effect (closer to "the best of several tried horses" than a blind confirmatory result) and should be described that way, not as an unqualified win.
+
+5. **A candidate fix for the subject-count problem exists but is deliberately deferred, not started.** `IC_Visual_AI_new_APDinASDfiles` (a separate, previously unused dataset — 33 independent subjects vs. this document's 12, ~3,558 labeled components across `chirp` and `rest` tasks) was evaluated as a possible held-out validation set. It would meaningfully shrink the subject-clustered intervals above (~1.7x tighter, from cluster count alone) and is completely unbiased by every test in this document, which would make it a genuine confirmatory check rather than another iteration on already-inspected data. It does **not** fix items 2 or 3 above (same undocumented-selection-gaps pattern found in 28 of its 32 source files; also zero `line_noise` examples) and requires real unbuilt infrastructure (its `.set` files are epoched, not continuous, which the current plotting/classification code path does not support). Decision: **kept in reserve for the next phase of work, not started now**, so it stays available as a genuinely blind test rather than getting used up prematurely.
+
+**Status**: this closes out the baseline-establishment phase of this project's history — every claim above is either backed by a real, validated measurement or explicitly flagged with the uncertainty that remains. Everything from this point forward (prompt/model iteration, evidence injection, the `IC_Visual_AI_new_APDinASDfiles` validation pass, repeated-trials confidence intervals) is modernization built on top of this documented baseline, not part of establishing it.
+
 ---
 
 ## 2026-01-15: RFC-001 Strip Layout Integration
