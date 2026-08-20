@@ -172,6 +172,22 @@ Ran 4 screening passes (same 78-sample stratified set used throughout):
 
 **Recommended next step, not yet run**: graduate `gpt-5.6-sol` + `tightened_v1_strip.txt` to the full 679-set, mirroring exactly how `terra` + `tightened_v1` was promoted from its own 78-sample screen. This is the same incumbent prompt, not a newly-fit one, and fills a real gap (no full-679 result exists yet for any model besides `gpt-4.1` and `terra`).
 
+## 2026-08-20: `gpt-5.6-terra`'s own model-only baseline point, filled in
+
+`terra` never actually had a clean, prompt-unmodified accuracy number — every `terra` result reported so far used the tightened prompt. Ran `gpt-5.6-terra` + unmodified `strip_default.txt` on the same 78-sample: **53.8% (42/78)**, subject-clustered 95% CI [26.1%, 71.0%] ([`experiments/results/2026-08-20_terra_production_default_78sample.csv`](../experiments/results/2026-08-20_terra_production_default_78sample.csv)).
+
+This completes the three-way clean model comparison — same unmodified `strip_default.txt`, same 78-sample, zero prompt engineering on any of them:
+
+| Model | Unmodified prompt, 78-sample | Raw results |
+|---|---|---|
+| `gpt-4.1` | 33.3% | [`experiments/results/2026-08-19_gpt4.1_single_vs_strip_controlled_78sample.csv`](../experiments/results/2026-08-19_gpt4.1_single_vs_strip_controlled_78sample.csv) (`--pred-col strip_predicted_label`) |
+| `gpt-5.6-terra` | 53.8% | [`experiments/results/2026-08-20_terra_production_default_78sample.csv`](../experiments/results/2026-08-20_terra_production_default_78sample.csv) |
+| `gpt-5.6-sol` | 60.3% | [`experiments/results/2026-08-20_sol_production_default_78sample.csv`](../experiments/results/2026-08-20_sol_production_default_78sample.csv) |
+
+This is the fairest apples-to-apples model ranking available in this document — no prompt-engineering confound. Directionally consistent with every prompt-engineered comparison run so far (`sol` ≥ `terra` > `gpt-4.1`), though CIs have not been checked pairwise here and should be before treating the ordering as statistically settled.
+
+**In progress, not yet complete**: `gpt-5.6-sol` + `tightened_v1_strip.txt` on the full 679-set (mirrors `terra` + `tightened_v1`'s existing full-679 promotion), using a newly built normalized manifest (`/tmp/grace_679_manifest_normalized.csv` on cblprod, converted from `icvision_baseline_file_map.csv`'s 1-based `component`/raw `grace_label` columns to the 0-based `component_index`/normalized `true_label_norm` schema `run_screen.py` expects — verified against the known label distribution, `{eye: 86, brain: 224, muscle: 200, heart: 17, channel_noise: 29, other_artifact: 123}`, before use).
+
 ---
 
 ## 2026-01-15: RFC-001 Strip Layout Integration
