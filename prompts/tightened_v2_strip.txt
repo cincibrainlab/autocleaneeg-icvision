@@ -1,0 +1,59 @@
+Classify each of the {n} ICA components shown in this grid (labeled {labels}).
+
+Each component shows:
+- Topography map (scalp distribution)
+- Time series (first 2.5 seconds)
+- ERP-style image (continuous data segments)
+- Power spectrum (1-55Hz)
+
+Weigh converging evidence across all four panels for each component; do not rely on one panel alone.
+
+Valid labels and distinguishing cues:
+- "brain": Scalp map is roughly dipolar and not eye/edge focused, often central/parietal/temporal.
+  Spectrum usually falls with frequency (1/f-like) and may show peaks around 5-30 Hz, especially
+  alpha near 10 Hz. Time series is usually smoother/rhythmic rather than blink-like, step-like,
+  or high-frequency bursting.
+- "eye": Scalp map is frontal/periocular. Blinks often show strong bilateral frontal activity,
+  large slow spikes/deflections, and power concentrated below about 5 Hz. Horizontal eye movement
+  often shows left-right frontal polarity and step-like activity with stable intervals separated
+  by fast saccade transitions. When the scalp map is frontal/periocular AND the time series or
+  spectrum shows low-frequency-dominant, blink- or saccade-like structure, prefer eye over a
+  generic dipolar brain read or a single-electrode channel_noise read.
+- "muscle": Power spectrum is the leading clue: broad high-frequency power, often above 20 Hz,
+  with a flat or rising high-frequency profile rather than clean 1/f decay. Scalp map may look
+  shallow, edge-focused, temporal/jaw/frontal, or locally dipolar near muscle areas -- including
+  a topography that looks like it is dominated by one or two nearby electrodes. Activity may
+  appear spiky, erratic, or bursty. Any high-frequency spectral elevation (flat or rising power
+  above roughly 20-30 Hz) points to muscle, not channel_noise, even when the scalp map also looks
+  locally focal -- topography alone does not override spectral evidence here.
+- "heart": Look for regular ECG/QRS-like deflections about once per second in the time series or
+  repeated bands in the segment image. Scalp map is often a broad near-linear gradient from a far
+  source. A clear, regular ~1 Hz QRS-like rhythm is decisive for heart on its own, even if the
+  scalp map is broad, diffuse, or non-dipolar.
+- "line_noise": A sharp narrow peak at 50 or 60 Hz is decisive when that frequency is visible.
+  Do not call line_noise for a notch/dip at 50/60 Hz or for mild line noise mixed into another
+  clearer source.
+- "channel_noise": This is a narrow, high-bar category, not a default guess for a noisy- or
+  spiky-looking component. Both conditions must hold: (1) the scalp map is unambiguously
+  dominated by a single isolated electrode -- a sharp one-channel "island" with no smooth spatial
+  falloff to neighboring sites and no opposite pole, AND (2) the power spectrum is flat or noisy
+  WITHOUT the rising/elevated high-frequency profile described under muscle. If the spectrum shows
+  that muscle-like high-frequency elevation, classify as muscle even if the topography looks
+  focal to one electrode. If evidence is ambiguous between an isolated bad electrode and a diffuse
+  or unclear source, prefer muscle or other_artifact over channel_noise.
+- "other_artifact": Use when evidence is mixed, non-dipolar, splotchy/multipolar, contradictory,
+  or does not clearly fit the categories above. This is a common, correct answer -- roughly one
+  in six components in typical EEG data genuinely belongs here -- not a last resort to avoid.
+  When panels genuinely conflict, the visual evidence is weak, or no category fits cleanly,
+  other_artifact is the correct label: do not force channel_noise, muscle, eye, or a weak brain
+  read onto an ambiguous component just to give a more specific-sounding answer.
+
+Confidence guidance:
+- Use high confidence only when multiple panels agree or one decisive cue is present
+  (clear blink/saccade, clear QRS rhythm, sharp 50/60 Hz peak, or isolated bad channel with a
+  clean, non-elevated spectrum).
+- Use lower confidence when cues conflict, the source looks mixed, or the component could
+  plausibly be confused with another class.
+
+Respond with JSON array (one object per component, {n} objects total):
+{json_example}

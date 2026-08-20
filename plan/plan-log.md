@@ -128,6 +128,27 @@ Both configs underperform the tightened prompt on the identical sample; CIs over
 
 **Next step under consideration, not yet run**: a further-tightened prompt variant that keeps `tightened_v1.txt`'s specific per-category clarifying cues (its apparent strength) while testing whether trimming it further helps or hurts — distinct from the failed hypothesis of *adding* a formal scoring system, which this entry now closes out as tested and rejected.
 
+## 2026-08-20: `tightened_v2_strip.txt` drafted — not yet tested
+
+New candidate: `prompts/tightened_v2_strip.txt`, a strip-native template (unlike `tightened_v1.txt`, which is single-mode text adapted to strip via a wrapper) built through the real PR #15 `custom_prompt` mechanism directly, matching `detailed_original_strip.txt`'s approach. Validated to render correctly via `config.get_strip_prompt(n, template=...)` for n=3, 9, 22.
+
+**Transparency note, same caveat class as `tightened_v1.txt`'s own selection effect (second addendum, item 4) but stronger**: this variant was not written blind. It directly targets `tightened_v1.txt`'s own two weakest points as already measured and reported on Grace's 679-set in Section 3 above — `other_artifact` at 38% (worst category) and the dominant `muscle→channel_noise` confusion (65 cases). Both fixes are informed by having seen those specific numbers: the `channel_noise` criteria now require an explicit AND on topology *and* a non-elevated spectrum (spectral evidence overrides a focal-looking topography), and `other_artifact` guidance now cites its true ~18% base rate (123/679) from the same ground truth, to counter under-use. This is real train/test contamination, more direct than anything flagged so far this session — any accuracy gain on Grace's data should be read as partly "fit to this specific dataset's error pattern," not purely a generalizable prompt improvement, until confirmed on a genuinely unseen set (e.g. the reserved `IC_Visual_AI_new_APDinASDfiles`, per the earlier addendum, item 5).
+
+At 631 words it also happens to land between `tightened_v1.txt` (704) and `strip_default.txt` (168) — not by design, but worth noting given the length-vs-structure finding immediately above.
+
+**Not yet run against any model.**
+
+## 2026-08-20: `gpt-5.6-sol` — connectivity and vision-path verified, not yet screened
+
+Before adding a third model to the test matrix, checked what's actually reachable from cblprod rather than assuming `sol` shares `terra`'s setup:
+
+- `GET /v1/models` on the ClinCog gateway (`https://openai.cincibrainlab.com/v1`, same bearer auth as `terra`) lists `gpt-5.6-sol` alongside `gpt-5.6-terra` and a third, previously-unseen sibling `gpt-5.6-luna`. Same endpoint, same auth — no new client-construction path needed, unlike the Azure gateway.
+- Sent a real strip image (the same 9-component grid used for the `detailed_original_strip.txt` smoke test) through `gpt-5.6-sol`'s vision path directly: it correctly described all four panel types (topography, time series, ERP-style segments, power spectrum) — confirms genuine image understanding, not a canned/text-only fallback. Worth checking explicitly given this project's own prior history with vision-routing bugs on other endpoints (see 2026-01-17, "Local Endpoint Test (Vision Routing Fix)").
+- Sent the actual strip-mode classification prompt (9 components, same categories as `strip_default.txt`): returned a clean, valid JSON array with 9 well-formed, plausibly-varied objects (label/confidence/reason per component) — response-format compliance confirmed.
+- **Infrastructure note, not a `sol`-specific issue**: raw `curl`/`urllib` requests without a browser/SDK-style `User-Agent` get blocked by this gateway's Cloudflare WAF (`error code: 1010`). Reproduced identically against known-working `terra` with the same bare `urllib` request, confirming it's a client-header artifact of ad-hoc debugging, not an access restriction on `sol`. Not a concern for any real test script, since the `openai` Python SDK (what `classify_components_strip_batch` actually uses) sets its own `User-Agent`.
+
+**Smoke test only — not included in `experiments/results/`, no accuracy claim.** Planned next step: same two-stage protocol as every other candidate — 78-sample screen against (a) unmodified `strip_default.txt`, the one model-isolated comparison point that was never actually run for `terra` either, and (b) `tightened_v1.txt`, directly comparable to `terra`'s existing 62.8%/41.0% numbers on the same sample. Also planned: generalizing the current prompt-specific runner (`experiments/runners/run_detailed_original_strip_screen.py`) into one reusable `--model`/`--prompt-file`-parametrized script before adding this third model's runs, rather than writing another near-duplicate one-off script.
+
 ---
 
 ## 2026-01-15: RFC-001 Strip Layout Integration
