@@ -62,7 +62,7 @@ Distinct task (binary reject/keep, not 7-category) and distinct methodology (ful
 3. **Single-rater ground truth** — Grace's 679-set has no second reviewer and no inter-rater agreement statistic.
 4. **Strip-batched components are not i.i.d.** — components sharing a batch/API call are correlated; naive per-component accuracy does not account for this clustering.
 5. **Endpoint provenance is not fully confirmed** — neither the Azure `gpt-4.1` gateway nor the CLIProxy `gpt-5.6-terra` gateway used here has been confirmed as the actual endpoint real production traffic uses (`vision.autocleaneeg.org`, referenced elsewhere in this project's history, was never reached with a working credential during this investigation).
-6. **Multiple-comparisons**: roughly 8 configurations were tried in an exploratory, iterative fashion without correction for multiple comparisons.
+6. **Multiple-comparisons**: roughly 8 configurations were tried in an exploratory, iterative fashion without correction for multiple comparisons. **[STALE — see the 2026-08-20 "Multiple-comparisons tally" entry near the end of this document for the current, real count.]**
 
 **Status**: `gpt-5.6-terra`, even with the best prompt tested so far, does not yet beat ICLabel on the real 7-category task at true scale (57.14% vs. 65.98%). Planned next steps (not yet run): evidence injection (numeric channel-loading features, targets the dominant `muscle→channel_noise` confusion specifically), reasoning-effort tuning, smaller strip sizes, combined prompt on `gpt-5.6-terra`, and closing the methodology gaps above before treating any of these numbers as final.
 
@@ -207,6 +207,32 @@ The raw file used a short-form label vocabulary for both true and predicted labe
 **ICLabel's own subject-clustered 95% CI: [62.4%, 76.9%]**, per-subject mean 69.6% (n=12, range 47.0%–88.9%).
 
 This meaningfully corrects the framing of the immediately preceding entry. With a real interval now computed, `sol` + `tightened_v1`'s CI [64.9%, 79.2%] (mean 72.1%) overlaps ICLabel's substantially — this was not, in fact, "the closest any configuration has come to a defensible beats-ICLabel claim" once ICLabel gets its own honest uncertainty; it is two genuinely close, statistically indistinguishable-at-n=12 competitors. **Every "beats/loses to ICLabel" claim anywhere in this document, past or future, should be read the same way**: directional only, not a settled result, given the CI widths this ground truth's subject count produces. The original baseline entry's framing ("terra loses to ICLabel by 8.8 points") was itself already flagged as unsafe once subject clustering was applied (second addendum, item 1) — this entry extends that same correction to ICLabel's side of every comparison, not just the tested models' side.
+
+## 2026-08-20: Multiple-comparisons tally, real count (replaces the stale "roughly 8" in Section 6, item 6)
+
+Every distinct (model, prompt, layout) configuration actually scored against Grace's 679-set ground truth this session, counted directly from `experiments/results/`, one row per entry:
+
+| # | Model | Prompt | Layout | Scale(s) tested |
+|---|---|---|---|---|
+| 1 | `gpt-4.1` | `default.txt` (unmodified) | single | 78-sample |
+| 2 | `gpt-4.1` | `strip_default.txt` (unmodified) | strip | 78-sample **and** full 679-set |
+| 3 | `gpt-4.1` | `tightened_v1_strip.txt` | strip | 78-sample |
+| 4 | `gpt-4.1` | `combined_v1.txt` | strip | 78-sample |
+| 5 | `gpt-4.1` | `detailed_original_strip.txt` | strip | 78-sample |
+| 6 | `gpt-4.1` | `tightened_v2_strip.txt` | strip | 78-sample |
+| 7 | `gpt-5.6-terra` | `strip_default.txt` (unmodified) | strip | 78-sample |
+| 8 | `gpt-5.6-terra` | `tightened_v1_strip.txt` | strip | 78-sample **and** full 679-set |
+| 9 | `gpt-5.6-terra` | `detailed_original_strip.txt` | strip | 78-sample |
+| 10 | `gpt-5.6-terra` | `tightened_v2_strip.txt` | strip | 78-sample |
+| 11 | `gpt-5.6-sol` | `strip_default.txt` (unmodified) | strip | 78-sample |
+| 12 | `gpt-5.6-sol` | `tightened_v1_strip.txt` | strip | 78-sample **and** full 679-set |
+| 13 | MNE-ICLabel | n/a (non-LLM, deterministic) | n/a | full 679-set |
+
+**13 distinct classifiers/configurations compared against the same ground truth, not "roughly 8."** 12 are LLM configurations across 3 models and 5 distinct prompts (plus the single-mode default); the 13th is the non-LLM reference. Three configurations (#2, #8, #12) were carried from a 78-sample screen to a full-679 confirmatory run under the two-stage protocol established this session — that is staged/sequential testing of pre-selected candidates, not 3 additional independent comparisons, but it's worth being precise that 15 total scoring runs underlie these 13 configurations.
+
+Excluded from this count, as already scoped out explicitly in the first addendum's item 1: the RESTORE-RCT binary reject/keep thread (Section 5) — a different task on different data with its own methodology, not part of the same "does X beat ICLabel on Grace's 7-category ground truth" comparison pool.
+
+**No multiple-comparisons correction has been applied to any claim in this document.** With 13 comparisons against the same n=12-subject ground truth, this remains an important caveat for any external use of these numbers — it does not change any individual result, but it means the *selection* of which configuration to highlight as "leading" (currently `sol` + `tightened_v1`) carries a real risk of being partly a favorable draw among 13 tries, not purely a true effect. This is the same caveat already stated for the tightened-prompt selection specifically (second addendum, item 4); it now applies to the sol/tightened_v1 selection too, for the same reason.
 
 ---
 
