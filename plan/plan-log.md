@@ -1,5 +1,71 @@
 # Plan Log
 
+## 2026-08-19: Production Accuracy Baseline — icvision vs ICLabel
+
+**Context**: PI requested a solid, defensible production accuracy baseline before considering any migration to `gpt-5.6-terra`. This entry documents that investigation end to end, in the order the work should be read (not strictly the order it happened): the infrastructure bug found and fixed first, then the true unmodified-production baseline, then a pre-existing prompt candidate, then a new prompt candidate, then a separate binary-task pipeline-reproduction thread, then honest methodology limitations.
+
+**Ground truth used**: Grace's independently, blindly labeled 679-component set (`updated_master_file.csv`, 12 source `.set` files, 7-category labels), and its locked-132 hard-case subset. All numbers below are scored against this same ground truth unless noted otherwise. Reference point: **MNE-ICLabel scores 65.98% on the full 679-set, 58.3% on the locked-132 subset** — both real, local, zero-cost, already the default classifier inside `autocleaneeg_pipeline`.
+
+### 1. Infrastructure bug found and fixed first
+
+While running the real production strip-batch code path, discovered that `classify_strip_image()`'s markdown-fence JSON stripping only worked when the closing fence was the literal last line of the response — any trailing text after it (which `gpt-4.1` adds fairly often) caused a silent parse failure, with the whole affected strip batch falling back to a fake `other_artifact` result with no indication anything went wrong. `classify_component_image_openai()` (single-image path) had no fence-handling at all. Roughly half of all strip batches failed this way on first measurement.
+
+- **Issue**: [#13](https://github.com/cincibrainlab/autocleaneeg-icvision/issues/13)
+- **Fix (PR)**: [#14](https://github.com/cincibrainlab/autocleaneeg-icvision/pull/14) — `_extract_json_payload()`, regex-based fence extraction with bracket-matching fallback, validated against the real captured failing response plus 4 other cases (clean fence, no fence, object vs array, nested braces in string values)
+- **Every result below was measured with this fix applied locally**, ahead of the PR merging — numbers are not reproducible from `main` as it stands until #14 lands.
+
+### 2. Real production baseline — unmodified code, unmodified prompts
+
+Two distinct production configurations exist and use two *different* prompts (this was initially mischaracterized mid-investigation and corrected):
+
+| Config | Model | Layout | Prompt (unmodified, shipped) | Sample | Accuracy |
+|---|---|---|---|---|---|
+| Single-mode default | `gpt-4.1` | single | `prompts/default.txt` (commit `c506659`, 2025-12-23, Ernie Pedapati) | 78-component stratified sample | **33.3%** |
+| Strip-mode default (what the pipeline actually forces) | `gpt-4.1` | strip | `STRIP_PROMPT_TEMPLATE` in `config.py` (commit `ea5f683`, 2026-01-15, Ernie Pedapati) | full 679-set | **40.5%** |
+
+Both endpoints were `gpt-4.1` via a freshly-provisioned Azure APIM gateway (`api-key` header + `api-version` query param, not the SDK's default `Authorization: Bearer` — required a client-construction patch at the call site, not a change to icvision's own source).
+
+### 3. Tightened prompt — pre-existing artifact, not authored during this investigation
+
+Written earlier on the unmerged `terra/integration` branch (commit `c3a804a`, "docs: tighten channel_noise, eye, heart, and fallback cues in ICA prompt"), never merged to `main`, never previously accuracy-tested. Strip mode has no `custom_prompt` hook in production code, so this was tested by substituting the prompt's category-guidance text into strip mode's required response-format wrapper (the framing/JSON-array-format portions copied verbatim from the real `STRIP_PROMPT_TEMPLATE`; only category definitions swapped).
+
+| Model | Sample | Accuracy | Note |
+|---|---|---|---|
+| `gpt-4.1` | 78-sample | 41.0% | |
+| `gpt-5.6-terra` | 78-sample | 62.8% | **Superseded by full-set result below — sample was stratified toward hard categories, inflating this number** |
+| `gpt-5.6-terra` | **full 679-set** | **57.14%** | Real, unbiased result. Per-category: channel_noise 93%, eye 69%, heart 65%, brain 61%, muscle 54%, other_artifact 38%. Still **8.8 points below ICLabel's 65.98%**. Dominant remaining error: `muscle→channel_noise` (65 cases) |
+
+### 4. Combined prompt — new work, authored during this investigation
+
+`prompts/combined_v1.txt`, written today, synthesizing elements from the tightened prompt and an older archived prompt (`prompts/detailed_original.txt`, retired 2025-12-23), informed by error-pattern analysis on the locked-132 subset.
+
+| Model | Sample | Accuracy |
+|---|---|---|
+| `gpt-4.1` | 78-sample | 35.9% (underperformed the tightened prompt on the same sample/model) |
+
+**Not yet run**: combined prompt + `gpt-5.6-terra`, at any scale.
+
+### 5. Separate thread: real E2E pipeline reproduction + ICLabel binary accuracy (RESTORE-RCT)
+
+Distinct task (binary reject/keep, not 7-category) and distinct methodology (full `autocleaneeg_pipeline` v3.0.0 run from raw `.bdf` end to end, not classifier-only comparison against a fixed decomposition) — kept separate from the icvision numbers above, not directly comparable to them.
+
+- Recovered the exact custom task config (`RESTORE_RCT_Biosemi64.py`), SHA-256-verified identical to what the original clinical ground truth was built against; pipeline's fixed `ICA(random_state=97)` default made the fresh run reproduce human-corrected ground truth exactly on the first subject tested (57/57 components).
+- **First scoring pass showed misleading ~100% agreement across 9 subjects** — root cause: 7 of 9 subjects had `status=auto` in the QC control sheet, meaning no independent human correction was ever applied; comparing a deterministic rerun against its own prior unreviewed output is close to circular.
+- **Corrected**: rescoped to only the 15 subjects across the full cohort with a genuine, independent `manual_fixes/*.json` human correction on record. Result: **898/901 components correct = 99.67%**, 0 false positives, 3 false negatives, $0 cost (ICLabel runs locally, no API involved).
+
+### 6. Methodology limitations — not yet addressed, should be disclosed with any external use of these numbers
+
+1. **Train/test contamination risk**: both the tightened and combined prompts were evaluated on data whose error patterns had already been inspected (the tightened prompt indirectly, the combined prompt directly, during its own authoring today). No held-out set has been used that was never inspected during prompt design.
+2. **No repeated trials / variance estimates anywhere** — every number above is a single run. `temperature=0.2` reduces but does not eliminate run-to-run variance; we cannot currently distinguish real effect sizes from noise.
+3. **Single-rater ground truth** — Grace's 679-set has no second reviewer and no inter-rater agreement statistic.
+4. **Strip-batched components are not i.i.d.** — components sharing a batch/API call are correlated; naive per-component accuracy does not account for this clustering.
+5. **Endpoint provenance is not fully confirmed** — neither the Azure `gpt-4.1` gateway nor the CLIProxy `gpt-5.6-terra` gateway used here has been confirmed as the actual endpoint real production traffic uses (`vision.autocleaneeg.org`, referenced elsewhere in this project's history, was never reached with a working credential during this investigation).
+6. **Multiple-comparisons**: roughly 8 configurations were tried in an exploratory, iterative fashion without correction for multiple comparisons.
+
+**Status**: `gpt-5.6-terra`, even with the best prompt tested so far, does not yet beat ICLabel on the real 7-category task at true scale (57.14% vs. 65.98%). Planned next steps (not yet run): evidence injection (numeric channel-loading features, targets the dominant `muscle→channel_noise` confusion specifically), reasoning-effort tuning, smaller strip sizes, combined prompt on `gpt-5.6-terra`, and closing the methodology gaps above before treating any of these numbers as final.
+
+---
+
 ## 2026-01-15: RFC-001 Strip Layout Integration
 
 **Document**: `multi-tracing-production.qmd`

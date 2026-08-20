@@ -1,0 +1,84 @@
+Classify this EEG ICA component into ONE category using the diagnostic image panels:
+scalp topography, component activity/time series, continuous data segments or ERP-like image,
+and power spectrum. Weigh converging evidence across panels; do not rely on one panel alone.
+
+Two labels below are easy default fallbacks when evidence looks messy: "channel_noise" and
+"brain". Both are overused when a component doesn't cleanly fit anything else. Before choosing
+either one, actively check whether a more specific category's decisive cue (listed below) is
+present -- muscle's spectral slope, heart's rhythmic beat, eye's frontal low-frequency pattern.
+Only fall back to channel_noise or brain, or to other_artifact, once you've ruled those out.
+
+Valid labels and distinguishing cues:
+
+- "brain": Scalp map is roughly dipolar and not eye/edge focused, often central/parietal/temporal.
+  Spectrum usually falls with frequency (1/f-like) and may show peaks around 5-30 Hz, especially
+  alpha near 10 Hz. Time series is usually smoother/rhythmic rather than blink-like, step-like,
+  or high-frequency bursting. A visible ERP/consistent segment pattern can support brain but is
+  not sufficient if the scalp map is non-dipolar or artifact-like. Do not use brain as a safe
+  default for an ambiguous or broad/diffuse topography -- check heart and eye first (see below).
+
+- "eye": Scalp map is frontal/periocular, typically anterior to and including Fp1, Fp2, F7, F8.
+  Blinks often show strong bilateral frontal activity, large slow spikes/deflections, and power
+  concentrated below about 5 Hz. Horizontal eye movement often shows left-right frontal polarity
+  and step-like activity with stable intervals separated by fast saccade transitions. When the
+  scalp map is frontal/periocular AND the time series or spectrum shows low-frequency-dominant,
+  blink- or saccade-like structure, prefer eye over a generic dipolar brain read, a channel_noise
+  read, or other_artifact: frontal focality alone is weak evidence for channel_noise, and a
+  plausible-looking anterior dipole is not enough to call brain if the activity pattern is
+  blink/saccade-like. Only let brain, channel_noise, or other_artifact win this tie-break when
+  another panel clearly contradicts eye (e.g., a sharp 50/60 Hz peak, a rhythmic 8-13 Hz alpha
+  spectrum with smooth non-blink activity, or an unambiguous isolated-electrode map).
+
+- "muscle": Power spectrum is the leading, often decisive clue: broad high-frequency power, often
+  above 20 Hz, with a flat or clearly rising high-frequency profile rather than clean 1/f decay.
+  This spectral pattern is decisive on its own -- if present, prefer muscle even when the scalp
+  map looks shallow, edge-focused, or locally focal near temporal/jaw/frontal sites, UNLESS the
+  scalp map is unambiguously a single isolated electrode with no opposite pole and no smooth
+  spatial falloff (in which case see channel_noise). Do not let an edge-focused or spiky-looking
+  topography alone pull this toward channel_noise when the spectrum shows muscle's high-frequency
+  signature. Activity may appear spiky, erratic, or bursty in the time series.
+
+- "heart": Look for regular ECG/QRS-like deflections about once per second in the time series or
+  repeated bands in the segment image. This rhythmic ~1 Hz pattern is decisive for heart on its
+  own. Scalp topography is not diagnostic for heart and should be treated as uninformative rather
+  than contradicting evidence: cardiac sources are typically distant/broad and often produce a
+  diffuse, near-linear gradient or an odd, non-dipolar map that can superficially resemble brain
+  or other_artifact. Do not classify a component as brain, muscle, or other_artifact on the
+  strength of its topography alone if the time series or segment image shows the ~1 Hz rhythmic
+  pattern -- the rhythm outweighs an ambiguous or brain-like-looking scalp map. Power spectrum is
+  usually not informative for heart either way.
+
+- "line_noise": A sharp narrow peak at 50 or 60 Hz is decisive when that frequency is visible.
+  Do not call line_noise for a notch/dip at 50/60 Hz or for a component that merely has mild line
+  noise mixed into another clearer source. Topography and time series are not informative for
+  this category; the spectral peak alone should drive the decision.
+
+- "channel_noise": This is a narrow, high-bar category, not a default guess for a noisy-, spiky-,
+  or otherwise hard-to-classify component. Use it ONLY when the scalp map is unambiguously
+  dominated by a single isolated electrode: a sharp one-channel "island" with essentially no
+  smooth spatial falloff to neighboring sites and no opposite pole. Before selecting
+  channel_noise, explicitly rule out muscle (broad/rising high-frequency spectral power -- see
+  above, this rules out channel_noise even if the map looks edge-focused or focal) and rule out
+  eye (frontal focality with low-frequency-dominant activity). If the evidence is ambiguous
+  between an isolated bad electrode and a diffuse or unclear source, prefer muscle or
+  other_artifact over channel_noise. Reserve channel_noise for cases where the single bad
+  electrode is the obvious, unmistakable read.
+
+- "other_artifact": Use when evidence is mixed, non-dipolar, splotchy/multipolar, contradictory,
+  very late/low-variance-looking, or does not clearly fit the categories above -- after you have
+  actively checked and ruled out heart's rhythm, muscle's spectral slope, and eye's frontal
+  low-frequency pattern, not merely because the component looks unusual at a glance. Weak alpha or
+  an ERP-like pattern alone should not force a brain label if topology is not plausible. When
+  panels genuinely conflict, the visual evidence is weak, or no category fits cleanly,
+  other_artifact is the correct fallback: do not force channel_noise, muscle, or eye onto an
+  ambiguous component just to avoid using other_artifact, and do not force brain or channel_noise
+  onto it either just because they feel like safe defaults.
+
+Confidence guidance:
+- Use high confidence only when multiple panels agree or one decisive cue is present
+  (clear blink/saccade, clear QRS rhythm, sharp 50/60 Hz peak, clear high-frequency muscle
+  spectral slope, or an isolated bad channel).
+- Use lower confidence when cues conflict, the source looks mixed, or the component could plausibly
+  be confused with another class.
+
+Respond with ONLY valid JSON: {"label": "category_name", "confidence": 0.0-1.0, "reason": "brief explanation"}
