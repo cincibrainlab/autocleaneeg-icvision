@@ -198,6 +198,16 @@ This is the highest pooled accuracy and the tightest, highest-positioned confide
 
 **Honest framing**: this is real, substantial progress — the tightest and highest interval yet, closing most of the gap to ICLabel that the original baseline entry described as an 8.8-point deficit — but "terra loses to ICLabel" from the original baseline entry should now read as "the newest configuration tested, sol + tightened_v1, plausibly matches or exceeds ICLabel, pending an ICLabel confidence interval that doesn't exist yet." Recommended next step: commit ICLabel's raw per-component 679-set predictions to `experiments/results/` so its own subject-clustered CI can finally be computed — this has been a real gap in every ICLabel comparison made in this document, not just this one.
 
+## 2026-08-20: ICLabel's raw predictions committed — its own confidence interval closes the "beats ICLabel" gap honestly
+
+Closed the gap flagged immediately above. ICLabel's raw per-component predictions already existed on cblprod (`/tmp/icvision_reconstructed_baseline/iclabel_full_baseline.csv`, produced by `extract_iclabel_baseline_from_eeglab.py` — runs `mne_icalabel.label_components` on the same saved EEGLAB ICA decompositions used for every icvision test, against the same 679-component Grace ground truth) — it just had never been committed to this repo. Verified its accuracy (65.9793...%) reproduces the documented 65.98% reference exactly before using it (679/679 rows, 0 failures, 12 unique subjects — matches).
+
+The raw file used a short-form label vocabulary for both true and predicted labels (`"other"`, `"channel"`, consistently on both sides, so its own accuracy figure was never affected by the label-normalization bug flagged earlier in this document) rather than icvision's full-name vocabulary (`"other_artifact"`, `"channel_noise"`). Converted via the same normalization used throughout this project and verified the conversion is accuracy-invariant (448/679 = 65.98% before and after) before committing [`experiments/results/2026-08-20_iclabel_full679.csv`](../experiments/results/2026-08-20_iclabel_full679.csv).
+
+**ICLabel's own subject-clustered 95% CI: [62.4%, 76.9%]**, per-subject mean 69.6% (n=12, range 47.0%–88.9%).
+
+This meaningfully corrects the framing of the immediately preceding entry. With a real interval now computed, `sol` + `tightened_v1`'s CI [64.9%, 79.2%] (mean 72.1%) overlaps ICLabel's substantially — this was not, in fact, "the closest any configuration has come to a defensible beats-ICLabel claim" once ICLabel gets its own honest uncertainty; it is two genuinely close, statistically indistinguishable-at-n=12 competitors. **Every "beats/loses to ICLabel" claim anywhere in this document, past or future, should be read the same way**: directional only, not a settled result, given the CI widths this ground truth's subject count produces. The original baseline entry's framing ("terra loses to ICLabel by 8.8 points") was itself already flagged as unsafe once subject clustering was applied (second addendum, item 1) — this entry extends that same correction to ICLabel's side of every comparison, not just the tested models' side.
+
 ---
 
 ## 2026-01-15: RFC-001 Strip Layout Integration
