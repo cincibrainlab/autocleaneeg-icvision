@@ -5,10 +5,13 @@ Raw, unmodified output CSVs for every result reported as a finding in
 (subject/source file, the clustering unit), `component_index`, true label,
 predicted label(s), confidence, and the model's stated reason.
 
-Deliberately **not** included: smoke tests, screening runs, or anything that
-didn't itself become a reported number in `plan-log.md` — those are cheap,
-disposable sanity checks, not evidentiary artifacts. Committing every one of
-those would bury the real results in noise.
+Deliberately **not** included: smoke tests, or anything that didn't itself
+become a reported number in `plan-log.md` — those are cheap, disposable
+sanity checks, not evidentiary artifacts, and committing every one of them
+would bury the real results in noise. Screening-pass runs (the 78-sample
+scale) *are* included once they produce a number that gets cited as a
+finding, even a negative one (a prompt underperforming) — the bar is "was
+this cited as evidence," not "did it win."
 
 Score any of these directly against `experiments/scoring/subject_clustered_scoring.py`
 to independently reproduce the pooled accuracy and subject-clustered
@@ -22,5 +25,9 @@ confidence interval reported for it — that's the point of committing them.
 | `2026-08-19_gpt4.1_combined_78sample.csv` | `gpt-4.1` + combined prompt (`prompts/combined_v1.txt`, stashed), 78-sample | 35.9% |
 | `2026-08-19_terra_tightened_78sample.csv` | `gpt-5.6-terra` + tightened prompt, 78-sample — **superseded**, sample was stratified toward hard categories | 62.8% |
 | `2026-08-20_terra_tightened_full679.csv` | `gpt-5.6-terra` + tightened prompt, full 679-set — the current reference number, subject-clustered 95% CI [52.6%, 68.3%] | 57.14% |
+| `2026-08-20_gpt4.1_detailed_original_strip_78sample.csv` | `gpt-4.1` + `prompts/detailed_original_strip.txt` (weighted decisive-feature scoring system), same 78-sample as the tightened/combined rows above | 34.6% (below tightened's 41.0% on the identical sample; CIs overlap) |
+| `2026-08-20_terra_detailed_original_strip_78sample.csv` | `gpt-5.6-terra` + `prompts/detailed_original_strip.txt`, same 78-sample as the tightened row above | 55.1% (below tightened's 62.8% on the identical sample; CIs overlap) |
 
 All verified against the reported numbers in `plan-log.md` at the time this directory was created (2026-08-20) by running `subject_clustered_scoring.py` on each file directly.
+
+**Prompt length is not the driver of the pattern above** — on this same 78-sample, apples-to-apples (`gpt-4.1`): `strip_default.txt` (168 words, the shipped production prompt) scores worst at 33.3%, `tightened_v1.txt` (704 words) scores best at 41.0%, and `detailed_original_strip.txt` (815 words) and `combined_v1.txt` (949 words) fall in between at 34.6%/35.9%. The shortest prompt is not the best, and the two worst-performing long prompts share a specific structural feature the winner lacks: an explicit numeric weighted-scoring system with "decisive feature" override rules (e.g. "if X's power spectrum scores ≥0.95, set X to 1.0, others to 0.0"). The working hypothesis is that this rigid algorithmic framing, not verbosity itself, causes systematic over-collapse into specific categories (`detailed_original_strip.txt` drove `gpt-4.1`'s `other_artifact` to 0/12 correct; drove `gpt-5.6-terra`'s predictions to lean heavily on `channel_noise`/`brain`). See `experiments/runners/run_detailed_original_strip_screen.py` for the run mechanism.
