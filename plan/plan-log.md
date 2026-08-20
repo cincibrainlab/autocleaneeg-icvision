@@ -188,6 +188,16 @@ This is the fairest apples-to-apples model ranking available in this document �
 
 **In progress, not yet complete**: `gpt-5.6-sol` + `tightened_v1_strip.txt` on the full 679-set (mirrors `terra` + `tightened_v1`'s existing full-679 promotion), using a newly built normalized manifest (`/tmp/grace_679_manifest_normalized.csv` on cblprod, converted from `icvision_baseline_file_map.csv`'s 1-based `component`/raw `grace_label` columns to the 0-based `component_index`/normalized `true_label_norm` schema `run_screen.py` expects — verified against the known label distribution, `{eye: 86, brain: 224, muscle: 200, heart: 17, channel_noise: 29, other_artifact: 123}`, before use).
 
+## 2026-08-20: `gpt-5.6-sol` + `tightened_v1_strip.txt`, full 679-set — new leading result
+
+The full-679 graduation run above completed: **469/679 = 69.07%**, subject-clustered 95% CI **[64.9%, 79.2%]** ([`experiments/results/2026-08-20_sol_tightened_v1_full679.csv`](../experiments/results/2026-08-20_sol_tightened_v1_full679.csv)). Per-category: heart 94%, muscle 77%, brain 74%, eye 66%, other_artifact 51%, channel_noise 48%.
+
+This is the highest pooled accuracy and the tightest, highest-positioned confidence interval of any configuration measured across this entire session — for comparison, `terra` + `tightened_v1` on the same full-679 set: 57.14%, CI [52.6%, 68.3%] (Section 3 above). The 78-sample screening estimate (70.5%) held up closely at full scale (69.07%), which is itself a useful data point: the screening protocol has now correctly predicted a full-679 result twice (`terra` earlier, `sol` now).
+
+**On the ICLabel comparison, stated precisely rather than declared a clean win**: `sol`'s CI lower bound (64.9%) sits almost exactly at ICLabel's 65.98% point estimate — most of the CI's probability mass is above it, but the bottom edge dips just under. This is the closest any configuration has come to a defensible "beats ICLabel" claim, but two things hold it back from being a clean, certain claim: (1) ICLabel's own 65.98% has never had a subject-clustered interval computed — its raw per-component predictions were never committed to `experiments/results/`, so it's being compared as a fixed number against a real interval, not interval-to-interval; (2) `sol`'s CI still overlaps `terra`'s CI (barely — terra's ceiling 68.3% vs sol's floor 64.9%), so `sol` is not yet statistically distinguishable from `terra` either, only directionally ahead with a much tighter interval.
+
+**Honest framing**: this is real, substantial progress — the tightest and highest interval yet, closing most of the gap to ICLabel that the original baseline entry described as an 8.8-point deficit — but "terra loses to ICLabel" from the original baseline entry should now read as "the newest configuration tested, sol + tightened_v1, plausibly matches or exceeds ICLabel, pending an ICLabel confidence interval that doesn't exist yet." Recommended next step: commit ICLabel's raw per-component 679-set predictions to `experiments/results/` so its own subject-clustered CI can finally be computed — this has been a real gap in every ICLabel comparison made in this document, not just this one.
+
 ---
 
 ## 2026-01-15: RFC-001 Strip Layout Integration
