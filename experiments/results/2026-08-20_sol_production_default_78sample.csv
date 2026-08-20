@@ -1,0 +1,79 @@
+set_path,component_index,true_label_norm,predicted_label,confidence,reason
+SavedFiles/0137_VDAudio_ICA.set,1,heart,heart,0.92,"Broad scalp distribution with repeated sharp, approximately 1 Hz rhythmic deflections in the time series."
+SavedFiles/0137_VDAudio_ICA.set,5,heart,brain,0.82,Broad dipolar anterior-posterior topography with a generally declining 1/f-like spectrum and no clear artifact signature.
+SavedFiles/0137_VDAudio_ICA.set,23,muscle,muscle,0.94,Frontal-edge focal topography combined with a flattened/rising high-frequency spectrum and irregular fast activity.
+SavedFiles/0137_VDAudio_ICA.set,39,muscle,channel_noise,0.94,Single isolated sensor-like focal spot with an erratic time series and broadly flat noisy higher-frequency spectrum.
+SavedFiles/0137_VDAudio_ICA.set,53,channel_noise,other_artifact,0.68,"Highly focal central topography and strongly low-frequency activity, but neither frontal ocular morphology nor the flat noisy spectrum required for channel noise."
+SavedFiles/0137_VDAudio_ICA.set,66,muscle,brain,0.78,Lateral temporal dipolar pattern with a declining 1/f spectrum and a modest alpha-range peak.
+SavedFiles/0161_VD_audio_ICA.set,6,heart,heart,0.96,Highly regular approximately 1-2 Hz cardiac-like spikes and broadly distributed scalp projection.
+SavedFiles/0161_VD_audio_ICA.set,16,heart,heart,0.93,Regular approximately 1-2 Hz sharp deflections with a broad dipolar scalp distribution.
+SavedFiles/0161_VD_audio_ICA.set,18,eye,eye,0.94,Broad frontal/periocular maximum with slow transient excursions and strongly low-frequency-dominated power.
+SavedFiles/0161_VD_audio_ICA.set,25,eye,eye,0.88,Frontal periocular topography and low-frequency-dominated spectrum with irregular slow ocular-like activity.
+SavedFiles/0161_VD_audio_ICA.set,33,eye,eye,0.99,"Strong frontal focus, large slow time-series deflections, and a spectrum dominated by very low frequencies."
+SavedFiles/0161_VD_noaudio_ICA.set,1,heart,heart,0.91,"Large, stereotyped deflections recur at approximately 1 Hz, with a broad scalp distribution."
+SavedFiles/0161_VD_noaudio_ICA.set,6,brain,brain,0.82,Central dipolar topography with a declining 1/f-like spectrum and a distinct spectral bump consistent with neural activity.
+SavedFiles/0161_VD_noaudio_ICA.set,11,heart,brain,0.73,Broad dipolar scalp pattern and a generally 1/f spectrum without the edge-focused high-frequency profile of muscle.
+SavedFiles/0161_VD_noaudio_ICA.set,25,brain,brain,0.89,Clear dipolar scalp distribution with a declining spectrum and prominent alpha/beta-range peaks.
+SavedFiles/0206_VDaudio_ICA.set,1,heart,heart,0.94,Broad scalp distribution with regularly repeating sharp deflections and a harmonic-rich spectrum consistent with cardiac activity.
+SavedFiles/0206_VDaudio_ICA.set,3,eye,eye,0.98,"Clear frontal dipolar distribution, very large slow deflections, and strongly low-frequency-dominated power."
+SavedFiles/0206_VDaudio_ICA.set,4,eye,brain,0.88,"Broad dipolar scalp pattern with a 1/f spectrum and a modest oscillatory bump, consistent with a neural component."
+SavedFiles/0206_VDaudio_ICA.set,15,muscle,muscle,0.98,Inferior edge-focused topography with dense high-frequency activity and a flat-to-rising spectrum at higher frequencies.
+SavedFiles/0206_VDaudio_ICA.set,39,other_artifact,other_artifact,0.84,"Large slow oscillatory transients and low-frequency power, but the focus is posterior rather than periocular and is not broadly distributed like heart."
+SavedFiles/0206_VDaudio_ICA.set,53,channel_noise,eye,0.72,"Strong frontal/periocular focus with a low-frequency-dominated spectrum and relatively slow, irregular deflections."
+SavedFiles/0206_VDaudio_ICA.set,55,other_artifact,brain,0.68,Lateral temporal spatial pattern with a declining 1/f spectrum; it lacks the flat or rising high-frequency power required for muscle.
+SavedFiles/0206_VDaudio_ICA.set,63,channel_noise,other_artifact,0.78,Posterior edge-localized source with isolated large slow transients; it lacks the flat noisy spectrum required for channel noise.
+SavedFiles/0206_VDaudio_ICA.set,68,channel_noise,muscle,0.76,Temporal edge-focused topography with rapid noisy activity and a comparatively flat high-frequency spectral tail without an alpha peak.
+SavedFiles/0206_VDaudio_ICA.set,77,muscle,eye,0.96,"Strong frontal/periocular focus, low-frequency-dominated spectrum, and a very large slow deflection."
+SavedFiles/0206_VDaudio_ICA.set,91,other_artifact,brain,0.78,Broad posterior dipolar pattern with a generally 1/f spectrum and no edge-focused high-frequency signature.
+SavedFiles/0206_VDaudio_ICA.set,93,eye,channel_noise,0.68,Highly isolated single-sensor temporal focus with an erratic noisy time series and no convincing neural spectral peak.
+SavedFiles/0206_VDaudio_ICA.set,103,channel_noise,other_artifact,0.76,"Focal posterior-temporal source with intermittent slow transient blocks and a falling spectrum, inconsistent with brain, eye, or muscle criteria."
+SavedFiles/0206_VDaudio_ICA.set,105,other_artifact,brain,0.6,Posterior-lateral opposing scalp fields and a 1/f spectrum; the spectrum is neither flat enough for channel noise nor high-frequency-rich enough for muscle.
+SavedFiles/0206_VDnoaudio_ICA.set,1,heart,heart,0.99,"Highly regular ~1-2 Hz sharp deflections, harmonic spectral peaks, and broad scalp distribution."
+SavedFiles/0206_VDnoaudio_ICA.set,2,heart,heart,0.99,Regular cardiac-like sharp transients with a harmonic-comb spectrum and broad dipolar topography.
+SavedFiles/0206_VDnoaudio_ICA.set,18,eye,brain,0.86,Lateral dipolar scalp pattern with a 1/f spectrum and a clear beta-range spectral bump.
+SavedFiles/0206_VDnoaudio_ICA.set,24,channel_noise,muscle,0.98,Edge-focused frontal topography combined with a flat/rising high-frequency spectrum and noisy time series.
+SavedFiles/0206_VDnoaudio_ICA.set,32,brain,brain,0.92,Broad dipolar scalp pattern with a 1/f spectrum and prominent alpha-range and weaker beta-range peaks.
+SavedFiles/0206_VDnoaudio_ICA.set,35,channel_noise,eye,0.96,"Frontal periocular focus, strongly low-frequency spectrum, and prominent slow deflections."
+SavedFiles/0206_VDnoaudio_ICA.set,58,channel_noise,channel_noise,0.82,Single isolated right-edge sensor focus with an erratic time series and nonphysiologic noisy activity.
+SavedFiles/0206_VDnoaudio_ICA.set,74,muscle,muscle,0.94,Edge-focused temporal topography with a flat-to-rising high-frequency spectrum and irregular fast activity.
+SavedFiles/0206_VDnoaudio_ICA.set,81,eye,eye,0.78,Broad frontal maximum and strongly low-frequency-dominated spectrum are most consistent with ocular activity.
+SavedFiles/0206_VDnoaudio_ICA.set,87,channel_noise,channel_noise,0.78,Very focal single-sensor frontal spot with random activity and no clear neural spectral peak.
+SavedFiles/0206_VDnoaudio_ICA.set,88,eye,channel_noise,0.86,Single isolated sensor-like focal spot with erratic activity and no clear physiological spectral peak.
+SavedFiles/0206_VDnoaudio_ICA.set,91,eye,other_artifact,0.64,"Mixed frontal and isolated posterior pattern with no clear alpha/beta peak, cardiac rhythm, or defining muscle signature."
+SavedFiles/0206_VDnoaudio_ICA.set,93,other_artifact,muscle,0.76,Strong peripheral posterior-edge focus with relatively flat high-frequency power and no distinct alpha peak.
+SavedFiles/0589_VDAudio_ICA.set,7,eye,eye,0.94,"Strong frontal/periocular distribution, low-frequency-dominated spectrum, and prominent slow deflections."
+SavedFiles/0589_VDAudio_ICA.set,17,brain,brain,0.94,Clear dipolar lateral/central scalp pattern with 1/f background and distinct alpha/beta-range spectral peaks.
+SavedFiles/0589_VDAudio_ICA.set,28,brain,other_artifact,0.66,"Broad non-dipolar scalp pattern with no clear alpha/beta peak, cardiac rhythm, ocular slow waves, or narrow line-noise peak."
+SavedFiles/0589_VDAudio_ICA.set,101,other_artifact,muscle,0.88,Strong lateral edge focus accompanied by a broad elevated/rising high-frequency spectral component without an alpha peak.
+SavedFiles/0589_VDAudio_ICA.set,104,muscle,channel_noise,0.98,"Single-sensor focal map with erratic sharp transients and a flat, elevated high-frequency spectrum."
+SavedFiles/0589_VDAudio_ICA.set,112,other_artifact,other_artifact,0.76,"Irregular multifocal edge distribution with no clear dipole, ocular dynamics, or flat/rising muscle spectrum."
+SavedFiles/0589_VDAudio_ICA.set,113,channel_noise,other_artifact,0.72,"Highly focal frontal map, but no large slow ocular deflections and the spectrum is not flat/noisy enough for channel noise."
+SavedFiles/0589_VDAudio_ICA.set,115,channel_noise,other_artifact,0.68,Very focal posterior distribution without a convincing dipole or alpha/beta peak; spectrum remains broadly 1/f.
+SavedFiles/0604_VDaudio_ICA.set,2,heart,heart,0.96,"Broad dipolar scalp distribution with repeated, stereotyped deflections at approximately 1 Hz."
+SavedFiles/0604_VDaudio_ICA.set,4,eye,brain,0.94,Broad central dipolar topography with a 1/f spectrum and a distinct alpha-range bump.
+SavedFiles/0604_VDaudio_ICA.set,24,brain,brain,0.9,Plausible lateralized dipolar scalp distribution with a declining 1/f spectrum and no edge-focused high-frequency muscle pattern.
+SavedFiles/0604_VDaudio_ICA.set,34,brain,brain,0.93,Clear broad anterior-posterior dipolar scalp pattern with a smoothly declining 1/f spectrum and no artifact-specific temporal signature.
+SavedFiles/0604_VDaudio_ICA.set,46,muscle,muscle,0.98,Lateral edge focus combined with sustained high-frequency activity and a flat-to-rising high-frequency spectrum.
+SavedFiles/0604_VDaudio_ICA.set,51,muscle,muscle,0.96,Inferolateral edge-focused map with noisy fast activity and no alpha peak in the flat/rising spectrum.
+SavedFiles/0604_VDaudio_ICA.set,61,other_artifact,eye,0.72,Strong frontal/periocular projection with a spectrum heavily dominated by very low frequencies; the temporal activity includes prominent transient deflections.
+SavedFiles/0604_VDaudio_ICA.set,79,other_artifact,other_artifact,0.69,"Frontal-lateral focus and low-frequency-heavy spectrum, but without the large slow deflections required for a clear eye component."
+SavedFiles/0604_VDaudio_ICA.set,83,muscle,muscle,0.98,Strong edge-localized temporal focus with abundant fast activity and a spectrum that rises toward high frequencies.
+SavedFiles/0604_VDaudio_ICA.set,93,channel_noise,channel_noise,0.87,Highly isolated single-sensor focus with an erratic time series and no convincing neural spectral peak.
+SavedFiles/0604_VDaudio_ICA.set,99,other_artifact,other_artifact,0.68,"Highly localized posterior focus without a convincing dipolar field; however, its declining 1/f-like spectrum is not flat enough for channel noise."
+SavedFiles/0604_VDaudio_ICA.set,103,muscle,muscle,0.84,Inferior edge-localized distribution with bursty fast activity and a largely flat high-frequency spectral tail.
+SavedFiles/0604_VDaudio_ICA.set,107,channel_noise,channel_noise,0.91,"Tiny isolated focal scalp spot accompanied by irregular burst activity and a noisy, relatively flat high-frequency spectrum."
+SavedFiles/0837_VDAudio_ICA.set,4,heart,heart,0.96,"Stereotyped sharp deflections recur roughly every second, with a broad scalp distribution characteristic of cardiac activity."
+SavedFiles/0837_VDAudio_ICA.set,21,brain,brain,0.88,Clear broad anterior-posterior dipolar pattern with a 1/f spectrum and a subtle alpha-range peak.
+SavedFiles/0837_VDAudio_ICA.set,67,other_artifact,brain,0.75,Broad approximately dipolar scalp pattern with a declining 1/f spectrum and a modest alpha-range feature.
+SavedFiles/0837_VDAudio_ICA.set,98,other_artifact,other_artifact,0.78,"Fragmented, multidipolar scalp pattern with no clear alpha peak or characteristic eye, muscle, cardiac, or line-noise signature."
+SavedFiles/0837_VDAudio_ICA.set,117,channel_noise,other_artifact,0.66,"Highly focal posterior spot and irregular activity, but the spectrum is strongly 1/f rather than flat/noisy, so it does not fully meet channel-noise criteria."
+SavedFiles/0837_VDNoAudio_ICA.set,5,heart,heart,0.94,Regular approximately 1 Hz sharp deflections with a broad dipolar scalp distribution.
+SavedFiles/0837_VDNoAudio_ICA.set,21,brain,brain,0.91,Broad posterior dipolar pattern with a 1/f spectrum and a modest alpha-range feature.
+SavedFiles/0837_VDNoAudio_ICA.set,57,channel_noise,channel_noise,0.97,Single isolated sensor hotspot with an erratic time series and relatively flat/noisy spectrum.
+SavedFiles/1846_VDnoaudio_ICA.set,7,heart,heart,0.91,"Repeated, stereotyped sharp deflections occur at roughly cardiac intervals, with a broad dipolar scalp distribution and no alpha or high-frequency muscle signature."
+SavedFiles/2319_VDaudio_ICA.set,3,heart,brain,0.78,Broad lateral dipolar scalp pattern with a generally decreasing 1/f-like spectrum and no sustained high-frequency elevation.
+SavedFiles/2319_VDaudio_ICA.set,5,muscle,muscle,0.97,Strong edge-focused temporal topography with noisy activity and a flat/elevated high-frequency spectrum lacking an alpha peak.
+SavedFiles/2818_VDnoaudio_ICA.set,3,brain,brain,0.95,Broad central-posterior dipolar pattern with a prominent alpha peak and otherwise declining spectrum.
+SavedFiles/2818_VDnoaudio_ICA.set,7,heart,heart,0.94,"Regular sharp deflections recur at approximately 1 Hz, with a broad scalp distribution."
+SavedFiles/2818_VDnoaudio_ICA.set,12,brain,brain,0.91,Lateral dipolar scalp pattern with a declining 1/f-like spectrum and a clear alpha-range peak.
+SavedFiles/2818_VDnoaudio_ICA.set,20,brain,brain,0.89,Central dipolar topography with a 1/f-like spectrum and an alpha-range spectral feature.

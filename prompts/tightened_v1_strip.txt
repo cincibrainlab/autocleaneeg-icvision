@@ -1,0 +1,63 @@
+Classify each of the {n} ICA components shown in this grid (labeled {labels}).
+
+Each component shows:
+- Topography map (scalp distribution)
+- Time series (first 2.5 seconds)
+- ERP-style image (continuous data segments)
+- Power spectrum (1-55Hz)
+
+Valid labels and distinguishing cues:
+- "brain": Scalp map is roughly dipolar and not eye/edge focused, often central/parietal/temporal.
+  Spectrum usually falls with frequency (1/f-like) and may show peaks around 5-30 Hz, especially
+  alpha near 10 Hz. Time series is usually smoother/rhythmic rather than blink-like, step-like,
+  or high-frequency bursting. A visible ERP/consistent segment pattern can support brain but is
+  not sufficient if the scalp map is non-dipolar or artifact-like.
+- "eye": Scalp map is frontal/periocular. Blinks often show strong bilateral frontal activity,
+  large slow spikes/deflections, and power concentrated below about 5 Hz. Horizontal eye movement
+  often shows left-right frontal polarity and step-like activity with stable intervals separated
+  by fast saccade transitions. When the scalp map is frontal/periocular AND the time series or
+  spectrum shows low-frequency-dominant, blink- or saccade-like structure, prefer eye over a
+  generic dipolar brain read or a single-electrode channel_noise read: frontal focality alone is
+  weak evidence for channel_noise, and a plausible-looking anterior dipole is not enough to call
+  brain if the activity pattern is blink/saccade-like. Only let brain or channel_noise win this
+  tie-break when another panel clearly contradicts eye (e.g., a sharp 50/60 Hz peak, a rhythmic
+  8-13 Hz alpha spectrum with smooth non-blink activity, or an unambiguous isolated-electrode map).
+- "muscle": Power spectrum is the leading clue: broad high-frequency power, often above 20 Hz,
+  with a flat or rising high-frequency profile rather than clean 1/f decay. Scalp map may look
+  shallow, edge-focused, temporal/jaw/frontal, or locally dipolar near muscle areas. Activity may
+  appear spiky, erratic, or bursty.
+- "heart": Look for regular ECG/QRS-like deflections about once per second in the time series or
+  repeated bands in the segment image. Scalp map is often a broad near-linear gradient from a far
+  source. Spectrum is usually not the main evidence. A clear, regular ~1 Hz QRS-like rhythm is
+  decisive for heart on its own: do not talk yourself out of heart just because the scalp map is
+  broad, diffuse, non-dipolar, or otherwise does not look like a typical brain or artifact
+  topology. That kind of broad/diffuse map is itself consistent with a distant cardiac source, not
+  evidence against it. When you see the rhythmic deflection pattern, label heart even if you would
+  otherwise default to brain, muscle, or other_artifact from the scalp map alone.
+- "line_noise": A sharp narrow peak at 50 or 60 Hz is decisive when that frequency is visible.
+  Do not call line_noise for a notch/dip at 50/60 Hz or for a component that merely has mild line
+  noise mixed into another clearer source.
+- "channel_noise": This is a narrow, high-bar category, not a default guess for a noisy- or
+  spiky-looking component. Use it ONLY when the scalp map is unambiguously dominated by a single
+  isolated electrode: a sharp one-channel "island" with essentially no smooth spatial falloff to
+  neighboring sites and no opposite pole. If the map instead shows broad high-frequency spectral
+  power, jaw/temporal/frontal focality, or a spiky/erratic time series without a truly isolated
+  single-electrode map, prefer muscle instead of channel_noise. If the evidence is ambiguous
+  between an isolated bad electrode and a diffuse or unclear source, prefer muscle or
+  other_artifact over channel_noise. Reserve channel_noise for cases where the single bad
+  electrode is the obvious, unmistakable read.
+- "other_artifact": Use when evidence is mixed, non-dipolar, splotchy/multipolar, contradictory,
+  very late/low-variance-looking, or does not clearly fit the categories above. Weak alpha or an
+  ERP-like pattern alone should not force a brain label if topology is not plausible. When panels
+  genuinely conflict, the visual evidence is weak, or no category fits cleanly, other_artifact is
+  the correct fallback: do not force channel_noise, muscle, or eye onto an ambiguous component
+  just to avoid using other_artifact.
+
+Confidence guidance:
+- Use high confidence only when multiple panels agree or one decisive cue is present
+  (clear blink/saccade, clear QRS rhythm, sharp 50/60 Hz peak, or isolated bad channel).
+- Use lower confidence when cues conflict, the source looks mixed, or the component could plausibly
+  be confused with another class.
+
+Respond with JSON array (one object per component, {n} objects total):
+{json_example}

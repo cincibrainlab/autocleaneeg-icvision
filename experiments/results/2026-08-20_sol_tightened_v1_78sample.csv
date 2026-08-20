@@ -1,0 +1,79 @@
+set_path,component_index,true_label_norm,predicted_label,confidence,reason
+SavedFiles/0137_VDAudio_ICA.set,1,heart,heart,0.97,"Regular sharp QRS-like deflections recur throughout the time series, with a broad scalp gradient consistent with a distant cardiac source."
+SavedFiles/0137_VDAudio_ICA.set,5,heart,heart,0.94,"Repeated sharp deflections occur at nearly regular intervals despite background noise, and the broad anterior-posterior map supports cardiac contamination."
+SavedFiles/0137_VDAudio_ICA.set,23,muscle,muscle,0.94,"Frontal edge-focused topology, erratic spiky activity, and a spectrum that remains elevated and rises across higher frequencies strongly indicate muscle."
+SavedFiles/0137_VDAudio_ICA.set,39,muscle,muscle,0.91,"The time series is noisy and bursty, while the spectrum becomes relatively flat at higher frequencies; the local two-pole map is not an isolated single-channel island."
+SavedFiles/0137_VDAudio_ICA.set,53,channel_noise,other_artifact,0.78,"The compact multipolar central map, slow nonstationary waveform, and strong edge bands in the segment image do not cleanly match brain, eye, muscle, or isolated channel noise."
+SavedFiles/0137_VDAudio_ICA.set,66,muscle,muscle,0.78,"A localized right frontal-temporal dipole and prominent burst of sharp, irregular activity are most consistent with a focal muscle source."
+SavedFiles/0161_VD_audio_ICA.set,6,heart,heart,0.99,"Very clear, regularly spaced ECG-like spikes dominate the time series, accompanied by a broad near-linear scalp gradient."
+SavedFiles/0161_VD_audio_ICA.set,16,heart,heart,0.98,"Regular sharp QRS-like deflections recur throughout the time series, with a broad gradient scalp map consistent with a distant cardiac source."
+SavedFiles/0161_VD_audio_ICA.set,18,eye,eye,0.88,"Broad frontal maximum and predominantly low-frequency activity support an ocular source, with several large slow irregular deflections."
+SavedFiles/0161_VD_audio_ICA.set,25,eye,eye,0.8,"Frontal/periocular topography and low-frequency-dominant spectrum favor eye activity, although the time series is less clearly blink-like."
+SavedFiles/0161_VD_audio_ICA.set,33,eye,eye,0.99,"Strong bilateral frontal topography, large slow blink-like deflections, repeated segment patterns, and strongly low-frequency-dominant power."
+SavedFiles/0161_VD_noaudio_ICA.set,1,heart,heart,0.98,"Regular sharp QRS-like deflections occur about once per second, with a broad scalp gradient consistent with a distant cardiac source."
+SavedFiles/0161_VD_noaudio_ICA.set,6,brain,other_artifact,0.67,"The concentric central hotspot is not a convincing dipole, while the noisy time series and segment image provide no specific eye, heart, muscle, or isolated-channel signature."
+SavedFiles/0161_VD_noaudio_ICA.set,11,heart,brain,0.76,"Broad dipolar scalp pattern and strongly decaying 1/f-like spectrum support a neural source; there is no clear blink, cardiac rhythm, or high-frequency muscle profile."
+SavedFiles/0161_VD_noaudio_ICA.set,25,brain,brain,0.82,"The map has a plausible central-temporal dipolar pattern, and the spectrum shows 1/f decay with broad rhythmic peaks rather than artifact-dominant high-frequency power."
+SavedFiles/0206_VDaudio_ICA.set,1,heart,heart,0.97,"Regular sharp QRS-like deflections recur throughout the time series, with corresponding spectral harmonics and a broad scalp gradient."
+SavedFiles/0206_VDaudio_ICA.set,3,eye,eye,0.98,"Strong left-right frontal polarity, large slow step-like deflections, and low-frequency-dominant power are characteristic of horizontal eye movements."
+SavedFiles/0206_VDaudio_ICA.set,4,eye,brain,0.73,The scalp map forms a broad smooth anterior-posterior dipole and the spectrum is predominantly 1/f-like without decisive artifact signatures.
+SavedFiles/0206_VDaudio_ICA.set,15,muscle,muscle,0.96,"Dense rapid activity and a flat-to-rising high-frequency spectrum, together with an inferior edge-focused map, strongly indicate muscle."
+SavedFiles/0206_VDaudio_ICA.set,39,other_artifact,other_artifact,0.68,Large nonstationary slow oscillations and a localized posterior map provide conflicting evidence without a clear brain rhythm or recognized artifact signature.
+SavedFiles/0206_VDaudio_ICA.set,53,channel_noise,channel_noise,0.9,"The scalp map is dominated by a tiny, sharply isolated frontal electrode island without a convincing opposite pole."
+SavedFiles/0206_VDaudio_ICA.set,55,other_artifact,brain,0.72,"Plausible left temporal dipolar source with a clean 1/f-like spectrum and no decisive ocular, cardiac, or high-frequency artifact signature."
+SavedFiles/0206_VDaudio_ICA.set,63,channel_noise,other_artifact,0.7,"Edge-focused topology and large nonstationary slow shifts with sustained segment bands are artifact-like, but do not clearly match eye, muscle, or channel noise."
+SavedFiles/0206_VDaudio_ICA.set,68,channel_noise,muscle,0.86,"Left temporal edge focus, erratic rapid activity, and relatively persistent high-frequency spectral power support muscle activity."
+SavedFiles/0206_VDaudio_ICA.set,77,muscle,eye,0.93,"Strong frontal/periocular topography with a large slow, step-like deflection and low-frequency-dominant spectrum."
+SavedFiles/0206_VDaudio_ICA.set,91,other_artifact,brain,0.66,"Posterior scalp distribution has smooth spatial structure, while the spectrum shows a broadly 1/f-like decay without high-frequency muscle power."
+SavedFiles/0206_VDaudio_ICA.set,93,eye,channel_noise,0.88,"A sharply localized single-electrode island at the left temporal edge dominates the scalp map, with noisy irregular activity."
+SavedFiles/0206_VDaudio_ICA.set,103,channel_noise,other_artifact,0.65,"The focal right-edge map and repeated long segment disturbances look artifactual, but the spectrum lacks decisive muscle or line-noise features."
+SavedFiles/0206_VDaudio_ICA.set,105,other_artifact,other_artifact,0.88,Splotchy multipolar topology with separated frontal and posterior extrema is not a plausible single dipole or isolated bad electrode.
+SavedFiles/0206_VDnoaudio_ICA.set,1,heart,heart,0.99,"Highly regular sharp QRS-like deflections recur throughout the time series, with a broad gradient scalp map consistent with a distant cardiac source."
+SavedFiles/0206_VDnoaudio_ICA.set,2,heart,heart,0.99,Clear periodic QRS-like complexes appear in both the time series and segment image; the broad scalp gradient supports cardiac contamination.
+SavedFiles/0206_VDnoaudio_ICA.set,18,eye,brain,0.64,"The right-frontal field is spatially smooth and plausibly dipolar, with an overall 1/f spectrum and no decisive ocular or high-frequency muscle signature."
+SavedFiles/0206_VDnoaudio_ICA.set,24,channel_noise,muscle,0.97,"The spectrum becomes elevated and nearly flat at higher frequencies, with erratic activity and a shallow frontal-edge scalp focus."
+SavedFiles/0206_VDnoaudio_ICA.set,32,brain,brain,0.62,"Smooth central scalp field with spectral structure and overall high-frequency decay is compatible with brain activity, though the multipolar topology lowers confidence."
+SavedFiles/0206_VDnoaudio_ICA.set,35,channel_noise,eye,0.82,"The component has a frontal/periocular focus, slow large fluctuations, and strongly low-frequency-dominant power."
+SavedFiles/0206_VDnoaudio_ICA.set,58,channel_noise,channel_noise,0.98,The scalp map is dominated by an unmistakable isolated right-edge electrode island with essentially no smooth spatial field.
+SavedFiles/0206_VDnoaudio_ICA.set,74,muscle,muscle,0.96,"Focal frontal-temporal edge map, erratic activity, and a flat-to-rising high-frequency spectrum are characteristic of muscle."
+SavedFiles/0206_VDnoaudio_ICA.set,81,eye,eye,0.72,"Broad frontal dominance and strong low-frequency power suggest ocular activity, although the topology is somewhat mixed."
+SavedFiles/0206_VDnoaudio_ICA.set,87,channel_noise,channel_noise,0.96,A single sharply localized frontal electrode dominates the otherwise nearly uniform scalp map.
+SavedFiles/0206_VDnoaudio_ICA.set,88,eye,eye,0.76,Strong bilateral frontal topography with low-frequency-dominant power and prominent slow segment-wise deflections supports ocular activity.
+SavedFiles/0206_VDnoaudio_ICA.set,91,eye,other_artifact,0.76,"The frontal field plus isolated posterior hotspot forms a non-dipolar, multipolar topology, while the other panels provide no decisive class-specific cue."
+SavedFiles/0206_VDnoaudio_ICA.set,93,other_artifact,other_artifact,0.68,"The source is strongly edge-focused with a broad asymmetric gradient, but lacks decisive muscle, eye, cardiac, or isolated-channel evidence."
+SavedFiles/0589_VDAudio_ICA.set,7,eye,eye,0.98,"Strong left-right frontal polarity, low-frequency-dominant spectrum, and a large step-like saccadic transition clearly indicate horizontal eye movement."
+SavedFiles/0589_VDAudio_ICA.set,17,brain,brain,0.91,A clear smooth dipolar scalp map and prominent rhythmic spectral peaks near the alpha and beta ranges strongly support a neural source.
+SavedFiles/0589_VDAudio_ICA.set,28,brain,brain,0.72,"Broad central scalp distribution, approximately 1/f spectral decay, and absence of blink, QRS, isolated-channel, or high-frequency muscle cues support brain activity."
+SavedFiles/0589_VDAudio_ICA.set,101,other_artifact,muscle,0.86,The source is concentrated at the right scalp edge and has noisy activity with a broad elevated mid-to-high-frequency spectral hump.
+SavedFiles/0589_VDAudio_ICA.set,104,muscle,muscle,0.96,"Highly localized frontal dipole, spiky time course, and strong flat/rising high-frequency power are characteristic of muscle activity."
+SavedFiles/0589_VDAudio_ICA.set,112,other_artifact,other_artifact,0.83,"The scalp map is splotchy and multipolar, while the other panels lack a decisive eye, cardiac, muscle, or line-noise signature."
+SavedFiles/0589_VDAudio_ICA.set,113,channel_noise,channel_noise,0.84,Topography is dominated by a sharply localized frontal electrode island with no clear opposite pole or plausible broad dipole.
+SavedFiles/0589_VDAudio_ICA.set,115,channel_noise,channel_noise,0.82,"A single sharply focal posterior electrode dominates the map, without a convincing spatially extended dipolar pattern."
+SavedFiles/0604_VDaudio_ICA.set,2,heart,heart,0.98,"Regular sharp QRS-like deflections recur about once per second, with a broad gradient scalp map consistent with a distant cardiac source."
+SavedFiles/0604_VDaudio_ICA.set,4,eye,brain,0.88,"Smooth central dipolar topology, falling spectrum with a clear approximately 10 Hz peak, and relatively rhythmic activity support a neural source."
+SavedFiles/0604_VDaudio_ICA.set,24,brain,brain,0.74,Plausible smooth oblique dipolar scalp distribution and a declining 1/f-like spectrum without clear artifact-specific features.
+SavedFiles/0604_VDaudio_ICA.set,34,brain,brain,0.78,"Broad, smooth anterior-posterior dipolar topology with a 1/f-like spectrum and no decisive ocular, cardiac, or high-frequency muscle signature."
+SavedFiles/0604_VDaudio_ICA.set,46,muscle,muscle,0.97,"Focal left temporal-edge topology and broadly elevated, rising high-frequency spectrum strongly indicate muscle activity."
+SavedFiles/0604_VDaudio_ICA.set,51,muscle,muscle,0.95,Localized posterior-temporal edge source with noisy activity and sustained high-frequency spectral power is most consistent with muscle.
+SavedFiles/0604_VDaudio_ICA.set,61,other_artifact,eye,0.86,Strong frontal/periocular maximum with posterior opposite polarity and a low-frequency-dominant spectrum are characteristic of ocular activity.
+SavedFiles/0604_VDaudio_ICA.set,79,other_artifact,eye,0.78,Left frontal/periocular topology and strongly low-frequency-dominant spectrum favor an ocular source despite the absence of a classic bilateral blink.
+SavedFiles/0604_VDaudio_ICA.set,83,muscle,muscle,0.97,"Temporal edge-focused map, erratic activity, and strong broad high-frequency power with a rising profile are characteristic of muscle."
+SavedFiles/0604_VDaudio_ICA.set,93,channel_noise,channel_noise,0.91,Scalp map is dominated by a very small isolated electrode-centered island without a convincing opposing pole.
+SavedFiles/0604_VDaudio_ICA.set,99,other_artifact,channel_noise,0.82,"The scalp map is dominated by a sharp, highly localized central electrode island with little smooth spatial spread or clear opposite pole."
+SavedFiles/0604_VDaudio_ICA.set,103,muscle,muscle,0.77,"Inferior posterior edge-focused topology and bursty irregular activity suggest neck muscle, though the spectral evidence is less decisive."
+SavedFiles/0604_VDaudio_ICA.set,107,channel_noise,channel_noise,0.94,Highly localized single-electrode scalp island and abrupt intermittent high-amplitude activity strongly indicate a bad channel.
+SavedFiles/0837_VDAudio_ICA.set,4,heart,heart,0.98,"Regular sharp QRS-like deflections recur about once per second, with a broad gradient-like scalp map consistent with a distant cardiac source."
+SavedFiles/0837_VDAudio_ICA.set,21,brain,brain,0.78,"The scalp map is relatively smooth and dipolar, with a 1/f-like spectrum and no blink, QRS, isolated-channel, or high-frequency muscle signature."
+SavedFiles/0837_VDAudio_ICA.set,67,other_artifact,brain,0.62,"The spectrum has an overall 1/f decline with a modest mid-frequency feature, and the broad scalp distribution is more compatible with a neural source than a specific artifact."
+SavedFiles/0837_VDAudio_ICA.set,98,other_artifact,other_artifact,0.82,"The topology is splotchy and multipolar, while the time series and spectrum provide no decisive eye, muscle, cardiac, or neural pattern."
+SavedFiles/0837_VDAudio_ICA.set,117,channel_noise,channel_noise,0.96,The scalp map contains an unmistakable isolated single-electrode hotspot with minimal smooth spatial spread.
+SavedFiles/0837_VDNoAudio_ICA.set,5,heart,heart,0.98,"Regular sharp QRS-like deflections recur roughly once per second, with a broad scalp gradient consistent with a distant cardiac source."
+SavedFiles/0837_VDNoAudio_ICA.set,21,brain,brain,0.82,"Broad posterior-central dipolar topology, 1/f-like spectral decay, and no clear ocular, cardiac, line-noise, or high-frequency muscle signature."
+SavedFiles/0837_VDNoAudio_ICA.set,57,channel_noise,channel_noise,0.96,The scalp map is dominated by an unmistakable isolated single-electrode island with minimal spatial spread.
+SavedFiles/1846_VDnoaudio_ICA.set,7,heart,heart,0.97,"The time series shows regular sharp QRS-like deflections roughly once per second, supported by a broad scalp gradient consistent with a distant cardiac source."
+SavedFiles/2319_VDaudio_ICA.set,3,heart,other_artifact,0.7,"Broad edge-focused scalp gradient with intermittent large spikes and no clear rhythmic, ocular, cardiac, or isolated-channel signature; the panels are mixed despite a generally declining spectrum."
+SavedFiles/2319_VDaudio_ICA.set,5,muscle,muscle,0.96,"Strong temporal-edge focality, erratic high-frequency activity, and a flat/rising spectrum above roughly 20 Hz strongly indicate muscle artifact."
+SavedFiles/2818_VDnoaudio_ICA.set,3,brain,brain,0.84,Broad plausible central dipolar source with a prominent alpha-range peak and otherwise decreasing spectral power.
+SavedFiles/2818_VDnoaudio_ICA.set,7,heart,heart,0.98,"Regular sharp QRS-like deflections recur about once per second, with a broad scalp gradient consistent with a distant cardiac source."
+SavedFiles/2818_VDnoaudio_ICA.set,12,brain,brain,0.87,Clear smooth dipolar scalp map with a generally 1/f-like spectrum and a low-frequency neural peak; no decisive artifact pattern.
+SavedFiles/2818_VDnoaudio_ICA.set,20,brain,other_artifact,0.63,"The concentric, non-dipolar topology and noisy time course are not clearly neural, while the spectrum lacks decisive muscle, eye, cardiac, or line-noise features."

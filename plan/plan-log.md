@@ -149,6 +149,29 @@ Before adding a third model to the test matrix, checked what's actually reachabl
 
 **Smoke test only — not included in `experiments/results/`, no accuracy claim.** Planned next step: same two-stage protocol as every other candidate — 78-sample screen against (a) unmodified `strip_default.txt`, the one model-isolated comparison point that was never actually run for `terra` either, and (b) `tightened_v1.txt`, directly comparable to `terra`'s existing 62.8%/41.0% numbers on the same sample. Also planned: generalizing the current prompt-specific runner (`experiments/runners/run_detailed_original_strip_screen.py`) into one reusable `--model`/`--prompt-file`-parametrized script before adding this third model's runs, rather than writing another near-duplicate one-off script.
 
+## 2026-08-20: Runner generalized; `tightened_v2_strip.txt` and `gpt-5.6-sol` screened — new leading candidate
+
+Replaced `run_detailed_original_strip_screen.py` with `experiments/runners/run_screen.py`, parametrized by `--model`/`--prompt-file` (model→endpoint mapping fixed internally, since it's one canonical endpoint per model, verified empirically above — no separate `--endpoint` flag to get out of sync). Credentials read from environment variables, never hardcoded.
+
+Ran 4 screening passes (same 78-sample stratified set used throughout):
+
+| Model | Prompt | Accuracy | Subject-clustered 95% CI (n=12) | Raw results |
+|---|---|---|---|---|
+| `gpt-4.1` | `tightened_v2_strip.txt` | 33.3% (26/78) | [15.1%, 43.1%] | [`experiments/results/2026-08-20_gpt4.1_tightened_v2_78sample.csv`](../experiments/results/2026-08-20_gpt4.1_tightened_v2_78sample.csv) |
+| `gpt-5.6-terra` | `tightened_v2_strip.txt` | 64.1% (50/78) | [58.3%, 84.9%]\* | [`experiments/results/2026-08-20_terra_tightened_v2_78sample.csv`](../experiments/results/2026-08-20_terra_tightened_v2_78sample.csv) |
+| `gpt-5.6-sol` | unmodified `strip_default.txt` | 60.3% (47/78) | [50.7%, 86.4%] | [`experiments/results/2026-08-20_sol_production_default_78sample.csv`](../experiments/results/2026-08-20_sol_production_default_78sample.csv) |
+| `gpt-5.6-sol` | `tightened_v1_strip.txt` | **70.5% (55/78)** | [62.8%, 88.4%] | [`experiments/results/2026-08-20_sol_tightened_v1_78sample.csv`](../experiments/results/2026-08-20_sol_tightened_v1_78sample.csv) |
+
+\* This CI is oddly narrow relative to its own pooled accuracy because per-subject accuracy on this run was unusually consistent except for two 0%-scoring outlier files — a reminder that a t-based interval with 12 clusters can look deceptively tight; treat as approximate.
+
+**Bug found and fixed en route**: the first attempt used `prompt_tightened.txt` (single-mode text, ending in a literal `{"label": ...}` JSON object) directly as a strip-mode `custom_prompt` — crashed immediately (`KeyError: '"label"'`), because it was never actually a strip-native template. Every prior `tightened_v1.txt` strip-mode result (including the ones already reported above) was produced by the old monkey-patch scripts, which spliced its category text into a hardcoded wrapper — a real strip template never existed until now. Fixed by authoring `prompts/tightened_v1_strip.txt`: the same `tightened_v1.txt` category guidance, verbatim and unedited, wrapped with strip's real `{n}`/`{labels}`/`{json_example}` placeholders via the actual `custom_prompt` mechanism — reproducing the same tested content through the correct mechanism, not a new variant. Verified to render for n=3, 9, 22 before use.
+
+**`tightened_v2_strip.txt`: mixed, inconclusive result, not a win.** Worse than `tightened_v1_strip.txt` on `gpt-4.1` (33.3% vs 41.0%) and marginally better on `gpt-5.6-terra` (64.1% vs 62.8%); CIs overlap on both. The channel_noise fix (targeting the previously-dominant muscle→channel_noise over-triggering) overcorrected on `gpt-4.1`, collapsing channel_noise recall to 20% (3/15, only 4 total predictions across 78 components) — the opposite failure mode. Does not replace `tightened_v1_strip.txt` as the leading candidate based on this evidence.
+
+**`gpt-5.6-sol` is the new leading candidate.** Both its screening numbers are the highest measured this session — including 60.3% with *zero prompt engineering* (unmodified production prompt), the clean model-only comparison point `terra` never got. `sol` + `tightened_v1_strip.txt` at 70.5% pooled is the first configuration in this project's history to exceed ICLabel's 65.98% full-679 reference at the pooled level. Every CI still overlaps every other config's at n=12 — this is not yet a statistically settled claim, and it is one more entry in an already-large multiple-comparisons pile (now well past the "roughly 8" configurations noted in Section 6 of the original baseline entry; that count should be treated as stale and due for a real tally before any external use of these numbers).
+
+**Recommended next step, not yet run**: graduate `gpt-5.6-sol` + `tightened_v1_strip.txt` to the full 679-set, mirroring exactly how `terra` + `tightened_v1` was promoted from its own 78-sample screen. This is the same incumbent prompt, not a newly-fit one, and fills a real gap (no full-679 result exists yet for any model besides `gpt-4.1` and `terra`).
+
 ---
 
 ## 2026-01-15: RFC-001 Strip Layout Integration

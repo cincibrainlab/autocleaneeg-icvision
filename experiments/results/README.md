@@ -27,6 +27,10 @@ confidence interval reported for it — that's the point of committing them.
 | `2026-08-20_terra_tightened_full679.csv` | `gpt-5.6-terra` + tightened prompt, full 679-set — the current reference number, subject-clustered 95% CI [52.6%, 68.3%] | 57.14% |
 | `2026-08-20_gpt4.1_detailed_original_strip_78sample.csv` | `gpt-4.1` + `prompts/detailed_original_strip.txt` (weighted decisive-feature scoring system), same 78-sample as the tightened/combined rows above | 34.6% (below tightened's 41.0% on the identical sample; CIs overlap) |
 | `2026-08-20_terra_detailed_original_strip_78sample.csv` | `gpt-5.6-terra` + `prompts/detailed_original_strip.txt`, same 78-sample as the tightened row above | 55.1% (below tightened's 62.8% on the identical sample; CIs overlap) |
+| `2026-08-20_gpt4.1_tightened_v2_78sample.csv` | `gpt-4.1` + `prompts/tightened_v2_strip.txt`, same 78-sample | 33.3% (below `tightened_v1_strip.txt`'s 41.0% on the identical sample — the channel_noise fix overcorrected) |
+| `2026-08-20_terra_tightened_v2_78sample.csv` | `gpt-5.6-terra` + `prompts/tightened_v2_strip.txt`, same 78-sample | 64.1% (marginally above `tightened_v1_strip.txt`'s 62.8%; CIs overlap — mixed/inconclusive result across the two models) |
+| `2026-08-20_sol_production_default_78sample.csv` | `gpt-5.6-sol` + unmodified `prompts/strip_default.txt`, same 78-sample — the clean model-only comparison point never actually run for `terra` | 60.3% (vs `gpt-4.1`'s 33.3% on the identical unmodified prompt/sample) |
+| `2026-08-20_sol_tightened_v1_78sample.csv` | `gpt-5.6-sol` + `prompts/tightened_v1_strip.txt`, same 78-sample | **70.5% — highest pooled result of any configuration tested this session**, above ICLabel's 65.98% full-679 reference at the pooled level (not yet subject-clustered-confirmed; CI still overlaps every other config at n=12) |
 
 All verified against the reported numbers in `plan-log.md` at the time this directory was created (2026-08-20) by running `subject_clustered_scoring.py` on each file directly.
 

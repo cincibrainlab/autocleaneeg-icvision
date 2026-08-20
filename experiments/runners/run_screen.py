@@ -1,15 +1,24 @@
 #!/usr/bin/env python3
-"""78-sample screening run for prompts/detailed_original_strip.txt in strip
-mode, via the real PR #15 custom_prompt mechanism (classify_components_strip_batch(...,
-custom_prompt=template)) -- not the pre-PR#15 monkey-patch approach the older
-run_prompt_variant_strip*.py scripts used. detailed_original_strip.txt is a
-complete template (its own framing + JSON schema + scoring-system block, with
-{n}/{labels}/{json_example} placeholders), not bare category-guidance text to
-be spliced into a hardcoded wrapper, so it goes through custom_prompt as-is.
+"""Generalized 78-sample screening runner: any model x any strip-mode prompt.
 
-Endpoint (Azure gpt-4.1 vs ClinCog gpt-5.6-terra) is selected via --endpoint.
+Replaces run_detailed_original_strip_screen.py (and the older, retired
+run_prompt_variant_strip*.py monkey-patch scripts) with one script
+parametrized by --model and --prompt-file, via the real PR #15 custom_prompt
+mechanism (classify_components_strip_batch(..., custom_prompt=template)).
+
+Model -> endpoint mapping is fixed here (one canonical endpoint per model,
+verified empirically -- see plan/plan-log.md, 2026-08-20 entries for
+gpt-5.6-sol's connectivity/vision-path verification), so --model is the only
+selector needed; there is no separate --endpoint flag to get out of sync
+with it.
+
 Credentials are read from the environment (AZURE_ICVISION_API_KEY,
 CLINCOG_API_KEY) -- never hardcode them here.
+
+Usage:
+    python run_screen.py --model gpt-4.1 --output out.csv
+        (omit --prompt-file to use the unmodified production STRIP_PROMPT_TEMPLATE)
+    python run_screen.py --model gpt-5.6-sol --prompt-file /path/to/tightened_v1.txt --output out.csv
 """
 import argparse
 import csv
@@ -29,62 +38,60 @@ mne.set_log_level("ERROR")
 import openai
 from icvision import api
 
-# Note: deliberately NOT applying /tmp/fixed_strip_parser.py's monkey-patch here.
-# That patch forked classify_strip_image() to work around the markdown-fence
-# parsing bug (issue #13) before it was fixed properly in PR #14, and predates
-# PR #15's custom_prompt parameter. PR #14 and #15 are both merged and synced
-# into /tmp/icvision_prod_test_cwd/icvision/ already, so the native
-# classify_strip_image() has both the real fix and custom_prompt support --
-# applying the old fork here would silently override it with a stale copy
-# that doesn't know about custom_prompt.
-
 BASE_DIR = Path("/cblstore/srv/Analysis/Nate_Projects/Projects/IC_Visual_AI")
 SAMPLE_CSV = "/tmp/single_mode_sample.csv"
-PROMPT_FILE = "/tmp/icvision_prod_test_cwd/prompts/detailed_original_strip.txt"
 
-ENDPOINTS = {
-    "azure": {
-        "api_key": os.environ.get("AZURE_ICVISION_API_KEY"),
+MODELS = {
+    "gpt-4.1": {
+        "api_key_env": "AZURE_ICVISION_API_KEY",
         "api_version": "2025-03-01-preview",
         "base_url": "https://ext-team-ai-gateway.azure-api.net/external-teams-foundry/openai",
-        "model": "gpt-4.1",
         "auth": "azure",
     },
-    "clincog": {
-        "api_key": os.environ.get("CLINCOG_API_KEY"),
+    "gpt-5.6-terra": {
+        "api_key_env": "CLINCOG_API_KEY",
         "api_version": None,
         "base_url": "https://openai.cincibrainlab.com/v1",
-        "model": "gpt-5.6-terra",
+        "auth": "bearer",
+    },
+    "gpt-5.6-sol": {
+        "api_key_env": "CLINCOG_API_KEY",
+        "api_version": None,
+        "base_url": "https://openai.cincibrainlab.com/v1",
         "auth": "bearer",
     },
 }
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--endpoint", choices=["azure", "clincog"], required=True)
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--model", choices=sorted(MODELS), required=True)
+    parser.add_argument("--prompt-file", default=None, help="Strip-mode custom_prompt template; omit to use the unmodified production STRIP_PROMPT_TEMPLATE")
     parser.add_argument("--output", required=True)
+    parser.add_argument("--sample-csv", default=SAMPLE_CSV)
+    parser.add_argument("--strip-size", type=int, default=9)
     args = parser.parse_args()
 
-    ep = ENDPOINTS[args.endpoint]
-    if not ep["api_key"]:
-        env_var = "AZURE_ICVISION_API_KEY" if args.endpoint == "azure" else "CLINCOG_API_KEY"
-        sys.exit(f"Missing credential: set {env_var} in the environment before running.")
+    mc = MODELS[args.model]
+    api_key = os.environ.get(mc["api_key_env"])
+    if not api_key:
+        sys.exit(f"Missing credential: set {mc['api_key_env']} in the environment before running.")
 
-    if ep["auth"] == "azure":
+    if mc["auth"] == "azure":
         _OrigOpenAI = openai.OpenAI
 
         def _PatchedOpenAI(*a, **kw):
-            kw["default_headers"] = {**kw.get("default_headers", {}), "api-key": ep["api_key"]}
-            kw["default_query"] = {**kw.get("default_query", {}), "api-version": ep["api_version"]}
+            kw["default_headers"] = {**kw.get("default_headers", {}), "api-key": api_key}
+            kw["default_query"] = {**kw.get("default_query", {}), "api-version": mc["api_version"]}
             return _OrigOpenAI(*a, **kw)
 
         api.openai.OpenAI = _PatchedOpenAI
 
-    custom_prompt = Path(PROMPT_FILE).read_text()
-    variant_name = f"detailed_original_strip_{args.endpoint}"
+    custom_prompt = Path(args.prompt_file).read_text() if args.prompt_file else None
+    prompt_name = Path(args.prompt_file).stem if args.prompt_file else "production_default"
+    variant_name = f"{args.model}_{prompt_name}"
 
-    sample_rows = list(csv.DictReader(open(SAMPLE_CSV)))
+    sample_rows = list(csv.DictReader(open(args.sample_csv)))
     by_file = defaultdict(list)
     for r in sample_rows:
         by_file[r["set_path"]].append(r)
@@ -105,11 +112,11 @@ def main():
         results_df, meta = api.classify_components_strip_batch(
             ica,
             raw,
-            ep["api_key"],
+            api_key,
             component_indices=zero_based,
-            model_name=ep["model"],
-            strip_size=9,
-            base_url=ep["base_url"],
+            model_name=args.model,
+            strip_size=args.strip_size,
+            base_url=mc["base_url"],
             auto_exclude=False,
             custom_prompt=custom_prompt,
             output_dir=Path(f"/tmp/{variant_name}_output/{set_path.replace('/', '_')}"),
