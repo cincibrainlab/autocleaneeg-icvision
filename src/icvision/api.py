@@ -9,6 +9,7 @@ classification requests and parsing structured JSON responses.
 import base64
 import concurrent.futures
 import logging
+import re
 import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, cast
@@ -28,6 +29,39 @@ from .plotting import create_strip_image, plot_components_batch
 
 # Set up logging for the module
 logger = logging.getLogger("icvision.api")
+
+
+def _extract_json_payload(text: str, bracket: str = "{") -> str:
+    """Extract a JSON object or array from a model response, tolerating
+    markdown code fences and any surrounding text.
+
+    Some models wrap their JSON response in a ```json ... ``` fence and
+    occasionally add trailing commentary after the closing fence. A naive
+    "strip the first/last line" approach only works when the closing fence
+    is the literal last line of the response -- any trailing text breaks
+    that assumption and causes json.loads to raise "Extra data". This finds
+    the fenced block anywhere in the text, or falls back to matching the
+    first opening bracket to the last matching closing bracket.
+
+    Args:
+        text: Raw model response text.
+        bracket: Which JSON structure to look for -- "{" for an object,
+            "[" for an array.
+
+    Returns:
+        The extracted candidate JSON string (still needs json.loads/parsing;
+        this does not validate that the result is well-formed JSON).
+    """
+    text = text.strip()
+    close = "}" if bracket == "{" else "]"
+    fence_pattern = rf"```(?:json)?\s*(\{re.escape(bracket)}.*?\{re.escape(close)})\s*```"
+    fence_match = re.search(fence_pattern, text, re.DOTALL)
+    if fence_match:
+        return fence_match.group(1)
+    start, end = text.find(bracket), text.rfind(close)
+    if start != -1 and end != -1 and end > start:
+        return text[start : end + 1]
+    return text
 
 
 def classify_component_image_openai(
@@ -134,7 +168,7 @@ def classify_component_image_openai(
                 import json
 
                 parse_start_time = time.time()
-                structured_response = json.loads(message_content)
+                structured_response = json.loads(_extract_json_payload(message_content, bracket="{"))
                 parse_end_time = time.time()
                 logger.debug("JSON parsing for %s took %.3f seconds", image_path.name, parse_end_time - parse_start_time)
 
@@ -476,14 +510,10 @@ def classify_strip_image(
     try:
         logger.debug("Raw strip response: %s", message_content[:500])
 
-        # Parse JSON - handle markdown code blocks
-        json_str = message_content.strip()
-        if json_str.startswith("```"):
-            lines = json_str.split("\n")
-            json_str = "\n".join(
-                lines[1:-1] if lines[-1].startswith("```") else lines[1:]
-            )
-
+        # Parse JSON - handle markdown code blocks (and any trailing text
+        # after the closing fence, which the previous first/last-line strip
+        # did not tolerate; see GH issue #13).
+        json_str = _extract_json_payload(message_content, bracket="[")
         raw_results = json.loads(json_str)
 
         # Map letter labels back to component indices
