@@ -7,6 +7,7 @@ used throughout the ICVision package.
 
 import os
 from pathlib import Path
+from typing import Optional
 
 # Default OpenAI model for vision classification
 DEFAULT_MODEL = "gpt-4.1"
@@ -15,7 +16,7 @@ DEFAULT_MODEL = "gpt-4.1"
 PROMPT_SEARCH_PATHS = [
     Path.cwd() / "prompts",  # Current working directory
     Path.home() / ".icvision" / "prompts",  # User home
-    Path(__file__).parent.parent.parent.parent / "prompts",  # Package prompts dir
+    Path(__file__).resolve().parent.parent.parent / "prompts",  # Package prompts dir (src/icvision/config.py -> src/icvision -> src -> repo root)
 ]
 
 
@@ -32,6 +33,18 @@ def load_prompt(prompt_name: str = "default") -> str:
 
     Returns:
         Prompt text content
+
+    Raises:
+        FileNotFoundError: If {prompt_name}.txt is not found in any search path.
+            Previously this silently fell back to a hardcoded duplicate string
+            with no mechanism keeping it in sync with prompts/default.txt -- for
+            any deployment not run with cwd set to the package's own repo root,
+            PROMPT_SEARCH_PATHS[2] was resolving to the wrong directory entirely
+            (an off-by-one in the parent-directory count), so the fallback was
+            silently used far more often than intended, with no indication to
+            the caller that the "real" prompt file was never actually found. A
+            classification tool used for accuracy measurement should fail
+            loudly here rather than silently substitute a different prompt.
     """
     filename = f"{prompt_name}.txt"
 
@@ -40,23 +53,13 @@ def load_prompt(prompt_name: str = "default") -> str:
         if prompt_file.exists():
             return prompt_file.read_text().strip()
 
-    # Fallback to built-in short prompt
-    return DEFAULT_SHORT_PROMPT
+    searched = ", ".join(str(p / filename) for p in PROMPT_SEARCH_PATHS)
+    raise FileNotFoundError(
+        f"Could not find prompt file '{filename}' in any of the search paths: {searched}. "
+        "Set a working directory with a prompts/ subfolder, place it in ~/.icvision/prompts/, "
+        "or check that the package's own prompts/ directory is intact."
+    )
 
-
-# Short, efficient prompt that works within proxy timeout limits
-DEFAULT_SHORT_PROMPT = """Classify this EEG ICA component into ONE category and provide your answer in JSON format:
-
-Categories:
-- "brain": Dipolar central/parietal pattern, 1/f spectrum with possible 6-35Hz peaks
-- "eye": Frontal/periocular dipolar pattern, low-frequency dominated
-- "muscle": Positive spectral slope at high frequencies, edge-focused topography
-- "heart": ~1Hz rhythmic deflections in time series
-- "line_noise": Sharp peak at 50/60Hz
-- "channel_noise": Single isolated focal spot, no dipole
-- "other_artifact": Doesn't fit above categories
-
-Respond with JSON: {"label": "category_name", "confidence": 0.0-1.0, "reason": "brief explanation"}"""
 
 # Component label definitions in priority order
 COMPONENT_LABELS = [
@@ -321,34 +324,29 @@ Example JSON response:
 OPENAI_ICA_PROMPT = load_prompt("default")
 
 
-# Strip prompt template for batch classification
-# Supports variable number of components (1-9) with letter labels A-I
-STRIP_PROMPT_TEMPLATE = """Classify each of the {n} ICA components shown in this grid (labeled {labels}).
-
-Each component shows:
-- Topography map (scalp distribution)
-- Time series (first 2.5 seconds)
-- ERP-style image (continuous data segments)
-- Power spectrum (1-55Hz)
-
-Categories:
-- "brain": Dipolar pattern (can be central, parietal, OR lateral/temporal), 1/f spectrum with alpha (8-12Hz) or beta (13-30Hz) peaks. NOTE: Lateral/edge topography with alpha peak = brain, not muscle
-- "eye": Frontal/periocular focus with low-frequency dominated spectrum (<4Hz) AND large slow deflections in time series. Frontal focal + slow deflections = eye, even if topography looks focal
-- "muscle": Edge-focused topography AND flat/rising high-frequency spectrum (no alpha peak). Must have BOTH features
-- "heart": ~1Hz rhythmic deflections in time series, broad scalp distribution
-- "line_noise": Sharp narrow peak at 50/60Hz
-- "channel_noise": Single isolated focal spot (one sensor) with flat/noisy spectrum AND erratic/random time series. NOT eye if spectrum is low-frequency dominated with slow deflections
-- "other_artifact": Doesn't fit above categories
-
-Respond with JSON array (one object per component):
-{json_example}"""
+# Strip prompt template for batch classification, externalized to
+# prompts/strip_default.txt (matches OPENAI_ICA_PROMPT's convention above --
+# previously this lived only as an inline Python string, which had no
+# load_prompt()-style override path and made it invisible to anyone auditing
+# prompts/ for "what prompts does this system use"). Supports variable
+# number of components (1-9) with letter labels A-I via {n}/{labels}/
+# {json_example} substitution at call time in get_strip_prompt().
+STRIP_PROMPT_TEMPLATE = load_prompt("strip_default")
 
 
-def get_strip_prompt(n_components: int) -> str:
+def get_strip_prompt(n_components: int, template: Optional[str] = None) -> str:
     """Generate classification prompt for N components in a strip image.
 
     Args:
         n_components: Number of components in the strip (1-52)
+        template: Optional alternate template to format instead of the
+            default STRIP_PROMPT_TEMPLATE. Must contain the same {n}/{labels}/
+            {json_example} placeholders -- this is a template that gets
+            formatted fresh per call, not a pre-rendered string, so it stays
+            correct across batches of different sizes (e.g. a final,
+            shorter-than-strip_size batch). This is what custom_prompt on
+            classify_strip_image()/classify_components_strip_batch() actually
+            substitutes, rather than being used verbatim.
 
     Returns:
         Formatted prompt string
@@ -367,7 +365,8 @@ def get_strip_prompt(n_components: int) -> str:
     ]
     json_example = "[\n" + ",\n".join(json_lines) + "\n]"
 
-    return STRIP_PROMPT_TEMPLATE.format(n=n_components, labels=labels_str, json_example=json_example)
+    prompt_template = template if template is not None else STRIP_PROMPT_TEMPLATE
+    return prompt_template.format(n=n_components, labels=labels_str, json_example=json_example)
 
 
 # Default configuration parameters
