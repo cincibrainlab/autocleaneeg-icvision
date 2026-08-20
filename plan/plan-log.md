@@ -18,10 +18,12 @@ While running the real production strip-batch code path, discovered that `classi
 
 Two distinct production configurations exist and use two *different* prompts (this was initially mischaracterized mid-investigation and corrected):
 
-| Config | Model | Layout | Prompt (unmodified, shipped) | Sample | Accuracy |
-|---|---|---|---|---|---|
-| Single-mode default | `gpt-4.1` | single | `prompts/default.txt` (commit `c506659`, 2025-12-23, Ernie Pedapati) | 78-component stratified sample | **33.3%** |
-| Strip-mode default (what the pipeline actually forces) | `gpt-4.1` | strip | `STRIP_PROMPT_TEMPLATE` in `config.py` (commit `ea5f683`, 2026-01-15, Ernie Pedapati) | full 679-set | **40.5%** |
+| Config | Model | Layout | Prompt (unmodified, shipped) | Sample | Accuracy | Raw results |
+|---|---|---|---|---|---|---|
+| Single-mode default | `gpt-4.1` | single | `prompts/default.txt` (commit `c506659`, 2025-12-23, Ernie Pedapati) | 78-component stratified sample | **33.3%** | [`experiments/results/2026-08-19_gpt4.1_single_vs_strip_controlled_78sample.csv`](../experiments/results/2026-08-19_gpt4.1_single_vs_strip_controlled_78sample.csv) (`--pred-col single_predicted_label`) |
+| Strip-mode default (what the pipeline actually forces) | `gpt-4.1` | strip | `STRIP_PROMPT_TEMPLATE` in `config.py` (commit `ea5f683`, 2026-01-15, Ernie Pedapati) | full 679-set | **40.5%** | [`experiments/results/2026-08-19_gpt4.1_strip_production_baseline_full679.csv`](../experiments/results/2026-08-19_gpt4.1_strip_production_baseline_full679.csv) |
+
+Note: the single-mode row's 33.3% and strip mode's 33.3% on the same 78-sample were both drawn from the one controlled comparison file, [`2026-08-19_gpt4.1_single_vs_strip_controlled_78sample.csv`](../experiments/results/2026-08-19_gpt4.1_single_vs_strip_controlled_78sample.csv) (both `single_predicted_label` and `strip_predicted_label` columns present; select via `--pred-col` when scoring).
 
 Both endpoints were `gpt-4.1` via a freshly-provisioned Azure APIM gateway (`api-key` header + `api-version` query param, not the SDK's default `Authorization: Bearer` — required a client-construction patch at the call site, not a change to icvision's own source).
 
@@ -29,19 +31,19 @@ Both endpoints were `gpt-4.1` via a freshly-provisioned Azure APIM gateway (`api
 
 Written earlier on the unmerged `terra/integration` branch (commit `c3a804a`, "docs: tighten channel_noise, eye, heart, and fallback cues in ICA prompt"), never merged to `main`, never previously accuracy-tested. Strip mode has no `custom_prompt` hook in production code, so this was tested by substituting the prompt's category-guidance text into strip mode's required response-format wrapper (the framing/JSON-array-format portions copied verbatim from the real `STRIP_PROMPT_TEMPLATE`; only category definitions swapped).
 
-| Model | Sample | Accuracy | Note |
-|---|---|---|---|
-| `gpt-4.1` | 78-sample | 41.0% | |
-| `gpt-5.6-terra` | 78-sample | 62.8% | **Superseded by full-set result below — sample was stratified toward hard categories, inflating this number** |
-| `gpt-5.6-terra` | **full 679-set** | **57.14%** | Real, unbiased result. Per-category: channel_noise 93%, eye 69%, heart 65%, brain 61%, muscle 54%, other_artifact 38%. Still **8.8 points below ICLabel's 65.98%**. Dominant remaining error: `muscle→channel_noise` (65 cases) |
+| Model | Sample | Accuracy | Note | Raw results |
+|---|---|---|---|---|
+| `gpt-4.1` | 78-sample | 41.0% | | [`experiments/results/2026-08-19_gpt4.1_tightened_78sample.csv`](../experiments/results/2026-08-19_gpt4.1_tightened_78sample.csv) |
+| `gpt-5.6-terra` | 78-sample | 62.8% | **Superseded by full-set result below — sample was stratified toward hard categories, inflating this number** | [`experiments/results/2026-08-19_terra_tightened_78sample.csv`](../experiments/results/2026-08-19_terra_tightened_78sample.csv) |
+| `gpt-5.6-terra` | **full 679-set** | **57.14%** | Real, unbiased result. Per-category: channel_noise 93%, eye 69%, heart 65%, brain 61%, muscle 54%, other_artifact 38%. Still **8.8 points below ICLabel's 65.98%**. Dominant remaining error: `muscle→channel_noise` (65 cases) | [`experiments/results/2026-08-20_terra_tightened_full679.csv`](../experiments/results/2026-08-20_terra_tightened_full679.csv) |
 
 ### 4. Combined prompt — new work, authored during this investigation
 
 `prompts/combined_v1.txt`, written today, synthesizing elements from the tightened prompt and an older archived prompt (`prompts/detailed_original.txt`, retired 2025-12-23), informed by error-pattern analysis on the locked-132 subset.
 
-| Model | Sample | Accuracy |
-|---|---|---|
-| `gpt-4.1` | 78-sample | 35.9% (underperformed the tightened prompt on the same sample/model) |
+| Model | Sample | Accuracy | Raw results |
+|---|---|---|---|
+| `gpt-4.1` | 78-sample | 35.9% (underperformed the tightened prompt on the same sample/model) | [`experiments/results/2026-08-19_gpt4.1_combined_78sample.csv`](../experiments/results/2026-08-19_gpt4.1_combined_78sample.csv) |
 
 **Not yet run**: combined prompt + `gpt-5.6-terra`, at any scale.
 
@@ -84,10 +86,12 @@ These were found by going back and interrogating the ground truth itself, not th
 
 1. **True independent sample size is ~12, not 679.** All 679 components come from only 12 unique recordings. Computed real per-subject accuracy for the two full-679 results already reported above:
 
-   | Config | Pooled accuracy (n=679) | Per-subject range (n=12) | Per-subject mean | Subject-clustered 95% CI |
-   |---|---|---|---|---|
-   | `gpt-5.6-terra` + tightened | 57.14% | 45.6% – 78.3% | 60.5% | **[52.6%, 68.3%]** |
-   | `gpt-4.1` production baseline | 40.5% | 23.1% – 84.8% | 44.0% | **[32.0%, 56.0%]** |
+   | Config | Pooled accuracy (n=679) | Per-subject range (n=12) | Per-subject mean | Subject-clustered 95% CI | Raw results |
+   |---|---|---|---|---|---|
+   | `gpt-5.6-terra` + tightened | 57.14% | 45.6% – 78.3% | 60.5% | **[52.6%, 68.3%]** | [`experiments/results/2026-08-20_terra_tightened_full679.csv`](../experiments/results/2026-08-20_terra_tightened_full679.csv) |
+   | `gpt-4.1` production baseline | 40.5% | 23.1% – 84.8% | 44.0% | **[32.0%, 56.0%]** | [`experiments/results/2026-08-19_gpt4.1_strip_production_baseline_full679.csv`](../experiments/results/2026-08-19_gpt4.1_strip_production_baseline_full679.csv) |
+
+   Reproduce either CI directly: `python experiments/scoring/subject_clustered_scoring.py experiments/results/<file>.csv`.
 
    Two consequences that overturn how this document's headline claims should be read: (a) the two configs' subject-clustered intervals **overlap** (52.6%–56.0%) — under proper uncertainty, "terra beats the gpt-4.1 baseline" is no longer a safely settled claim, only a naive per-component calculation made it look that way; (b) terra's upper bound (68.3%) **exceeds ICLabel's 65.98%** — "terra loses to ICLabel by 8.8 points" is similarly not a settled fact once subject clustering is accounted for. Caveat on the caveat: a t-based interval with only 12 clusters is a rough approximation, not precision (normal-distribution assumptions get shaky at this n, especially given how skewed the gpt-4.1 per-subject values are) — but the qualitative direction (real uncertainty is much larger than the pooled numbers implied) is robust.
 
@@ -100,6 +104,12 @@ These were found by going back and interrogating the ground truth itself, not th
 5. **A candidate fix for the subject-count problem exists but is deliberately deferred, not started.** `IC_Visual_AI_new_APDinASDfiles` (a separate, previously unused dataset — 33 independent subjects vs. this document's 12, ~3,558 labeled components across `chirp` and `rest` tasks) was evaluated as a possible held-out validation set. It would meaningfully shrink the subject-clustered intervals above (~1.7x tighter, from cluster count alone) and is completely unbiased by every test in this document, which would make it a genuine confirmatory check rather than another iteration on already-inspected data. It does **not** fix items 2 or 3 above (same undocumented-selection-gaps pattern found in 28 of its 32 source files; also zero `line_noise` examples) and requires real unbuilt infrastructure (its `.set` files are epoched, not continuous, which the current plotting/classification code path does not support). Decision: **kept in reserve for the next phase of work, not started now**, so it stays available as a genuinely blind test rather than getting used up prematurely.
 
 **Status**: this closes out the baseline-establishment phase of this project's history — every claim above is either backed by a real, validated measurement or explicitly flagged with the uncertainty that remains. Everything from this point forward (prompt/model iteration, evidence injection, the `IC_Visual_AI_new_APDinASDfiles` validation pass, repeated-trials confidence intervals) is modernization built on top of this documented baseline, not part of establishing it.
+
+## 2026-08-20: Results directory established; `detailed_original_strip.txt` smoke test
+
+Committed `experiments/results/` — one CSV per number reported above, verified to reproduce the exact accuracy already stated in this document by scoring each file directly with `experiments/scoring/subject_clustered_scoring.py`. See `experiments/results/README.md` for the full file-by-file index; every table above now links its row to the underlying CSV.
+
+Ran a connectivity/format smoke test of `prompts/detailed_original_strip.txt` (the strip-mode adaptation of the archived weighted-scoring prompt, see `prompts/README.md`) against the `gpt-5.6-terra` / ClinCog endpoint: 8/9 correct on a single 9-component batch. **Not included in `experiments/results/`** and not a reported finding — per the smoke-test convention established this session, a single small batch with no repeated trials, no subject clustering, and picked from whatever was on hand isn't evidence, just a check that the prompt renders correctly and the endpoint round-trips a real response. The planned real test for this prompt is the 78-sample screening pass (both `gpt-4.1` and `gpt-5.6-terra`) described as next steps below — that result, once run, will get its own row and CSV the same way every other result in this document does.
 
 ---
 

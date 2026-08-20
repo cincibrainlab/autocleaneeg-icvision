@@ -1,0 +1,680 @@
+set_path,component_index,true_label_norm,predicted_label,confidence,reason
+SavedFiles/0137_VDAudio_ICA.set,0,eye,eye,0.94,Strong symmetric frontal/periocular map with large slow blink-like deflections and dominant low-frequency power.
+SavedFiles/0137_VDAudio_ICA.set,1,heart,heart,0.99,"Highly regular, sharp QRS-like transients recur at approximately one-second intervals; segment image shows repeated events."
+SavedFiles/0137_VDAudio_ICA.set,2,eye,eye,0.82,"Anterior left-right polarity pattern with slow, large saccade-like shifts and a low-frequency-dominant spectrum."
+SavedFiles/0137_VDAudio_ICA.set,3,brain,brain,0.65,Smooth anterior-posterior dipolar topography and broadly 1/f-like spectrum without a defining artifact signature.
+SavedFiles/0137_VDAudio_ICA.set,4,brain,muscle,0.78,Focal lateral/temporal edge distribution with erratic fast activity and relatively elevated broad higher-frequency content.
+SavedFiles/0137_VDAudio_ICA.set,5,heart,heart,0.79,Repeated sharp stereotyped deflections with a broad anterior-posterior gradient support a cardiac source.
+SavedFiles/0137_VDAudio_ICA.set,6,muscle,channel_noise,0.98,Topography is dominated by a single small isolated electrode island with no meaningful smooth opposing field.
+SavedFiles/0137_VDAudio_ICA.set,7,brain,other_artifact,0.62,Diffuse central pattern and irregular noisy activity lack a clear dipolar neural rhythm or decisive artifact-specific cue.
+SavedFiles/0137_VDAudio_ICA.set,8,brain,brain,0.73,"Plausible posterior-central dipolar map with predominantly falling 1/f spectrum and no clear eye, muscle, or line-noise signature."
+SavedFiles/0137_VDAudio_ICA.set,9,brain,brain,0.82,Broad smooth posterior-right dipolar map with a clear 1/f-like declining spectrum and no blink or high-frequency muscle signature.
+SavedFiles/0137_VDAudio_ICA.set,10,muscle,muscle,0.9,"Very focal left temporal/edge source, irregular spiky activity, and relatively elevated broad high-frequency spectral power."
+SavedFiles/0137_VDAudio_ICA.set,11,muscle,muscle,0.92,Strong focal right temporal-edge dipole with erratic spiky time series and broad non-1/f high-frequency activity.
+SavedFiles/0137_VDAudio_ICA.set,12,muscle,muscle,0.87,Localized left frontal-temporal edge source with bursty irregular activity and a spectrum not showing a clean neural 1/f profile.
+SavedFiles/0137_VDAudio_ICA.set,13,muscle,muscle,0.93,Highly focal inferior-left edge distribution with dense high-frequency spiking and broadly elevated high-frequency power.
+SavedFiles/0137_VDAudio_ICA.set,14,brain,brain,0.77,Smooth broad bilateral posterior distribution and strongly decreasing 1/f-like spectrum; activity lacks a sustained muscle-burst profile.
+SavedFiles/0137_VDAudio_ICA.set,15,muscle,muscle,0.91,"Compact left temporal-edge dipole with noisy spiky activity and a relatively flat, high-frequency-rich spectrum."
+SavedFiles/0137_VDAudio_ICA.set,16,brain,brain,0.73,Broad central-anterior versus posterior dipolar map with a pronounced declining 1/f spectrum and no decisive artifact rhythm.
+SavedFiles/0137_VDAudio_ICA.set,17,muscle,muscle,0.9,"Focal left temporal/edge distribution, irregular high-frequency activity, and a spectrum elevated across higher frequencies rather than clean 1/f decay."
+SavedFiles/0137_VDAudio_ICA.set,18,muscle,channel_noise,0.78,"Topography is dominated by a very focal isolated right-frontal hotspot, with irregular noisy activity and no plausible brain rhythm."
+SavedFiles/0137_VDAudio_ICA.set,19,muscle,muscle,0.73,Right temporal edge-focused opposing-polarity map and erratic high-frequency-looking activity support muscle artifact.
+SavedFiles/0137_VDAudio_ICA.set,20,brain,other_artifact,0.58,"Posterior focal map and noisy activity are not clearly dipolar brain activity, while the spectrum lacks a decisive muscle or line-noise signature."
+SavedFiles/0137_VDAudio_ICA.set,21,muscle,channel_noise,0.75,"A sharply localized right-frontal negative island dominates the scalp map, with spiky irregular activity."
+SavedFiles/0137_VDAudio_ICA.set,22,muscle,channel_noise,0.81,The compact single left-frontal hotspot is an unmistakably isolated-electrode-like map; activity is irregular rather than physiological.
+SavedFiles/0137_VDAudio_ICA.set,23,muscle,muscle,0.68,"Anterior edge-focused mixed-polarity topography, abrupt transient activity, and relatively elevated higher-frequency power fit muscle artifact."
+SavedFiles/0137_VDAudio_ICA.set,24,brain,other_artifact,0.68,"Broad multipolar, non-dipolar scalp distribution with irregular activity does not cleanly match brain, eye, muscle, or cardiac patterns."
+SavedFiles/0137_VDAudio_ICA.set,25,muscle,channel_noise,0.77,A small sharply focal frontal island without a broad spatial source pattern supports an isolated noisy channel.
+SavedFiles/0137_VDAudio_ICA.set,26,muscle,muscle,0.76,Focal lateral temporal/edge dipole with highly erratic activity and broad high-frequency content is characteristic of muscle artifact.
+SavedFiles/0137_VDAudio_ICA.set,27,brain,brain,0.62,"Broad, smooth central-versus-peripheral scalp field and a generally 1/f-decreasing spectrum; activity lacks a clear ocular, cardiac, or high-frequency muscle signature."
+SavedFiles/0137_VDAudio_ICA.set,28,muscle,channel_noise,0.82,Scalp map is dominated by a very focal anterior electrode-scale hotspot with limited smooth spatial spread; time series contains isolated extreme transients.
+SavedFiles/0137_VDAudio_ICA.set,29,muscle,channel_noise,0.88,"An unmistakably isolated, compact frontal hotspot dominates the map without a broad dipolar field, consistent with a bad single channel."
+SavedFiles/0137_VDAudio_ICA.set,30,muscle,muscle,0.76,"Focal left temporal/edge distribution, erratic spiky activity, and a spectrum that recovers/rises at higher frequencies support muscle artifact."
+SavedFiles/0137_VDAudio_ICA.set,31,muscle,muscle,0.72,Localized frontal field with irregular high-frequency activity and a non-1/f spectrum showing substantial higher-frequency power.
+SavedFiles/0137_VDAudio_ICA.set,32,eye,eye,0.9,"Broad frontal/periocular distribution, large slow blink-like deflection in the time series, and strongly low-frequency-dominant spectrum."
+SavedFiles/0137_VDAudio_ICA.set,33,muscle,muscle,0.68,"Focal frontal/temporal edge activity with a noisy, spiky trace and relatively elevated broad high-frequency spectral power."
+SavedFiles/0137_VDAudio_ICA.set,34,muscle,muscle,0.7,"Localized right frontal/temporal pattern, irregular bursty time course, and flattened/rising higher-frequency spectrum indicate muscle activity."
+SavedFiles/0137_VDAudio_ICA.set,36,eye,eye,0.86,Anterior-posterior ocular gradient together with large slow wave-like/saccade-like activity and dominant low-frequency power.
+SavedFiles/0137_VDAudio_ICA.set,37,brain,brain,0.58,"Broad smooth anterior-central distribution with a generally 1/f-decreasing spectrum; activity lacks a clear blink, ECG, or narrow line-noise signature."
+SavedFiles/0137_VDAudio_ICA.set,38,brain,other_artifact,0.54,"Topology is irregular with a focal lateral feature and diffuse frontal field, while the noisy activity and spectrum do not clearly establish a specific artifact class."
+SavedFiles/0137_VDAudio_ICA.set,39,muscle,channel_noise,0.82,Scalp map is dominated by a very compact isolated right-central electrode-like island with little smooth spatial falloff.
+SavedFiles/0137_VDAudio_ICA.set,40,muscle,muscle,0.78,"Focal right-temporal edge distribution, erratic sharp transients, and a relatively flat-to-rising high-frequency spectrum support muscle activity."
+SavedFiles/0137_VDAudio_ICA.set,42,muscle,muscle,0.75,Highly focal right-frontal/temporal source with sharp transient activity and pronounced elevated high-frequency spectral power.
+SavedFiles/0137_VDAudio_ICA.set,43,muscle,muscle,0.72,Edge-focused left frontal/temporal multipolar map and bursty irregular activity are more consistent with muscle than brain or an isolated bad channel.
+SavedFiles/0137_VDAudio_ICA.set,44,muscle,muscle,0.74,"Inferior posterior edge-focused focal map with a conspicuous burst of rapid, high-amplitude activity suggests neck or posterior muscle artifact."
+SavedFiles/0137_VDAudio_ICA.set,45,muscle,muscle,0.69,Focal inferior-right edge distribution and intermittent high-frequency bursty time series favor muscle artifact.
+SavedFiles/0137_VDAudio_ICA.set,46,brain,brain,0.62,"Broad, smooth frontal-versus-central dipolar pattern and a clear 1/f-like spectrum are compatible with a neural component despite noisy time-series segments."
+SavedFiles/0137_VDAudio_ICA.set,50,muscle,muscle,0.86,Right temporal edge-focused dipole with erratic high-frequency activity and a relatively flat elevated high-frequency spectrum.
+SavedFiles/0137_VDAudio_ICA.set,51,other_artifact,eye,0.93,Frontal/periocular distribution plus large slow blink-like deflections and strongly low-frequency-dominant spectrum.
+SavedFiles/0137_VDAudio_ICA.set,53,channel_noise,other_artifact,0.68,"Focal inferior-central, non-plausible topology with irregular slow transients; spectrum is low-frequency weighted but does not cleanly support eye or brain."
+SavedFiles/0137_VDAudio_ICA.set,54,other_artifact,eye,0.84,"Strong anterior edge distribution with large abrupt slow deflections and predominantly low-frequency power, consistent with ocular activity."
+SavedFiles/0137_VDAudio_ICA.set,56,other_artifact,muscle,0.9,"Left temporal edge focus, highly erratic activity, and several prominent higher-frequency spectral peaks support localized muscle artifact."
+SavedFiles/0137_VDAudio_ICA.set,58,muscle,muscle,0.84,"Anterior focal/edge distribution with noisy, bursty time series and weakly decaying high-frequency spectrum."
+SavedFiles/0137_VDAudio_ICA.set,59,muscle,muscle,0.8,Focal left frontal/temporal pattern with irregular spiky activity and appreciable broad high-frequency power.
+SavedFiles/0137_VDAudio_ICA.set,61,brain,other_artifact,0.7,"Broad non-dipolar peripheral gradient and noisy activity without a decisive ocular, cardiac, line-noise, or muscle spectral signature."
+SavedFiles/0137_VDAudio_ICA.set,62,muscle,muscle,0.82,Focal left anterior/temporal source with noisy activity and a spectrum that rises again at higher frequencies.
+SavedFiles/0137_VDAudio_ICA.set,63,muscle,other_artifact,0.62,"Irregular, splotchy frontal topography and noisy activity lack a clear dipole, blink pattern, isolated-channel island, or high-frequency muscle signature; spectrum is broadly 1/f-like."
+SavedFiles/0137_VDAudio_ICA.set,65,eye,eye,0.79,Broad anterior/frontal positivity with posterior-lateral opposite polarity and strongly low-frequency-dominant spectrum support an ocular source.
+SavedFiles/0137_VDAudio_ICA.set,66,muscle,channel_noise,0.83,"Topography is dominated by a sharply localized right-frontal electrode-scale hotspot with adjacent opposite polarity, while the time series contains abrupt extreme transients."
+SavedFiles/0137_VDAudio_ICA.set,69,brain,eye,0.77,Strong frontal/periocular left-right polarity pattern together with low-frequency-dominant power and large irregular deflections is most consistent with eye movement artifact.
+SavedFiles/0161_VD_audio_ICA.set,0,eye,eye,0.95,Strong bilateral frontal distribution with large slow blink-like deflections and low-frequency-dominant spectrum.
+SavedFiles/0161_VD_audio_ICA.set,1,eye,eye,0.94,Clear left-right frontal polarity with large slow transient/step-like activity and steep low-frequency spectrum.
+SavedFiles/0161_VD_audio_ICA.set,2,eye,eye,0.86,Anterior frontal map and predominantly low-frequency power support an ocular source despite noisier activity.
+SavedFiles/0161_VD_audio_ICA.set,3,brain,other_artifact,0.56,"Anterior-posterior pattern and irregular activity are not convincingly brain-, eye-, or muscle-specific; spectrum is broadly 1/f-like."
+SavedFiles/0161_VD_audio_ICA.set,4,brain,brain,0.68,Broad smooth central/posterior dipolar topography with a decaying 1/f-like spectrum and no decisive artifact signature.
+SavedFiles/0161_VD_audio_ICA.set,5,muscle,muscle,0.96,"Focal temporal/edge distribution, erratic high-frequency activity, and a flat-to-rising high-frequency spectrum indicate muscle."
+SavedFiles/0161_VD_audio_ICA.set,6,heart,heart,0.98,Regular sharp QRS-like deflections at roughly one-second intervals are decisive for cardiac artifact.
+SavedFiles/0161_VD_audio_ICA.set,7,muscle,muscle,0.91,"Bursty irregular high-frequency activity, locally edge-focused map, and strong broad high-frequency spectral power indicate muscle."
+SavedFiles/0161_VD_audio_ICA.set,8,eye,eye,0.91,Prominent frontal/periocular distribution with large slow transient activity and low-frequency-dominant spectrum.
+SavedFiles/0161_VD_audio_ICA.set,9,eye,eye,0.87,Strong bilateral frontal/periocular map with low-frequency-dominant spectrum and intermittent large slow activity.
+SavedFiles/0161_VD_audio_ICA.set,11,muscle,muscle,0.82,Focal right temporal/edge dipole with erratic high-frequency activity and relatively elevated broadband higher-frequency power.
+SavedFiles/0161_VD_audio_ICA.set,12,muscle,muscle,0.84,"Right frontotemporal focality, noisy spiky activity, and broad high-frequency spectral elevation support muscle artifact."
+SavedFiles/0161_VD_audio_ICA.set,13,muscle,muscle,0.86,Localized right frontal/temporal edge source with bursty spiky time course and non-1/f broadband spectrum.
+SavedFiles/0161_VD_audio_ICA.set,14,muscle,muscle,0.78,Very focal lateral scalp activity and irregular bursty signal with substantial higher-frequency power; not an unequivocal isolated electrode.
+SavedFiles/0161_VD_audio_ICA.set,15,eye,eye,0.91,Classic broad bilateral frontal topography with low-frequency-dominant spectrum and transient slow deflections.
+SavedFiles/0161_VD_audio_ICA.set,16,heart,heart,0.95,"Broad anterior-posterior gradient plus repeated, highly regular sharp QRS-like deflections in the time series."
+SavedFiles/0161_VD_audio_ICA.set,17,brain,other_artifact,0.58,"Mixed asymmetric frontal/lateral map and noisy activity without a decisive blink, muscle-spectrum, line-noise, or isolated-channel signature."
+SavedFiles/0161_VD_audio_ICA.set,18,eye,eye,0.84,Anterior-posterior frontal/periocular distribution with predominantly low-frequency power and large slow irregular deflections.
+SavedFiles/0161_VD_audio_ICA.set,19,muscle,muscle,0.78,Focal inferior-right edge dipole with irregular high-frequency activity and a relatively flat higher-frequency spectrum supports localized muscle activity.
+SavedFiles/0161_VD_audio_ICA.set,20,muscle,muscle,0.82,"Right frontal/temporal edge-focused source, erratic spiky activity, and substantial higher-frequency spectral power favor muscle over eye."
+SavedFiles/0161_VD_audio_ICA.set,23,muscle,muscle,0.76,"Very focal right anterior-temporal dipolar pattern with noisy, bursty time series and elevated high-frequency spectrum is most consistent with muscle."
+SavedFiles/0161_VD_audio_ICA.set,24,brain,eye,0.79,Broad bilateral frontal-to-inferior scalp gradient and strongly low-frequency-dominant spectrum indicate an ocular component despite noisy activity.
+SavedFiles/0161_VD_audio_ICA.set,25,eye,eye,0.84,Large anterior frontal field with bilateral temporal polarity and steep low-frequency spectral dominance strongly supports eye artifact.
+SavedFiles/0161_VD_audio_ICA.set,26,muscle,muscle,0.81,"Localized right temporal/auricular dipole, irregular fast activity, and relatively raised high-frequency power are characteristic of temporal muscle."
+SavedFiles/0161_VD_audio_ICA.set,27,muscle,muscle,0.7,"Small right lateral focal dipolar source with erratic bursty activity and non-clean 1/f spectrum favors muscle, though confidence is moderate."
+SavedFiles/0161_VD_audio_ICA.set,28,muscle,eye,0.73,Anterior-right frontal topography plus prominent slow deflections and low-frequency-dominant spectrum support an ocular artifact.
+SavedFiles/0161_VD_audio_ICA.set,29,muscle,eye,0.75,"Broad left frontal/periocular distribution and slow, low-frequency-dominant activity are most consistent with eye movement artifact."
+SavedFiles/0161_VD_audio_ICA.set,30,muscle,channel_noise,0.95,Topography is dominated by a tiny isolated right-temporal electrode island with no meaningful smooth opposing field; activity is erratic.
+SavedFiles/0161_VD_audio_ICA.set,31,muscle,channel_noise,0.95,"A sharply isolated left-temporal electrode focus dominates the scalp map, consistent with a single bad channel rather than a distributed source."
+SavedFiles/0161_VD_audio_ICA.set,32,muscle,channel_noise,0.93,The scalp map shows an unmistakable compact isolated right-lateral electrode island; the noisy activity supports channel-specific contamination.
+SavedFiles/0161_VD_audio_ICA.set,33,eye,eye,0.96,"Strong bilateral frontal/periocular scalp distribution combines with large slow stereotyped deflections and low-frequency-dominant spectrum, characteristic of blinks."
+SavedFiles/0161_VD_audio_ICA.set,34,muscle,brain,0.68,Posterior occipital distribution has a spatially extended opposing field and the spectrum is broadly 1/f-like without high-frequency muscle or line-noise dominance.
+SavedFiles/0161_VD_noaudio_ICA.set,0,eye,eye,0.96,Strong bilateral frontal/periocular map with large slow blink-like deflections and dominant low-frequency power.
+SavedFiles/0161_VD_noaudio_ICA.set,1,heart,other_artifact,0.62,"Broad non-focal gradient but intermittent sharp transients and splotchy segments do not fit a clear neural, eye, or cardiac pattern."
+SavedFiles/0161_VD_noaudio_ICA.set,2,muscle,channel_noise,0.76,"Topography is dominated by a very focal inferior-right electrode-like island, with erratic high-frequency activity."
+SavedFiles/0161_VD_noaudio_ICA.set,3,eye,brain,0.6,Reasonably smooth dipolar scalp distribution and predominantly 1/f spectrum; activity lacks decisive ocular or muscle features.
+SavedFiles/0161_VD_noaudio_ICA.set,4,brain,brain,0.66,Smooth posterior-central focal map and declining 1/f-like spectrum support a neural component despite somewhat irregular activity.
+SavedFiles/0161_VD_noaudio_ICA.set,5,muscle,muscle,0.86,"Focal right temporal/edge topography, erratic fast activity, and high-frequency spectral rise are characteristic of muscle."
+SavedFiles/0161_VD_noaudio_ICA.set,6,brain,other_artifact,0.68,"Radial, non-dipolar central map with noisy irregular activity and no distinctive spectral or temporal signature."
+SavedFiles/0161_VD_noaudio_ICA.set,7,brain,other_artifact,0.7,Symmetric central splotchy/non-dipolar topography and irregular broadband-looking activity do not support a clear source class.
+SavedFiles/0161_VD_noaudio_ICA.set,8,brain,brain,0.56,Smooth lateralized dipolar scalp map with a broadly declining spectrum is more compatible with brain than a specific artifact.
+SavedFiles/0161_VD_noaudio_ICA.set,9,muscle,brain,0.78,"Smooth posterior midline dipolar map with a 1/f-like spectrum and no blink, QRS, or high-frequency burst signature."
+SavedFiles/0161_VD_noaudio_ICA.set,10,muscle,brain,0.72,Broad posterior dipolar distribution and predominantly low-frequency/1/f spectral profile; activity is not clearly ocular or muscular.
+SavedFiles/0161_VD_noaudio_ICA.set,11,heart,brain,0.7,"Broad, smooth diagonal scalp gradient with decaying spectrum and no decisive cardiac, line-noise, or muscle pattern."
+SavedFiles/0161_VD_noaudio_ICA.set,12,muscle,muscle,0.78,Right frontal/temporal focal opposing-pole map plus erratic activity and a spectrum that rises again toward higher frequencies.
+SavedFiles/0161_VD_noaudio_ICA.set,13,brain,eye,0.85,"Strong broad frontal midline distribution with posterior opposite polarity and low-frequency-dominant spectral activity, consistent with vertical ocular activity."
+SavedFiles/0161_VD_noaudio_ICA.set,15,eye,eye,0.68,"Anterior edge-focused scalp map and large slow, irregular deflections with predominantly low-frequency power support an ocular source."
+SavedFiles/0161_VD_noaudio_ICA.set,16,brain,brain,0.74,Plausible smooth lateral temporal dipole and a clear 1/f-like spectrum without a dominant high-frequency or ocular signature.
+SavedFiles/0161_VD_noaudio_ICA.set,17,muscle,other_artifact,0.7,"Highly edge-localized frontal source with mixed slow/bursty activity and a noncanonical spectrum; evidence is insufficiently clear for eye, muscle, or channel noise."
+SavedFiles/0161_VD_noaudio_ICA.set,18,muscle,muscle,0.75,"Small right frontal focal opposing-pole pattern with spiky activity and a high-frequency-upturning spectrum, consistent with focal facial muscle artifact."
+SavedFiles/0161_VD_noaudio_ICA.set,19,muscle,muscle,0.68,Right frontal edge-focused map with irregular spiky activity and a relatively flat higher-frequency spectral tail.
+SavedFiles/0161_VD_noaudio_ICA.set,20,muscle,channel_noise,0.96,"Topography is dominated by an unmistakable tiny isolated right-temporal electrode island, with otherwise noisy activity."
+SavedFiles/0161_VD_noaudio_ICA.set,21,muscle,muscle,0.64,"Very focal lateral temporal dipole with erratic activity and broadband spectral content, fitting local muscle better than brain."
+SavedFiles/0161_VD_noaudio_ICA.set,22,channel_noise,channel_noise,0.91,A sharply localized single-site right-temporal map and an isolated large transient strongly indicate a bad channel.
+SavedFiles/0161_VD_noaudio_ICA.set,23,muscle,muscle,0.74,"Right frontal/temporal edge distribution, noisy high-rate activity, and elevated broadband higher-frequency tail support muscle artifact."
+SavedFiles/0161_VD_noaudio_ICA.set,24,muscle,channel_noise,0.95,The compact upper-right scalp island is an unambiguous isolated-electrode pattern.
+SavedFiles/0161_VD_noaudio_ICA.set,25,brain,other_artifact,0.56,"Broad nonstandard anterior-central distribution and noisy activity lack a clear blink, cardiac, muscle-spectrum, or plausible brain signature."
+SavedFiles/0161_VD_noaudio_ICA.set,26,muscle,muscle,0.79,Strong lateral inferior edge dipole with irregular noisy activity and broad high-frequency power is characteristic of temporal/jaw muscle.
+SavedFiles/0161_VD_noaudio_ICA.set,27,other_artifact,muscle,0.71,Lateral edge-focused map and persistently erratic broadband activity favor muscle artifact over a cortical source.
+SavedFiles/0161_VD_noaudio_ICA.set,28,channel_noise,channel_noise,0.84,Topography is dominated by a very focal right-lateral single-electrode island; activity is irregular without a coherent physiological rhythm.
+SavedFiles/0161_VD_noaudio_ICA.set,29,channel_noise,channel_noise,0.86,"Sharp, isolated left-inferior edge focus with minimal smooth spatial spread strongly indicates a bad channel despite the low-frequency spectrum."
+SavedFiles/0161_VD_noaudio_ICA.set,30,muscle,muscle,0.82,"Right-frontal/temporal edge focus, erratic activity, noisy segment image, and a spectrum that rises again at higher frequencies support muscle artifact."
+SavedFiles/0161_VD_noaudio_ICA.set,31,muscle,muscle,0.79,Anterior edge-localized source with a large abrupt transient and elevated high-frequency spectral tail is more consistent with muscle than brain or eye.
+SavedFiles/0161_VD_noaudio_ICA.set,32,muscle,channel_noise,0.88,"The scalp map shows an unmistakably compact isolated left-lateral electrode island, with highly irregular spiky activity and no plausible dipolar field."
+SavedFiles/0161_VD_noaudio_ICA.set,33,eye,eye,0.8,Broad frontal maximum combined with dominant low-frequency power and large slow deflections supports an ocular component.
+SavedFiles/0206_VDaudio_ICA.set,0,eye,eye,0.98,Strong bilateral frontal/periocular topography with large slow blink-like deflections and steep low-frequency-dominant spectrum.
+SavedFiles/0206_VDaudio_ICA.set,1,heart,heart,0.96,Regular sharp QRS-like transients recur at a cardiac-rate rhythm; broad anterior-posterior scalp gradient is compatible with cardiac field.
+SavedFiles/0206_VDaudio_ICA.set,2,heart,heart,0.97,"Highly regular, repeating narrow deflections in the time series and repeated segment-image events are decisive cardiac evidence."
+SavedFiles/0206_VDaudio_ICA.set,3,eye,eye,0.88,"Anterior/right-frontal focality accompanies large slow stereotyped deflections and predominantly low-frequency power, consistent with ocular activity."
+SavedFiles/0206_VDaudio_ICA.set,4,eye,brain,0.62,"Broad, smooth central-frontal dipolar-looking distribution and decaying 1/f-like spectrum fit neural activity, though the time series is somewhat noisy."
+SavedFiles/0206_VDaudio_ICA.set,5,brain,brain,0.58,Smooth broad frontal-to-central/posterior opposing field and generally decreasing spectrum are more consistent with a brain component than a focal artifact.
+SavedFiles/0206_VDaudio_ICA.set,6,brain,muscle,0.72,Erratic high-frequency activity with an edge/frontal focal map and weakly structured segment image favors muscle artifact.
+SavedFiles/0206_VDaudio_ICA.set,7,brain,muscle,0.86,Localized temporal/edge topography with dense rapid spiky activity and broad high-frequency-looking noise supports muscle artifact.
+SavedFiles/0206_VDaudio_ICA.set,8,muscle,muscle,0.91,"Sustained dense high-frequency activity, diffuse noisy segment image, and relatively flat high-frequency spectrum strongly indicate muscle artifact."
+SavedFiles/0206_VDaudio_ICA.set,9,brain,brain,0.58,Smooth central scalp field with a broadly 1/f-like spectrum; activity is noisy but lacks decisive artifact structure.
+SavedFiles/0206_VDaudio_ICA.set,11,muscle,brain,0.55,"Posterior focal field with smooth spatial spread and declining spectrum, without clear eye, line, or muscle signature."
+SavedFiles/0206_VDaudio_ICA.set,12,brain,brain,0.82,Clear left-right dipolar temporal distribution and a broadly declining neural-like spectrum.
+SavedFiles/0206_VDaudio_ICA.set,13,brain,brain,0.56,"Localized frontal-central dipolar-looking map and no convincing blink, saccade, or high-frequency muscle profile."
+SavedFiles/0206_VDaudio_ICA.set,14,brain,brain,0.61,Broad asymmetric dipolar scalp distribution with 1/f-like spectral decline and no decisive artifact cue.
+SavedFiles/0206_VDaudio_ICA.set,15,muscle,muscle,0.68,"Inferior edge-focused source with dense, erratic high-frequency-looking activity, more consistent with neck/jaw muscle than brain."
+SavedFiles/0206_VDaudio_ICA.set,16,brain,brain,0.63,Smooth anterior-to-central dipolar topography and broadly declining spectrum; no clear ocular step or blink waveform.
+SavedFiles/0206_VDaudio_ICA.set,17,brain,other_artifact,0.54,Strong focal posterior-central map and intermittent sharp activity do not form a convincing brain dipole or isolated-channel pattern.
+SavedFiles/0206_VDaudio_ICA.set,18,brain,other_artifact,0.52,"Anterior-central focal field with mixed lateral activity, but time course lacks clear blink/saccade structure and spectrum is nonspecific."
+SavedFiles/0206_VDaudio_ICA.set,21,eye,other_artifact,0.62,Focal right-frontal map is not a convincing dipole; activity is irregular and spectrum is broadly 1/f-like without a decisive artifact signature.
+SavedFiles/0206_VDaudio_ICA.set,22,brain,brain,0.66,"Broad central/frontocentral dipolar distribution with a declining spectrum and no clear blink, line, or muscle pattern."
+SavedFiles/0206_VDaudio_ICA.set,23,brain,brain,0.61,"Plausible asymmetric frontocentral dipolar map and generally declining spectrum, without clear ocular slow transients or high-frequency muscle dominance."
+SavedFiles/0206_VDaudio_ICA.set,24,brain,eye,0.72,Strong bilateral frontal/periocular field with opposite central polarity supports an ocular source despite the relatively irregular displayed segment.
+SavedFiles/0206_VDaudio_ICA.set,25,brain,muscle,0.67,Right lateral temporal/edge-focused source with erratic spiky activity and relatively elevated broad mid-to-high-frequency power.
+SavedFiles/0206_VDaudio_ICA.set,26,eye,eye,0.82,Clear opposing left-right frontal polarity and large slow deflections are characteristic of horizontal eye movements.
+SavedFiles/0206_VDaudio_ICA.set,28,brain,brain,0.57,Broad inferior-central versus right-frontal spatial gradient is more plausible as a neural dipole than an isolated channel artifact; spectrum declines with frequency.
+SavedFiles/0206_VDaudio_ICA.set,29,muscle,muscle,0.84,"Right temporal edge focus, highly erratic activity, and a flat-to-rising high-frequency spectrum strongly indicate muscle artifact."
+SavedFiles/0206_VDaudio_ICA.set,30,other_artifact,muscle,0.78,Strong lateral edge source with fast irregular activity and a relatively flat high-frequency spectrum supports muscle rather than a neural source.
+SavedFiles/0206_VDaudio_ICA.set,31,brain,brain,0.62,"Broad, reasonably smooth central dipolar distribution with a falling 1/f-like spectrum; activity is irregular but lacks a clear ocular, cardiac, or line-noise pattern."
+SavedFiles/0206_VDaudio_ICA.set,32,muscle,channel_noise,0.83,Topography is dominated by a tiny isolated frontal electrode island with no meaningful opposing pole; time series is spike-like.
+SavedFiles/0206_VDaudio_ICA.set,33,brain,eye,0.7,Anterior midline frontal distribution with an opposing central pole and low-frequency-dominant spectrum supports an ocular source.
+SavedFiles/0206_VDaudio_ICA.set,34,brain,brain,0.74,Clear broad left-right dipolar scalp pattern and a generally declining spectrum are consistent with a lateral cortical source.
+SavedFiles/0206_VDaudio_ICA.set,35,eye,eye,0.88,"Strong frontal/periocular focality, large slow transient deflections, and low-frequency-heavy spectrum converge on ocular artifact."
+SavedFiles/0206_VDaudio_ICA.set,37,brain,brain,0.7,Smooth lateral dipolar topography with 1/f-like spectral decay fits a temporal cortical component despite somewhat noisy activity.
+SavedFiles/0206_VDaudio_ICA.set,39,other_artifact,other_artifact,0.62,Posterior focal map and large slow transient activity do not fit a plausible cortical dipole or the characteristic frontal pattern of eye artifact.
+SavedFiles/0206_VDaudio_ICA.set,40,muscle,channel_noise,0.86,"A sharply localized right-temporal single-electrode island dominates the map, with spiky irregular activity."
+SavedFiles/0206_VDaudio_ICA.set,41,channel_noise,channel_noise,0.88,"Unambiguous isolated right-frontal electrode hotspot without a smooth opposing pole, accompanied by transient noisy activity."
+SavedFiles/0206_VDaudio_ICA.set,45,channel_noise,channel_noise,0.9,Topography is dominated by a tiny isolated left-lateral electrode island; activity is irregular without a physiological rhythm.
+SavedFiles/0206_VDaudio_ICA.set,46,brain,other_artifact,0.65,"Multipolar, non-dipolar scalp pattern with noisy activity and no distinctive eye, heart, or line-noise signature."
+SavedFiles/0206_VDaudio_ICA.set,47,brain,other_artifact,0.68,Splotchy multi-region map and irregular broadband-looking activity do not form a plausible single brain dipole.
+SavedFiles/0206_VDaudio_ICA.set,51,muscle,channel_noise,0.82,"Strong, sharply localized inferior-right edge focus is most consistent with an isolated bad electrode rather than a smooth source."
+SavedFiles/0206_VDaudio_ICA.set,52,other_artifact,muscle,0.68,Focal anterior/right edge distribution with erratic spiky activity supports localized facial or temporal muscle artifact.
+SavedFiles/0206_VDaudio_ICA.set,53,channel_noise,channel_noise,0.94,"Exceptionally small, sharp frontal electrode island with little smooth spread to neighboring sites is a clear bad-channel pattern."
+SavedFiles/0206_VDaudio_ICA.set,54,other_artifact,muscle,0.7,Lateral edge/temporal focus and irregular noisy time series fit muscle artifact better than a cortical source.
+SavedFiles/0206_VDaudio_ICA.set,55,other_artifact,channel_noise,0.88,"Scalp map is overwhelmingly dominated by one compact left-lateral electrode focus, with noisy nonphysiological activity."
+SavedFiles/0206_VDaudio_ICA.set,57,other_artifact,other_artifact,0.6,"Posterior edge-weighted, weakly defined pattern lacks a clean dipole or decisive spectral/time-series signature."
+SavedFiles/0206_VDaudio_ICA.set,59,other_artifact,channel_noise,0.89,Very focal isolated frontal electrode island without a smooth opposing pole; activity is irregular rather than physiologic.
+SavedFiles/0206_VDaudio_ICA.set,60,muscle,channel_noise,0.91,"Unmistakable single mid-frontal hotspot with limited spatial falloff and noisy, non-rhythmic activity."
+SavedFiles/0206_VDaudio_ICA.set,62,other_artifact,channel_noise,0.93,Dominant isolated left-temporal/peripheral electrode island; segment image and time series are consistent with a bad channel source.
+SavedFiles/0206_VDaudio_ICA.set,63,channel_noise,channel_noise,0.88,"Highly localized inferior right-edge hotspot, with transient irregular activity and no plausible dipolar scalp field."
+SavedFiles/0206_VDaudio_ICA.set,64,muscle,channel_noise,0.87,A sharply focal frontal-midline electrode pattern dominates the map; no blink-like slow waveform supports eye artifact.
+SavedFiles/0206_VDaudio_ICA.set,65,other_artifact,other_artifact,0.7,"Splotchy multipolar scalp pattern and mixed low-frequency activity do not form a clear dipole, eye pattern, or isolated-electrode map."
+SavedFiles/0206_VDaudio_ICA.set,66,other_artifact,channel_noise,0.93,Strong isolated inferior right peripheral hotspot with abrupt spatial localization and artifact-like segmented activity.
+SavedFiles/0206_VDaudio_ICA.set,68,channel_noise,channel_noise,0.9,Single compact left-temporal/edge electrode island dominates the map; irregular broadband activity is non-physiologic.
+SavedFiles/0206_VDaudio_ICA.set,69,muscle,channel_noise,0.85,"Focal anterior hotspot without a smooth opposing pole, coupled with noisy non-rhythmic time-series activity."
+SavedFiles/0206_VDaudio_ICA.set,70,other_artifact,channel_noise,0.84,Topography is dominated by a compact isolated right-frontal edge island without a clear opposing pole; activity is irregular.
+SavedFiles/0206_VDaudio_ICA.set,71,other_artifact,channel_noise,0.86,"Very focal isolated occipital-edge island with minimal smooth spatial spread, consistent with a single bad electrode."
+SavedFiles/0206_VDaudio_ICA.set,72,other_artifact,other_artifact,0.69,"Multipolar, edge-heavy and spatially irregular map; irregular activity and nonspecific 1/f spectrum do not support a clean source class."
+SavedFiles/0206_VDaudio_ICA.set,73,other_artifact,channel_noise,0.88,"Small, sharply localized left-frontal electrode island with no plausible broad dipolar counterpart."
+SavedFiles/0206_VDaudio_ICA.set,74,other_artifact,channel_noise,0.86,"Strong focal inferior-edge island, spatially isolated and incompatible with a smooth cortical dipole."
+SavedFiles/0206_VDaudio_ICA.set,75,channel_noise,channel_noise,0.9,Unmistakable compact lower-right single-electrode island; the irregular trace supports channel-specific noise.
+SavedFiles/0206_VDaudio_ICA.set,77,muscle,eye,0.79,Anterior/periocular topography and a large slow deflection with abrupt transition are consistent with ocular movement or blink activity.
+SavedFiles/0206_VDaudio_ICA.set,79,other_artifact,other_artifact,0.66,"Irregular two-focal edge distribution and nonspecific noisy activity lack a convincing dipolar, ocular, or muscle signature."
+SavedFiles/0206_VDaudio_ICA.set,80,eye,brain,0.55,Broad anterior-posterior opposing scalp pattern and a decaying spectrum are more compatible with a weak dipolar neural component than a focal artifact.
+SavedFiles/0206_VDaudio_ICA.set,82,eye,channel_noise,0.96,Unmistakable isolated focal scalp island with a large transient and sparse segment outliers.
+SavedFiles/0206_VDaudio_ICA.set,83,other_artifact,channel_noise,0.94,Scalp map is dominated by a compact single-electrode-like lower-left focus; activity is erratic.
+SavedFiles/0206_VDaudio_ICA.set,84,muscle,channel_noise,0.91,"Very localized frontal-midline island without a smooth opposing pole, with noisy nonrhythmic activity."
+SavedFiles/0206_VDaudio_ICA.set,85,muscle,muscle,0.73,Right temporal/edge-localized pattern with highly jagged activity and relatively sustained higher-frequency power.
+SavedFiles/0206_VDaudio_ICA.set,86,muscle,channel_noise,0.89,Tight anterior focal island and isolated extreme transients/segment outliers support a bad-channel source.
+SavedFiles/0206_VDaudio_ICA.set,87,eye,other_artifact,0.72,"Broad frontal and lateral multipolar map with irregular activity, but no clear blink pattern or decisive muscle spectrum."
+SavedFiles/0206_VDaudio_ICA.set,88,other_artifact,channel_noise,0.95,"Clear compact single-site lower-right scalp focus with noisy, nonphysiologic-looking activity."
+SavedFiles/0206_VDaudio_ICA.set,89,other_artifact,muscle,0.66,Large inferior edge-focused source with irregular fast activity is more consistent with peripheral muscle than brain.
+SavedFiles/0206_VDaudio_ICA.set,90,other_artifact,other_artifact,0.76,"Diffuse, non-dipolar and splotchy central/inferior topology with irregular activity does not cleanly fit a neural or specific artifact class."
+SavedFiles/0206_VDaudio_ICA.set,91,other_artifact,channel_noise,0.93,Topography is dominated by a sharp isolated left posterior electrode island; activity is irregular without a coherent physiological rhythm.
+SavedFiles/0206_VDaudio_ICA.set,93,eye,channel_noise,0.96,"Very focal single-electrode-like left temporal island with noisy, non-rhythmic activity and no plausible dipolar field."
+SavedFiles/0206_VDaudio_ICA.set,94,muscle,channel_noise,0.97,"Unambiguous sharp isolated left-edge electrode focus, accompanied by erratic broadband-looking component activity."
+SavedFiles/0206_VDaudio_ICA.set,95,other_artifact,channel_noise,0.91,Localized left frontal electrode island is spatially isolated rather than a smooth ocular or cortical field; time course is noisy.
+SavedFiles/0206_VDaudio_ICA.set,96,other_artifact,channel_noise,0.86,A very sharp left inferior focal island dominates a spatially irregular map; activity is noisy rather than blink- or rhythm-like.
+SavedFiles/0206_VDaudio_ICA.set,97,muscle,channel_noise,0.96,Clear isolated right frontal electrode island with no extended opposite pole and irregular noisy time series.
+SavedFiles/0206_VDaudio_ICA.set,98,channel_noise,channel_noise,0.94,"Sharp compact central-right focal island is characteristic of a single bad channel, with nonphysiological irregular activity."
+SavedFiles/0206_VDaudio_ICA.set,100,eye,channel_noise,0.88,Highly localized right lateral focal pattern with adjacent polarity reversal and irregular activity supports electrode-specific noise.
+SavedFiles/0206_VDaudio_ICA.set,101,channel_noise,channel_noise,0.95,Distinct compact inferior posterior electrode island without a smooth dipolar scalp distribution; time series is noisy and non-rhythmic.
+SavedFiles/0206_VDaudio_ICA.set,102,other_artifact,other_artifact,0.62,Mixed focal central and frontal topography without a clean dipole; irregular activity and generic 1/f spectrum.
+SavedFiles/0206_VDaudio_ICA.set,103,channel_noise,channel_noise,0.82,"Topography is dominated by a sharp, isolated right posterior electrode-sized island with little smooth spatial spread."
+SavedFiles/0206_VDaudio_ICA.set,104,other_artifact,muscle,0.7,Focal inferior-temporal/edge distribution and irregular spiky activity are more consistent with localized muscle artifact.
+SavedFiles/0206_VDaudio_ICA.set,105,other_artifact,channel_noise,0.76,Very compact occipital electrode-sized positive/negative island dominates an otherwise weak map; no coherent physiological pattern.
+SavedFiles/0206_VDaudio_ICA.set,106,eye,eye,0.87,Strong bilateral frontal/periocular field with a large slow transient in the time series and low-frequency-dominant spectrum.
+SavedFiles/0206_VDaudio_ICA.set,107,eye,channel_noise,0.73,"Small isolated central scalp island with noisy, non-rhythmic activity and no plausible broad dipolar field."
+SavedFiles/0206_VDaudio_ICA.set,108,other_artifact,other_artifact,0.62,Splotchy multipolar map with a central focal island and peripheral fields; panels do not support a single clear source class.
+SavedFiles/0206_VDaudio_ICA.set,109,other_artifact,channel_noise,0.75,Sharp compact posterior-central electrode-sized island with irregular noise-like time series and no clear physiological dipole.
+SavedFiles/0206_VDaudio_ICA.set,111,muscle,muscle,0.68,"Left temporal/edge focality, bursty irregular activity, and relatively flattened higher-frequency spectral tail suggest muscle artifact."
+SavedFiles/0206_VDnoaudio_ICA.set,0,eye,eye,0.93,Strong symmetric frontal/periocular scalp maximum with low-frequency-dominant spectrum and slow high-amplitude activity.
+SavedFiles/0206_VDnoaudio_ICA.set,1,heart,heart,0.97,"Highly regular, repeated sharp deflections at approximately cardiac cadence, also visible as recurring segment-image bands."
+SavedFiles/0206_VDnoaudio_ICA.set,2,heart,heart,0.98,Clear periodic QRS-like sharp transients throughout the time series and repeating structure in the segment image.
+SavedFiles/0206_VDnoaudio_ICA.set,3,eye,other_artifact,0.61,"Irregular noisy activity with a non-dipolar, asymmetric frontal-edge map; spectrum lacks a decisive muscle or line-noise signature."
+SavedFiles/0206_VDnoaudio_ICA.set,4,brain,brain,0.68,"Broad, smooth anterior-posterior dipolar topography and generally 1/f-like spectrum without blink-like slow transients or high-frequency muscle excess."
+SavedFiles/0206_VDnoaudio_ICA.set,5,eye,eye,0.82,"Opposing left-right anterior scalp poles are consistent with horizontal eye movement, with predominantly low-frequency power."
+SavedFiles/0206_VDnoaudio_ICA.set,6,brain,eye,0.79,Focal mid-frontal distribution with low-frequency-dominant spectrum and irregular slow ocular-like activity.
+SavedFiles/0206_VDnoaudio_ICA.set,7,brain,brain,0.58,Localized smooth right centrotemporal scalp field with no isolated-electrode appearance and no broad high-frequency muscle profile.
+SavedFiles/0206_VDnoaudio_ICA.set,8,brain,brain,0.61,"Smooth localized left temporal scalp field with diffuse opposite polarity and a declining, non-muscle-like spectrum."
+SavedFiles/0206_VDnoaudio_ICA.set,9,muscle,muscle,0.78,Posterior edge-focused map with highly erratic fast activity and relatively elevated high-frequency spectrum.
+SavedFiles/0206_VDnoaudio_ICA.set,10,brain,brain,0.67,"Broad, smooth central dipolar topography and predominantly low-frequency/1-f-like spectrum without a clear artifact pattern."
+SavedFiles/0206_VDnoaudio_ICA.set,11,brain,eye,0.91,"Strong left-right frontal polarity is characteristic of horizontal eye movements, with low-frequency-dominant activity."
+SavedFiles/0206_VDnoaudio_ICA.set,12,brain,brain,0.7,Smooth centrally distributed dipolar scalp map and a generally 1/f-like spectrum support a neural component.
+SavedFiles/0206_VDnoaudio_ICA.set,13,brain,other_artifact,0.55,"Central negative field with diffuse peripheral positivity is not a convincing cortical dipole, while activity and spectrum are nonspecific."
+SavedFiles/0206_VDnoaudio_ICA.set,14,muscle,muscle,0.82,Focal inferior/posterior edge distribution plus noisy high-frequency activity and elevated higher-frequency power suggest neck muscle.
+SavedFiles/0206_VDnoaudio_ICA.set,15,brain,brain,0.58,"Relatively smooth focal left-central/temporal map with low-frequency-dominant spectrum, though the activity is somewhat noisy."
+SavedFiles/0206_VDnoaudio_ICA.set,16,eye,eye,0.78,"Anterior right-frontal emphasis opposing posterior activity, combined with strong low-frequency spectral dominance, is consistent with ocular artifact."
+SavedFiles/0206_VDnoaudio_ICA.set,17,muscle,muscle,0.73,Inferior right posterior edge focus with irregular fast activity and a spectrum that rises again at higher frequencies suggests muscle artifact.
+SavedFiles/0206_VDnoaudio_ICA.set,18,eye,channel_noise,0.78,"Topography is dominated by a compact, isolated right-frontal electrode-like island without a clear opposing pole; activity is erratic."
+SavedFiles/0206_VDnoaudio_ICA.set,19,eye,eye,0.69,Strong anterior/frontopolar distribution with low-frequency-dominant spectrum supports an ocular source despite noisy activity.
+SavedFiles/0206_VDnoaudio_ICA.set,22,brain,brain,0.55,"Broad, smooth left-anterior to right-posterior dipolar field and overall 1/f spectrum are most compatible with a neural component, though weakly."
+SavedFiles/0206_VDnoaudio_ICA.set,23,brain,eye,0.62,Anterior left-right polarity pattern and low-frequency-heavy spectrum are consistent with horizontal ocular activity.
+SavedFiles/0206_VDnoaudio_ICA.set,24,channel_noise,channel_noise,0.84,"Very small, sharply localized frontocentral hotspot with otherwise near-flat map is an unmistakable isolated-electrode pattern."
+SavedFiles/0206_VDnoaudio_ICA.set,26,eye,eye,0.73,Large frontal-polar field with broad opposite posterior distribution and strong low-frequency power supports ocular artifact.
+SavedFiles/0206_VDnoaudio_ICA.set,30,muscle,channel_noise,0.9,"Map is overwhelmingly dominated by a single sharp right-temporal electrode island, with no smooth dipolar counterpart."
+SavedFiles/0206_VDnoaudio_ICA.set,31,brain,other_artifact,0.57,Broad but irregular multipolar/diagonal scalp pattern and noisy non-rhythmic activity do not cleanly fit brain or a specific artifact class.
+SavedFiles/0206_VDnoaudio_ICA.set,32,brain,other_artifact,0.68,Splotchy multipolar frontal-central-posterior map and mixed spectrum/activity lack a clear dipolar neural or specific artifact signature.
+SavedFiles/0206_VDnoaudio_ICA.set,33,muscle,muscle,0.72,Lateral edge-focused map with erratic spiky activity and relatively sustained higher-frequency spectral power.
+SavedFiles/0206_VDnoaudio_ICA.set,34,brain,other_artifact,0.55,"Broad irregular, non-cleanly dipolar topology with noisy activity and no decisive eye, muscle, or cardiac pattern."
+SavedFiles/0206_VDnoaudio_ICA.set,35,channel_noise,channel_noise,0.94,Unmistakable tiny isolated frontal electrode island with little smooth spatial spread.
+SavedFiles/0206_VDnoaudio_ICA.set,36,muscle,channel_noise,0.95,"Very focal single-electrode-like right-central island, meeting the strict isolated-channel criterion."
+SavedFiles/0206_VDnoaudio_ICA.set,37,brain,other_artifact,0.58,Central splotchy/multipolar distribution and noisy segments lack a clear dipolar neural or specific artifact signature.
+SavedFiles/0206_VDnoaudio_ICA.set,38,other_artifact,other_artifact,0.68,"Multiple focal frontal patches create a non-dipolar, mixed pattern without a definitive blink or muscle spectrum."
+SavedFiles/0206_VDnoaudio_ICA.set,40,brain,brain,0.74,Smooth lateral central dipole and predominantly falling 1/f-like spectrum are consistent with a neural source.
+SavedFiles/0206_VDnoaudio_ICA.set,41,brain,brain,0.7,"Broad, reasonably dipolar frontocentral-to-right distribution with a low-frequency-dominant 1/f-like spectrum."
+SavedFiles/0206_VDnoaudio_ICA.set,44,eye,eye,0.78,Anterior lateral polarity pattern with slow large deflections and strong low-frequency power supports ocular activity.
+SavedFiles/0206_VDnoaudio_ICA.set,45,muscle,muscle,0.78,Edge-focused posterior/temporal map with erratic activity and relatively broad high-frequency spectral power.
+SavedFiles/0206_VDnoaudio_ICA.set,47,muscle,channel_noise,0.95,Topography is dominated by a sharply isolated frontal electrode island without a smooth opposing pole.
+SavedFiles/0206_VDnoaudio_ICA.set,48,other_artifact,channel_noise,0.96,"Unmistakable single-electrode-like focal hotspot over right frontal scalp, with noisy nonphysiologic activity."
+SavedFiles/0206_VDnoaudio_ICA.set,49,muscle,channel_noise,0.94,Very focal left-frontal island dominates the scalp map and lacks a plausible distributed dipole.
+SavedFiles/0206_VDnoaudio_ICA.set,50,channel_noise,channel_noise,0.88,"Strong, compact inferior-posterior focal hotspot is consistent with an isolated bad channel rather than a distributed source."
+SavedFiles/0206_VDnoaudio_ICA.set,51,other_artifact,eye,0.72,Broad anterior/frontal distribution with opposing central positivity and low-frequency-dominant spectrum supports ocular activity.
+SavedFiles/0206_VDnoaudio_ICA.set,52,muscle,channel_noise,0.93,"Scalp distribution is a compact isolated frontal hotspot with adjacent focal opposite polarity, characteristic of a bad electrode."
+SavedFiles/0206_VDnoaudio_ICA.set,54,muscle,muscle,0.76,"Lateral inferior edge-focused map, irregular fast activity, and non-steep high-frequency spectral tail support muscle artifact."
+SavedFiles/0206_VDnoaudio_ICA.set,55,other_artifact,channel_noise,0.91,"A sharply localized right-frontal hotspot dominates an otherwise weak map, consistent with isolated channel noise."
+SavedFiles/0206_VDnoaudio_ICA.set,56,muscle,channel_noise,0.96,"Topography is dominated by a tiny isolated frontal electrode island, with erratic broadband activity and no coherent dipolar source."
+SavedFiles/0206_VDnoaudio_ICA.set,57,other_artifact,brain,0.58,Broad left-temporal to right-frontal spatial gradient is more dipolar than isolated; spectrum has a generally 1/f-like decline without high-frequency dominance.
+SavedFiles/0206_VDnoaudio_ICA.set,58,channel_noise,channel_noise,0.95,A sharply localized right-temporal single-electrode hotspot and sparse segment-image bands indicate an isolated noisy channel.
+SavedFiles/0206_VDnoaudio_ICA.set,61,other_artifact,channel_noise,0.94,"Very focal left-edge electrode island without smooth distributed falloff, combined with irregular activity, supports channel noise."
+SavedFiles/0206_VDnoaudio_ICA.set,62,other_artifact,eye,0.68,"Broad anterior midline positivity with opposing lateral/posterior negativity is periocular, and the spectrum is strongly low-frequency weighted."
+SavedFiles/0206_VDnoaudio_ICA.set,63,other_artifact,channel_noise,0.95,"The compact left-frontal hotspot is essentially isolated, and the noisy irregular time course lacks a plausible distributed neural pattern."
+SavedFiles/0206_VDnoaudio_ICA.set,64,eye,channel_noise,0.93,Focal left-temporal electrode island with discrete horizontal segment-image events is characteristic of a bad channel.
+SavedFiles/0206_VDnoaudio_ICA.set,65,brain,other_artifact,0.56,"The frontal-central multipolar map is non-dipolar and the irregular activity/spectrum do not clearly establish eye, muscle, or brain."
+SavedFiles/0206_VDnoaudio_ICA.set,66,other_artifact,channel_noise,0.89,A dominant focal left-temporal island with isolated segment-image bands favors an electrode-specific artifact over a distributed source.
+SavedFiles/0206_VDnoaudio_ICA.set,67,muscle,channel_noise,0.88,Scalp map is dominated by a compact isolated right-lateral electrode-sized hotspot; activity is irregular without a physiological rhythm.
+SavedFiles/0206_VDnoaudio_ICA.set,68,eye,other_artifact,0.64,Multipolar lateral/frontal map with inconsistent segment structure; spectrum is 1/f-like but topology is not a plausible brain dipole.
+SavedFiles/0206_VDnoaudio_ICA.set,69,other_artifact,other_artifact,0.75,Broad splotchy multipolar topography with several poles and noisy activity does not cleanly fit brain or a specific artifact class.
+SavedFiles/0206_VDnoaudio_ICA.set,70,eye,channel_noise,0.91,"Very sharp central-right single-electrode island without smooth spatial falloff, accompanied by irregular noisy activity."
+SavedFiles/0206_VDnoaudio_ICA.set,71,other_artifact,channel_noise,0.87,Compact isolated right posterior-temporal hotspot dominates the map; the trace contains abrupt irregular excursions.
+SavedFiles/0206_VDnoaudio_ICA.set,72,eye,channel_noise,0.88,Clear focal left-lateral electrode-sized negative island with no broad dipolar field; activity is noisy and non-rhythmic.
+SavedFiles/0206_VDnoaudio_ICA.set,73,muscle,channel_noise,0.88,"A sharply localized left temporal hotspot dominates an otherwise near-flat scalp map, consistent with one bad channel."
+SavedFiles/0206_VDnoaudio_ICA.set,74,muscle,channel_noise,0.92,Unmistakable compact right frontal-lateral electrode island and broadband irregular time series.
+SavedFiles/0206_VDnoaudio_ICA.set,75,other_artifact,channel_noise,0.88,Map is dominated by a compact inferior-right edge electrode hotspot without a smooth opposing pole; activity is irregular.
+SavedFiles/0206_VDnoaudio_ICA.set,78,muscle,channel_noise,0.96,Topography is dominated by a very sharp isolated frontal electrode-sized hotspot; activity is irregular without a coherent physiological pattern.
+SavedFiles/0206_VDnoaudio_ICA.set,81,eye,other_artifact,0.72,"Mixed, multipolar frontal and central map with irregular activity and no decisive blink, muscle, or single-channel signature."
+SavedFiles/0206_VDnoaudio_ICA.set,82,other_artifact,other_artifact,0.71,"Edge-focused and spatially irregular posterior map with intermittent activity, but no convincing high-frequency muscle spectrum or isolated-electrode pattern."
+SavedFiles/0206_VDnoaudio_ICA.set,87,channel_noise,channel_noise,0.95,"A compact, isolated upper-frontal hotspot dominates the scalp map with little smooth spatial falloff, consistent with one bad channel."
+SavedFiles/0206_VDnoaudio_ICA.set,88,eye,eye,0.79,Broad frontal/periocular distribution and strongly low-frequency-dominant spectrum support an ocular source despite irregular segments.
+SavedFiles/0206_VDnoaudio_ICA.set,91,eye,eye,0.75,Anterior frontal-dominant scalp pattern with low-frequency-heavy power and non-rhythmic transient activity is most consistent with eye artifact.
+SavedFiles/0206_VDnoaudio_ICA.set,92,other_artifact,eye,0.68,"Broad frontal polarity pattern and steep low-frequency spectrum favor ocular activity, although the time series is not a clear blink pattern."
+SavedFiles/0206_VDnoaudio_ICA.set,93,other_artifact,other_artifact,0.7,"Strong edge-localized lower-left activity with an irregular, non-dipolar map but without convincing broadband high-frequency muscle evidence."
+SavedFiles/0206_VDnoaudio_ICA.set,95,muscle,brain,0.61,"Lateral temporal dipolar topography and a generally falling 1/f-like spectrum are most compatible with a neural component, though activity is noisy."
+SavedFiles/0206_VDnoaudio_ICA.set,96,other_artifact,channel_noise,0.82,"Topography is dominated by a very focal isolated frontal electrode-sized island, while activity lacks a coherent ocular or neural pattern."
+SavedFiles/0206_VDnoaudio_ICA.set,97,eye,other_artifact,0.7,"Separated focal frontal and central extrema produce a non-dipolar, multipolar map; irregular activity does not clearly support eye, brain, or muscle."
+SavedFiles/0206_VDnoaudio_ICA.set,98,other_artifact,other_artifact,0.74,Splotchy focal posterior polarity islands plus diffuse frontal activity are not a plausible single dipole; spectrum is nonspecific 1/f-like.
+SavedFiles/0206_VDnoaudio_ICA.set,99,other_artifact,other_artifact,0.72,"Strong edge/posterior focality and non-dipolar distribution suggest artifact, but there is no high-frequency muscle signature or isolated-electrode pattern decisive for another class."
+SavedFiles/0589_VDAudio_ICA.set,0,muscle,muscle,0.76,"Focal left temporal/edge distribution with highly jagged, high-frequency activity and relatively elevated broadband higher-frequency power."
+SavedFiles/0589_VDAudio_ICA.set,1,eye,eye,0.98,"Strong bilateral frontal/periocular map, large slow blink-like deflections, repeated segment bands, and dominant low-frequency spectrum."
+SavedFiles/0589_VDAudio_ICA.set,2,brain,other_artifact,0.62,"Broad concentric, non-dipolar topology with irregular activity and no clear rhythmic neural peak or defining artifact signature."
+SavedFiles/0589_VDAudio_ICA.set,3,brain,brain,0.73,Smooth posterior-central focal dipolar field and a generally 1/f-like spectrum without prominent muscle or ocular features.
+SavedFiles/0589_VDAudio_ICA.set,4,brain,brain,0.68,Plausible right posterior-temporal dipolar topography with non-blink-like activity and declining spectrum.
+SavedFiles/0589_VDAudio_ICA.set,5,brain,brain,0.7,"Localized centro-right dipolar scalp map and broadly 1/f spectral profile, without a decisive artifact pattern."
+SavedFiles/0589_VDAudio_ICA.set,6,heart,muscle,0.78,Strong lower-left edge/temporal distribution with sharp erratic transients and broadband noisy activity consistent with muscle.
+SavedFiles/0589_VDAudio_ICA.set,7,eye,eye,0.86,Anterior left-right frontal polarity supports horizontal eye movement; activity includes abrupt ocular-like transitions and low-frequency-dominant power.
+SavedFiles/0589_VDAudio_ICA.set,8,muscle,muscle,0.74,Very focal right temporal/edge source with dense spiky high-frequency time-series activity; not an unmistakable isolated single-electrode map.
+SavedFiles/0589_VDAudio_ICA.set,9,muscle,brain,0.62,Compact lateral dipolar scalp pattern with a broadly 1/f-like spectrum and no decisive artifact signature.
+SavedFiles/0589_VDAudio_ICA.set,10,brain,other_artifact,0.58,"Inferior-left focal map and irregular activity are not convincingly dipolar, ocular, or muscle-dominant."
+SavedFiles/0589_VDAudio_ICA.set,11,muscle,channel_noise,0.84,"Topography is dominated by a very sharp, isolated right-anterior electrode-sized island without a smooth opposing pole."
+SavedFiles/0589_VDAudio_ICA.set,12,muscle,muscle,0.68,Edge/inferior-left localized distribution with highly erratic spiky activity is most consistent with peripheral muscle artifact.
+SavedFiles/0589_VDAudio_ICA.set,14,muscle,brain,0.55,"Localized left-central dipolar structure and falling spectrum are compatible with a neural source, though activity is noisy."
+SavedFiles/0589_VDAudio_ICA.set,15,brain,eye,0.74,Broad frontal-versus-posterior scalp gradient combined with strong low-frequency spectral dominance supports vertical ocular activity.
+SavedFiles/0589_VDAudio_ICA.set,16,muscle,muscle,0.76,Strong inferior edge/neck distribution and irregular high-frequency-looking activity support muscle contamination.
+SavedFiles/0589_VDAudio_ICA.set,17,brain,eye,0.79,Clear frontal-central opposing-polarity distribution with low-frequency-dominant spectrum is characteristic of an ocular component.
+SavedFiles/0589_VDAudio_ICA.set,18,muscle,brain,0.6,Right-lateral compact dipolar map with a generally declining spectrum lacks a decisive artifact-specific feature.
+SavedFiles/0589_VDAudio_ICA.set,21,eye,muscle,0.78,Frontal/edge-weighted map with erratic high-frequency activity and a relatively elevated broad high-frequency spectral plateau.
+SavedFiles/0589_VDAudio_ICA.set,22,brain,channel_noise,0.82,"Topography is dominated by a compact, isolated central electrode-like island, with noisy nonphysiologic activity."
+SavedFiles/0589_VDAudio_ICA.set,23,brain,brain,0.67,Broad lateralized dipolar scalp distribution and a generally 1/f-decreasing spectrum support a neural source despite noisy activity.
+SavedFiles/0589_VDAudio_ICA.set,24,muscle,muscle,0.74,"Focal anterior-left map, highly irregular rapid activity, and relatively strong higher-frequency power are most consistent with muscle."
+SavedFiles/0589_VDAudio_ICA.set,25,muscle,muscle,0.73,Very focal anterior-left activity with erratic fast fluctuations and a flattened/rising high-frequency spectrum.
+SavedFiles/0589_VDAudio_ICA.set,26,other_artifact,brain,0.72,Spatially broad opposing-polarity map and a clean declining 1/f-like spectrum are compatible with a brain component.
+SavedFiles/0589_VDAudio_ICA.set,28,brain,other_artifact,0.58,"Broad non-dipolar central/peripheral pattern and noisy activity lack a clear eye, muscle, or plausible focal neural signature."
+SavedFiles/0589_VDAudio_ICA.set,29,brain,brain,0.63,"Broad left-posterior to right-central polarity pattern with a predominantly 1/f spectrum suggests a neural source, though topology is imperfect."
+SavedFiles/0589_VDAudio_ICA.set,30,eye,eye,0.9,"Strong frontal/periocular distribution, pronounced slow transient deflections, and dominant very-low-frequency power indicate ocular artifact."
+SavedFiles/0589_VDAudio_ICA.set,31,brain,other_artifact,0.72,Splotchy multipolar scalp pattern with erratic activity; spectrum decays but lacks a clear neural rhythm or decisive artifact signature.
+SavedFiles/0589_VDAudio_ICA.set,32,other_artifact,other_artifact,0.61,"Anterior-posterior gradient suggests possible ocular contribution, but the activity is not clearly blink- or saccade-like and the evidence is mixed."
+SavedFiles/0589_VDAudio_ICA.set,33,brain,muscle,0.67,Strong peripheral temporal/inferior focality and irregular fast-looking activity favor muscle despite a broadly decreasing spectrum.
+SavedFiles/0589_VDAudio_ICA.set,34,other_artifact,other_artifact,0.7,"Non-dipolar, patchy map with posterior edge emphasis and noisy irregular activity; no decisive spectral or temporal pattern."
+SavedFiles/0589_VDAudio_ICA.set,37,brain,other_artifact,0.71,"Mixed frontal and posterior patches, erratic time series, and no clear blink, cardiac, line, or neural-rhythm signature."
+SavedFiles/0589_VDAudio_ICA.set,38,muscle,muscle,0.91,Right frontal/temporal focal source with a conspicuously flat-to-rising high-frequency spectrum and noisy activity is characteristic of muscle.
+SavedFiles/0589_VDAudio_ICA.set,39,brain,other_artifact,0.69,"Broad inferior/lateral non-dipolar distribution and irregular activity without a defining eye, muscle-spectrum, or cardiac pattern."
+SavedFiles/0589_VDAudio_ICA.set,42,other_artifact,muscle,0.75,Prominent inferior edge and right temporal focality with fast irregular activity favor a peripheral muscle source.
+SavedFiles/0589_VDAudio_ICA.set,45,other_artifact,other_artifact,0.7,"Multipolar peripheral map and noisy non-rhythmic activity are artifact-like, but the spectrum lacks a decisive high-frequency muscle profile."
+SavedFiles/0589_VDAudio_ICA.set,48,other_artifact,other_artifact,0.72,"Edge-dominated, non-dipolar posterior pattern with irregular noisy activity; spectrum lacks a decisive muscle or line-noise signature."
+SavedFiles/0589_VDAudio_ICA.set,55,muscle,channel_noise,0.9,"Topography is dominated by a very compact isolated frontal electrode-like island, with otherwise diffuse low-amplitude field and noisy activity."
+SavedFiles/0589_VDAudio_ICA.set,57,other_artifact,other_artifact,0.7,Asymmetric edge/posterior splotchy map and irregular broadband-looking activity do not form a plausible brain dipole or clear ocular pattern.
+SavedFiles/0589_VDAudio_ICA.set,58,other_artifact,other_artifact,0.68,Multipolar scalp distribution with bilateral posterior edge foci and irregular activity; no decisive spectral or temporal signature.
+SavedFiles/0589_VDAudio_ICA.set,62,other_artifact,other_artifact,0.7,"Non-dipolar frontal-plus-posterior patchy field with noisy, non-rhythmic time course; not a clear blink, muscle, or brain component."
+SavedFiles/0589_VDAudio_ICA.set,63,other_artifact,other_artifact,0.67,"Mixed frontal and peripheral topography with erratic activity and no clear alpha, QRS, ocular, or line-frequency signature."
+SavedFiles/0589_VDAudio_ICA.set,66,other_artifact,other_artifact,0.71,"Broad, splotchy anterior-posterior pattern and irregular continuous activity are not consistent with a clean dipolar neural source."
+SavedFiles/0589_VDAudio_ICA.set,69,muscle,channel_noise,0.88,"A sharply localized right-frontal electrode-like focus dominates an otherwise near-uniform scalp map, supporting an isolated bad channel."
+SavedFiles/0589_VDAudio_ICA.set,70,other_artifact,other_artifact,0.7,Patchy multipolar frontal/temporal and posterior distribution with irregular noisy activity; no decisive hallmark of another category.
+SavedFiles/0589_VDAudio_ICA.set,73,muscle,muscle,0.65,Left frontal/temporal edge-focused map with irregular spiky activity and relatively sustained higher-frequency spectral power.
+SavedFiles/0589_VDAudio_ICA.set,74,muscle,muscle,0.62,"Focal lateral-temporal scalp pattern, erratic fast activity, and a spectrum that flattens after the low-frequency drop."
+SavedFiles/0589_VDAudio_ICA.set,75,other_artifact,other_artifact,0.61,"Strong anterior-posterior edge pattern is non-dipolar and activity is noisy; no convincing blink, muscle-spectrum, or brain-rhythm signature."
+SavedFiles/0589_VDAudio_ICA.set,78,other_artifact,eye,0.58,"Predominantly anterior versus posterior scalp gradient and low-frequency-dominant spectrum suggest a vertical ocular source, though the trace is not strongly blink-like."
+SavedFiles/0589_VDAudio_ICA.set,83,other_artifact,muscle,0.6,Lateral edge-focused topography with irregular fast fluctuations and appreciable broadband higher-frequency power.
+SavedFiles/0589_VDAudio_ICA.set,84,eye,other_artifact,0.64,"Multipolar anterior/occipital pattern and noisy segments lack a clear dipolar neural, ocular, or definitive muscle signature."
+SavedFiles/0589_VDAudio_ICA.set,85,muscle,other_artifact,0.66,Splotchy inferior-posterior distribution with erratic activity; spectrum is broadly 1/f-like but topology is not plausibly neural.
+SavedFiles/0589_VDAudio_ICA.set,86,other_artifact,other_artifact,0.68,Irregular lateral and posterior focalities with noisy continuous segments; no isolated electrode island or diagnostic spectral peak.
+SavedFiles/0589_VDAudio_ICA.set,87,other_artifact,other_artifact,0.67,"Non-dipolar mixed scalp pattern and irregular activity without clear ocular structure, narrow line peak, or broadband muscle profile."
+SavedFiles/0589_VDAudio_ICA.set,88,other_artifact,other_artifact,0.76,"Multipolar, edge-weighted scalp pattern with erratic activity and no convincing neural rhythm or decisive artifact signature."
+SavedFiles/0589_VDAudio_ICA.set,89,muscle,other_artifact,0.79,Splotchy non-dipolar topography and noisy irregular time series; spectrum lacks a clear line-noise or muscle-dominant profile.
+SavedFiles/0589_VDAudio_ICA.set,91,other_artifact,other_artifact,0.77,Posterior/edge-heavy multipolar map with irregular broadband-looking activity and no coherent brain-like pattern.
+SavedFiles/0589_VDAudio_ICA.set,93,other_artifact,other_artifact,0.82,"Strongly non-dipolar, patchy spatial distribution with irregular spiky activity; no clear ocular, cardiac, or line-noise cue."
+SavedFiles/0589_VDAudio_ICA.set,94,other_artifact,other_artifact,0.78,Mixed frontal and posterior focalities with noisy segments and no consistent low-frequency blink or plausible neural dipole.
+SavedFiles/0589_VDAudio_ICA.set,96,muscle,muscle,0.68,"Irregular high-frequency-looking activity and relatively elevated, flattened higher-frequency spectrum support muscle despite a diffuse map."
+SavedFiles/0589_VDAudio_ICA.set,99,other_artifact,other_artifact,0.81,Complex edge/posterior multipolar scalp pattern and erratic activity do not form a plausible brain dipole or specific artifact signature.
+SavedFiles/0589_VDAudio_ICA.set,100,other_artifact,other_artifact,0.79,"Patchy non-dipolar map with noisy broadband activity; no regular cardiac rhythm, ocular pattern, or narrow line peak."
+SavedFiles/0589_VDAudio_ICA.set,101,other_artifact,other_artifact,0.74,"Lateral edge focality is not an unmistakable isolated electrode, while the activity and spectrum provide no decisive alternative class."
+SavedFiles/0589_VDAudio_ICA.set,102,other_artifact,other_artifact,0.72,Splotchy multipolar scalp map and irregular noisy activity lack a plausible dipole or a category-specific spectral signature.
+SavedFiles/0589_VDAudio_ICA.set,103,other_artifact,other_artifact,0.74,"Diffuse irregular topography with several extrema and noisy non-rhythmic activity; no clear eye, cardiac, line, or isolated-channel pattern."
+SavedFiles/0589_VDAudio_ICA.set,104,muscle,channel_noise,0.94,"Topography is dominated by a small isolated central electrode island, and the time series contains repeated sharp single-channel-like transients."
+SavedFiles/0589_VDAudio_ICA.set,105,other_artifact,other_artifact,0.67,Central focal and surrounding mixed topography is not a clean dipole; activity and spectrum are nonspecific rather than clearly neural.
+SavedFiles/0589_VDAudio_ICA.set,107,other_artifact,muscle,0.63,Focal lateral/temporal edge distribution with highly erratic spiky activity supports a localized muscle source despite a broadly decreasing spectrum.
+SavedFiles/0589_VDAudio_ICA.set,109,other_artifact,muscle,0.61,Strong edge-focused lateral scalp pattern and irregular high-frequency-looking time series are more compatible with muscle than brain.
+SavedFiles/0589_VDAudio_ICA.set,110,muscle,channel_noise,0.9,"A very small, isolated frontal electrode island dominates an otherwise nearly uniform scalp map, meeting the bad-channel criterion."
+SavedFiles/0589_VDAudio_ICA.set,111,channel_noise,channel_noise,0.87,Scalp map is overwhelmingly a compact isolated frontocentral island with no smooth opposing pole; activity is noisy and non-neural.
+SavedFiles/0589_VDAudio_ICA.set,112,other_artifact,other_artifact,0.7,"Irregular multipolar/edge-influenced map and nonspecific noisy activity do not cleanly fit brain, eye, muscle, or isolated channel noise."
+SavedFiles/0589_VDAudio_ICA.set,113,channel_noise,channel_noise,0.88,Topography is dominated by a compact isolated frontal electrode-like island; activity is irregular without a coherent physiological rhythm.
+SavedFiles/0589_VDAudio_ICA.set,115,channel_noise,channel_noise,0.78,A sharply localized inferior-central island dominates the map with little smooth opposing field; the time series is noisy and non-rhythmic.
+SavedFiles/0589_VDAudio_ICA.set,117,other_artifact,other_artifact,0.72,"Broad edge-heavy, multipolar scalp pattern is not a plausible single dipole, while the spectrum lacks the sustained high-frequency elevation expected for muscle."
+SavedFiles/0589_VDAudio_ICA.set,118,muscle,channel_noise,0.91,"The scalp map shows an unmistakable small, isolated frontal electrode island with no meaningful opposite pole; activity is irregular."
+SavedFiles/0589_VDAudio_ICA.set,120,muscle,other_artifact,0.76,"Splotchy, multipolar frontal/edge distribution lacks a clean dipole or isolated-channel pattern; no blink-like slow structure or muscle-spectrum signature is clear."
+SavedFiles/0589_VDAudio_ICA.set,121,channel_noise,other_artifact,0.74,The diffuse multipolar central-posterior map is non-dipolar and inconsistent with a clear physiological source; the remaining panels do not decisively indicate another artifact class.
+SavedFiles/0604_VDaudio_ICA.set,0,eye,eye,0.88,Strong bilateral frontal/periocular map with large slow deflections and low-frequency-dominant spectrum.
+SavedFiles/0604_VDaudio_ICA.set,1,brain,eye,0.74,Anterior-posterior frontal distribution and predominantly low-frequency activity support an ocular source despite noisy time series.
+SavedFiles/0604_VDaudio_ICA.set,2,heart,eye,0.93,"Clear left-right frontal polarity with abrupt, step-like/spike-like saccade events is characteristic of horizontal eye movement."
+SavedFiles/0604_VDaudio_ICA.set,3,eye,eye,0.82,Broad frontal-positive/posterior-negative map and slow low-frequency spectrum are consistent with vertical ocular activity.
+SavedFiles/0604_VDaudio_ICA.set,4,eye,brain,0.58,Smooth central midline dipolar scalp pattern and non-bursting 1/f-like activity are more compatible with neural activity than a specific artifact.
+SavedFiles/0604_VDaudio_ICA.set,5,brain,channel_noise,0.72,Topography is dominated by a very tight central single-site island with no convincing opposing pole; activity contains abrupt outliers.
+SavedFiles/0604_VDaudio_ICA.set,6,brain,muscle,0.68,Strong focal temporal/edge distribution with erratic high-rate activity favors localized muscle artifact over brain.
+SavedFiles/0604_VDaudio_ICA.set,7,eye,eye,0.95,Opposing left-right frontal poles plus large slow transitions and stable intervals strongly indicate horizontal eye movements.
+SavedFiles/0604_VDaudio_ICA.set,8,brain,eye,0.79,"Frontal-posterior dipolar map with low-frequency-dominant, irregular slow activity is most consistent with an ocular component."
+SavedFiles/0604_VDaudio_ICA.set,9,brain,brain,0.82,Smooth central dipolar topography with a broadly 1/f-decreasing spectrum and no clear artifact-specific temporal pattern.
+SavedFiles/0604_VDaudio_ICA.set,10,brain,brain,0.78,"Plausible left centrotemporal dipole and 1/f-like spectral decay; activity lacks blink, ECG, or sustained high-frequency muscle features."
+SavedFiles/0604_VDaudio_ICA.set,11,brain,brain,0.8,Localized right temporal dipolar map with a declining spectrum and non-blink-like irregular neural activity.
+SavedFiles/0604_VDaudio_ICA.set,12,brain,brain,0.76,Broad opposing-polarity dipolar scalp distribution and predominantly low-frequency/1/f spectrum without decisive artifact cues.
+SavedFiles/0604_VDaudio_ICA.set,13,brain,eye,0.61,"Bilateral frontal/periocular-positive topology with posterior opposite polarity and strong low-frequency spectral dominance, although the time series is not a classic large blink trace."
+SavedFiles/0604_VDaudio_ICA.set,14,muscle,muscle,0.9,"Focal lateral temporal/edge map, bursty fast activity, striped segment image, and a flat-to-rising high-frequency spectrum."
+SavedFiles/0604_VDaudio_ICA.set,15,brain,brain,0.67,"Broad frontal-to-right lateral dipolar distribution with 1/f-like spectral decay and no convincing saccade, blink, or high-frequency muscle signature."
+SavedFiles/0604_VDaudio_ICA.set,16,muscle,muscle,0.92,"Strong focal right temporal edge activity with dense fast bursts, high-frequency segment texture, and a rising high-frequency spectrum."
+SavedFiles/0604_VDaudio_ICA.set,17,muscle,muscle,0.74,"Edge-focused frontal source with transient bursty activity, horizontal high-frequency segment structure, and relatively elevated high-frequency power; not an unmistakable single-electrode island."
+SavedFiles/0604_VDaudio_ICA.set,18,eye,eye,0.83,Anterior periocular map with large slow transient deflections and strongly low-frequency-dominant spectrum.
+SavedFiles/0604_VDaudio_ICA.set,19,muscle,muscle,0.78,Right temporal/edge-focused source with highly erratic fast activity and relatively flat broadband high-frequency spectrum.
+SavedFiles/0604_VDaudio_ICA.set,20,brain,brain,0.62,Smooth localized centro-right dipolar map and broadly declining spectrum without a decisive artifact signature.
+SavedFiles/0604_VDaudio_ICA.set,21,eye,eye,0.94,"Strong bilateral frontal distribution, prominent large slow blink-like deflections, and dominant low-frequency power."
+SavedFiles/0604_VDaudio_ICA.set,22,brain,eye,0.75,Broad anterior-posterior ocular-like gradient with low-frequency-dominant spectrum; activity lacks sustained high-frequency bursting.
+SavedFiles/0604_VDaudio_ICA.set,23,brain,brain,0.57,"Localized smooth central dipolar scalp pattern and 1/f-like spectrum, though the time series is somewhat noisy."
+SavedFiles/0604_VDaudio_ICA.set,24,brain,brain,0.55,"Broad plausible left-right dipolar distribution with falling spectrum and no clear line, cardiac, or ocular pattern."
+SavedFiles/0604_VDaudio_ICA.set,25,brain,muscle,0.68,Lateral temporal/edge-focused map with irregular spiky activity and comparatively broadband spectral content.
+SavedFiles/0604_VDaudio_ICA.set,26,muscle,other_artifact,0.62,Very focal inferior-left splotchy pattern and noisy activity do not cleanly support a dipolar brain source or unmistakable isolated bad channel.
+SavedFiles/0604_VDaudio_ICA.set,27,brain,brain,0.78,"Smooth central lateral dipole with broadly 1/f-like spectrum and no blink, ECG, or line-noise signature."
+SavedFiles/0604_VDaudio_ICA.set,28,muscle,muscle,0.73,Highly focal right temporal/edge source with erratic spiky activity and relatively elevated higher-frequency spectrum.
+SavedFiles/0604_VDaudio_ICA.set,29,muscle,muscle,0.77,"Focal right temporal edge distribution, sharp irregular activity, and non-clean high-frequency spectral tail."
+SavedFiles/0604_VDaudio_ICA.set,30,brain,brain,0.66,"Broad, smooth dipolar scalp field and low-frequency-dominant 1/f spectrum without characteristic ocular transients."
+SavedFiles/0604_VDaudio_ICA.set,31,muscle,muscle,0.79,Strong left peripheral/temporal source with spiky activity and flattened elevated high-frequency power.
+SavedFiles/0604_VDaudio_ICA.set,32,muscle,muscle,0.88,"Focal inferior temporal/jaw-edge topography, bursty high-amplitude activity, and increasing high-frequency power."
+SavedFiles/0604_VDaudio_ICA.set,33,muscle,muscle,0.75,Right temporal focal component with noisy irregular activity and a comparatively flat high-frequency spectrum.
+SavedFiles/0604_VDaudio_ICA.set,34,brain,eye,0.7,"Prominent anterior-posterior field with low-frequency-dominant spectrum, consistent with a vertical ocular source."
+SavedFiles/0604_VDaudio_ICA.set,35,muscle,muscle,0.76,Focal inferior left temporal/edge activity with irregular spikiness and relatively elevated higher-frequency power.
+SavedFiles/0604_VDaudio_ICA.set,36,other_artifact,other_artifact,0.62,"Strong lateral edge focus but no unmistakable isolated-electrode island; irregular activity and low-frequency spectrum do not cleanly support eye, brain, or muscle."
+SavedFiles/0604_VDaudio_ICA.set,37,brain,brain,0.72,"Broad posterior dipolar scalp distribution with a predominantly 1/f-like spectrum and no defining blink, line, or muscle signature."
+SavedFiles/0604_VDaudio_ICA.set,38,muscle,muscle,0.91,"Focal right temporal/edge dipole, erratic spiky activity, and a spectrum that rises substantially at high frequencies."
+SavedFiles/0604_VDaudio_ICA.set,40,muscle,muscle,0.9,Right temporal focal topography with bursty high-frequency activity and a pronounced high-frequency spectral increase.
+SavedFiles/0604_VDaudio_ICA.set,41,muscle,muscle,0.83,"Inferior right temporal/neck-edge focus, noisy activity, and relatively flat high-frequency spectral tail consistent with muscle."
+SavedFiles/0604_VDaudio_ICA.set,42,muscle,muscle,0.88,Localized right temporal dipole with spiky irregular time series and elevated high-frequency spectral power.
+SavedFiles/0604_VDaudio_ICA.set,43,muscle,muscle,0.85,"Right lateral temporal edge focus, erratic activity, and a spectrum with weak 1/f decay and sustained high-frequency power."
+SavedFiles/0604_VDaudio_ICA.set,45,brain,other_artifact,0.65,"Broad inferior gradient is not a convincing cortical dipole; activity is noisy, while the spectrum lacks a decisive muscle, eye, heart, or line-noise pattern."
+SavedFiles/0604_VDaudio_ICA.set,46,muscle,muscle,0.82,Left temporal edge-localized source with bursty spiky activity and a high-frequency-rising spectrum.
+SavedFiles/0604_VDaudio_ICA.set,47,muscle,muscle,0.86,Focal left-temporal edge dipole with erratic spiky activity and a flattened high-frequency spectral tail.
+SavedFiles/0604_VDaudio_ICA.set,48,muscle,muscle,0.84,"Lateral temporal focality, irregular high-frequency-looking activity, and non-1/f spectral flattening support muscle."
+SavedFiles/0604_VDaudio_ICA.set,49,other_artifact,muscle,0.72,Strong right-edge focal source with irregular activity and a broadly flattened higher-frequency spectrum; not an unmistakable single-electrode island.
+SavedFiles/0604_VDaudio_ICA.set,50,muscle,muscle,0.85,"Right temporal/edge-focused map, noisy bursty time series, and broad high-frequency spectral contribution indicate muscle."
+SavedFiles/0604_VDaudio_ICA.set,51,muscle,muscle,0.83,Inferior right edge-focused focal dipole with spiky irregular activity and flattened spectral tail is consistent with muscle.
+SavedFiles/0604_VDaudio_ICA.set,52,muscle,muscle,0.87,Strong left temporal edge source with highly erratic spikes and broad high-frequency power pattern.
+SavedFiles/0604_VDaudio_ICA.set,53,other_artifact,eye,0.82,"Anterior right-frontal distribution accompanies a large slow step-like deflection and strongly low-frequency-dominant spectrum, consistent with ocular movement."
+SavedFiles/0604_VDaudio_ICA.set,54,muscle,muscle,0.84,Inferior posterior/neck-edge focality with dense irregular spiking and broad high-frequency spectral flattening supports muscle.
+SavedFiles/0604_VDaudio_ICA.set,55,muscle,muscle,0.86,"Focal left temporal edge map, noisy bursty waveform, and flattened higher-frequency spectral profile indicate muscle."
+SavedFiles/0604_VDaudio_ICA.set,56,muscle,muscle,0.82,Focal right temporal/edge map with erratic spiky activity and relatively flat high-frequency spectrum.
+SavedFiles/0604_VDaudio_ICA.set,57,muscle,eye,0.88,Strong frontal/periocular distribution with marked low-frequency-dominant spectrum and large slow activity changes.
+SavedFiles/0604_VDaudio_ICA.set,58,eye,eye,0.91,"Bilateral frontal/periocular pattern, pronounced low-frequency power, and slow structured segment activity support ocular artifact."
+SavedFiles/0604_VDaudio_ICA.set,59,brain,brain,0.62,Smooth posterior dipolar scalp distribution and broadly 1/f-like spectrum without decisive ocular or muscle evidence.
+SavedFiles/0604_VDaudio_ICA.set,60,muscle,muscle,0.79,Focal left temporal edge source with irregular spiky time series and elevated broad higher-frequency content.
+SavedFiles/0604_VDaudio_ICA.set,61,other_artifact,eye,0.9,Large anterior-versus-posterior gradient combined with strongly low-frequency-dominant power is consistent with vertical eye activity.
+SavedFiles/0604_VDaudio_ICA.set,63,muscle,muscle,0.84,"Right temporal/edge focality, bursty irregular activity, and spectrum with sustained high-frequency power indicate muscle."
+SavedFiles/0604_VDaudio_ICA.set,64,muscle,muscle,0.78,Localized left temporal edge dipole with noisy spiky activity and non-rhythmic broadband spectrum favors muscle over channel noise.
+SavedFiles/0604_VDaudio_ICA.set,65,muscle,muscle,0.86,Right temporal edge-focused map with strong bursty fluctuations and broad high-frequency spectral content.
+SavedFiles/0604_VDaudio_ICA.set,66,muscle,channel_noise,0.72,Topography is dominated by a very focal adjacent hot/cold island with little broader spatial structure; activity is irregular.
+SavedFiles/0604_VDaudio_ICA.set,67,other_artifact,eye,0.7,Anterior-left frontal/periocular focus with strongly low-frequency-dominant spectrum supports an ocular source.
+SavedFiles/0604_VDaudio_ICA.set,68,other_artifact,eye,0.63,Focal right anterior/temporal edge distribution and slow-frequency-dominant spectrum are most consistent with an eye-related component.
+SavedFiles/0604_VDaudio_ICA.set,69,muscle,other_artifact,0.58,Extremely edge-localized lateral map and irregular activity do not form a convincing brain dipole or clear ocular/muscle pattern.
+SavedFiles/0604_VDaudio_ICA.set,71,channel_noise,channel_noise,0.82,"A small, sharply isolated inferior-left electrode island is the dominant scalp feature, consistent with a bad channel."
+SavedFiles/0604_VDaudio_ICA.set,72,other_artifact,muscle,0.61,"Inferior-lateral edge-focused map and persistently jagged, high-rate activity favor localized muscle artifact despite low-frequency power."
+SavedFiles/0604_VDaudio_ICA.set,73,brain,brain,0.61,"Broad, smooth right-lateral versus central/inferior dipolar distribution with a decaying spectrum is plausible for a neural source."
+SavedFiles/0604_VDaudio_ICA.set,74,eye,eye,0.9,Strong bilateral frontal maximum with opposing inferior pole and pronounced low-frequency spectrum is a classic vertical eye/blink pattern.
+SavedFiles/0604_VDaudio_ICA.set,75,brain,brain,0.69,Broad central-posterior dipolar scalp distribution and 1/f-like spectrum are most compatible with brain activity.
+SavedFiles/0604_VDaudio_ICA.set,76,eye,eye,0.7,Broad bilateral frontal maximum with low-frequency-dominant 1/f spectrum supports ocular activity.
+SavedFiles/0604_VDaudio_ICA.set,77,other_artifact,channel_noise,0.82,A sharply localized left-frontal electrode island and bursty irregular activity indicate an isolated bad channel.
+SavedFiles/0604_VDaudio_ICA.set,78,other_artifact,channel_noise,0.93,Topography is dominated by one very focal anterior electrode island without a smooth opposing pole.
+SavedFiles/0604_VDaudio_ICA.set,79,other_artifact,channel_noise,0.88,Very focal left-anterior island with erratic transient-rich activity is characteristic of a bad electrode.
+SavedFiles/0604_VDaudio_ICA.set,80,eye,channel_noise,0.8,"Localized frontal electrode-scale hotspot with bursty, nonphysiological activity favors channel noise."
+SavedFiles/0604_VDaudio_ICA.set,81,muscle,channel_noise,0.92,An unmistakable isolated right-frontal scalp island with no broad spatial source pattern.
+SavedFiles/0604_VDaudio_ICA.set,83,muscle,channel_noise,0.9,Single focal left-temporal electrode hotspot and highly irregular high-frequency activity indicate channel noise.
+SavedFiles/0604_VDaudio_ICA.set,84,muscle,muscle,0.72,Erratic fast activity and a relatively elevated high-frequency spectrum with frontal edge distribution favor muscle artifact.
+SavedFiles/0604_VDaudio_ICA.set,85,muscle,channel_noise,0.87,Topography is dominated by a compact left-posterior/temporal electrode island and noisy transient activity.
+SavedFiles/0604_VDaudio_ICA.set,87,other_artifact,muscle,0.78,Anterior edge-focused map with a pronounced erratic high-frequency burst in the time series; not blink-like despite low-frequency spectral decay.
+SavedFiles/0604_VDaudio_ICA.set,88,other_artifact,eye,0.72,"Left-frontal/periocular focality combined with predominantly low-frequency power and large slow, irregular deflections."
+SavedFiles/0604_VDaudio_ICA.set,90,muscle,channel_noise,0.9,"Topography is dominated by a compact isolated right-frontal electrode island, with otherwise minimal spatial structure."
+SavedFiles/0604_VDaudio_ICA.set,91,other_artifact,other_artifact,0.7,"Large isolated posterior-edge transient and non-dipolar peripheral map do not cleanly fit ocular, brain, or muscle activity."
+SavedFiles/0604_VDaudio_ICA.set,92,other_artifact,channel_noise,0.9,A sharply localized right-frontal electrode island dominates the scalp map without a smooth distributed field.
+SavedFiles/0604_VDaudio_ICA.set,93,channel_noise,channel_noise,0.88,"Small, isolated left-central scalp island with noisy activity is most consistent with a single bad channel."
+SavedFiles/0604_VDaudio_ICA.set,95,muscle,channel_noise,0.88,Map is dominated by a very focal left-temporal electrode island rather than a spatially extended source.
+SavedFiles/0604_VDaudio_ICA.set,96,other_artifact,muscle,0.85,"Strong lateral edge/temporal focus with persistently erratic, high-frequency-looking activity and relatively elevated high-frequency spectrum."
+SavedFiles/0604_VDaudio_ICA.set,97,other_artifact,other_artifact,0.78,Mixed multipolar frontal and posterior focal topography with noisy non-rhythmic activity lacks a coherent source pattern.
+SavedFiles/0604_VDaudio_ICA.set,98,other_artifact,channel_noise,0.88,Topography is dominated by a very focal central electrode-scale hot/cold island; activity is irregular and bursty without a plausible neural rhythm.
+SavedFiles/0604_VDaudio_ICA.set,99,other_artifact,channel_noise,0.84,"A single compact inferior-central scalp hotspot dominates an otherwise flat map, with noisy non-rhythmic activity and no defining artifact spectrum."
+SavedFiles/0604_VDaudio_ICA.set,100,other_artifact,other_artifact,0.63,"The lower-left focal hotspot is accompanied by a broad, irregular opposing field; noisy activity and a generic declining spectrum do not cleanly support a single source class."
+SavedFiles/0604_VDaudio_ICA.set,102,muscle,channel_noise,0.9,"The map shows an unmistakably tiny isolated left-inferior electrode-scale island, while the time course is erratic and non-neural."
+SavedFiles/0604_VDaudio_ICA.set,103,muscle,muscle,0.74,Inferior edge-focused distribution and transient spiky/bursty activity favor muscle; the spectrum lacks a distinct neural peak or ocular low-frequency pattern.
+SavedFiles/0604_VDaudio_ICA.set,105,other_artifact,other_artifact,0.6,"Anterior-central dipolar structure is present, but the strongly transient noisy burst and nonspecific 1/f spectrum do not convincingly fit brain or eye."
+SavedFiles/0604_VDaudio_ICA.set,106,other_artifact,eye,0.91,Strong frontal-versus-posterior scalp gradient together with predominantly slow activity and pronounced low-frequency spectral power is characteristic of ocular artifact.
+SavedFiles/0604_VDaudio_ICA.set,107,channel_noise,channel_noise,0.91,"A sharply localized right-anterior electrode-scale hotspot dominates the map, accompanied by abrupt noisy bursts rather than a physiological rhythm."
+SavedFiles/0604_VDaudio_ICA.set,108,other_artifact,channel_noise,0.83,The compact midline frontal hotspot with immediately surrounding opposite polarity is consistent with an isolated bad electrode; activity is irregular and not blink-like.
+SavedFiles/0604_VDaudio_ICA.set,110,channel_noise,channel_noise,0.88,Topography is dominated by a very focal isolated frontal electrode island; activity shows a localized burst without a characteristic physiologic rhythm.
+SavedFiles/0604_VDaudio_ICA.set,111,other_artifact,channel_noise,0.82,"A sharp focal frontocentral electrode-like island dominates the map, with irregular transient activity and no defining eye, cardiac, or line-noise signature."
+SavedFiles/0604_VDaudio_ICA.set,113,other_artifact,brain,0.68,"Broad smooth frontocentral dipolar distribution rather than an isolated channel, with a generally 1/f-decreasing spectrum and non-blink-like irregular neural activity."
+SavedFiles/0604_VDaudio_ICA.set,114,other_artifact,brain,0.64,"Smooth central-versus-frontal dipolar scalp pattern and 1/f-like spectrum support a brain source; no clear blink, QRS, line peak, or isolated-electrode pattern."
+SavedFiles/0837_VDAudio_ICA.set,0,eye,eye,0.98,"Strong bilateral frontal map, repeated large slow blink-like deflections, and low-frequency-dominant spectrum."
+SavedFiles/0837_VDAudio_ICA.set,1,eye,eye,0.84,Clear left-right frontal polarity is consistent with horizontal eye movements; activity is irregular with predominantly low-frequency power.
+SavedFiles/0837_VDAudio_ICA.set,2,brain,brain,0.73,Central smooth spatial distribution and a pronounced alpha-range spectral peak support a neural component despite noisy activity.
+SavedFiles/0837_VDAudio_ICA.set,3,eye,brain,0.5,"Broad anterior-lateral dipolar topography with a generally decaying spectrum is more compatible with brain than a specific artifact, though evidence is weak."
+SavedFiles/0837_VDAudio_ICA.set,4,heart,heart,0.91,"Regular, sharp QRS-like deflections recur about once per second; the broad scalp gradient is compatible with cardiac artifact."
+SavedFiles/0837_VDAudio_ICA.set,5,brain,brain,0.78,Smooth posterior-right focal dipole and distinct alpha-range peak with otherwise 1/f-like power support brain activity.
+SavedFiles/0837_VDAudio_ICA.set,6,brain,brain,0.66,Relatively smooth left temporal dipolar map and alpha-range spectral peak favor a neural source over muscle.
+SavedFiles/0837_VDAudio_ICA.set,7,brain,eye,0.62,"Strong symmetric frontal/periocular topography and low-frequency-weighted spectrum favor ocular activity, although the trace is not strongly blink-like."
+SavedFiles/0837_VDAudio_ICA.set,8,brain,brain,0.56,"Anterior-posterior dipolar distribution and decaying spectrum are compatible with brain activity, but the evidence is somewhat noisy and ambiguous."
+SavedFiles/0837_VDAudio_ICA.set,9,brain,brain,0.72,"Smooth focal central topography with clear low-frequency/1-f spectrum and no blink, ECG, or high-frequency muscle signature."
+SavedFiles/0837_VDAudio_ICA.set,10,brain,brain,0.78,Broad smooth central-versus-peripheral spatial pattern and a conventionally decaying spectrum support a neural component.
+SavedFiles/0837_VDAudio_ICA.set,11,brain,brain,0.84,Clear anterior-posterior dipolar scalp distribution with predominantly 1/f spectral decay; activity is not blink- or muscle-like.
+SavedFiles/0837_VDAudio_ICA.set,12,muscle,muscle,0.67,Very focal left anterior/edge source with erratic fast activity and relatively flat higher-frequency spectral content; not an isolated single-electrode island.
+SavedFiles/0837_VDAudio_ICA.set,13,muscle,muscle,0.86,"Inferior edge-focused topography, highly erratic activity, and notably flat broad high-frequency spectrum are characteristic of muscle artifact."
+SavedFiles/0837_VDAudio_ICA.set,14,brain,eye,0.83,"Strong bilateral frontal positivity with posterior negativity is a classic vertical ocular distribution, with low-frequency-dominant spectral shape."
+SavedFiles/0837_VDAudio_ICA.set,15,brain,brain,0.63,"Smooth, spatially extended frontal-right posterior dipolar pattern and decaying spectrum fit brain better than a focal artifact."
+SavedFiles/0837_VDAudio_ICA.set,16,brain,eye,0.88,Large frontal/periocular field opposed to posterior negativity and pronounced low-frequency spectral dominance indicate ocular activity.
+SavedFiles/0837_VDAudio_ICA.set,17,brain,eye,0.84,Broad frontal positivity with inferior/posterior negative pole and low-frequency-dominant spectrum support an eye component.
+SavedFiles/0837_VDAudio_ICA.set,19,brain,brain,0.72,"Broad, smooth posterior-versus-central dipolar topography with a 1/f-like spectrum and no clear ocular, line, or high-frequency muscle signature."
+SavedFiles/0837_VDAudio_ICA.set,21,brain,other_artifact,0.52,"Asymmetric, multipolar edge-weighted map and irregular activity; spectrum lacks a decisive muscle or line-noise pattern."
+SavedFiles/0837_VDAudio_ICA.set,22,muscle,channel_noise,0.76,Topography is dominated by a compact isolated left-inferior electrode-like island with little coherent opposing pole.
+SavedFiles/0837_VDAudio_ICA.set,23,brain,eye,0.64,Strong symmetric anterior/frontocentral scalp maximum with broad posterior opposite polarity and low-frequency-dominant spectrum.
+SavedFiles/0837_VDAudio_ICA.set,24,eye,eye,0.78,"Classic broad bilateral frontal maximum with posterior opposite polarity, together with predominantly low-frequency power."
+SavedFiles/0837_VDAudio_ICA.set,25,brain,other_artifact,0.58,Splotchy asymmetric peripheral distribution with multiple extrema; no clear single-source dipole or diagnostic spectral peak.
+SavedFiles/0837_VDAudio_ICA.set,26,brain,brain,0.66,"Smooth posterior-central dipolar distribution and generally falling spectrum, without a clear ocular or high-frequency artifact pattern."
+SavedFiles/0837_VDAudio_ICA.set,27,brain,other_artifact,0.63,Mixed multipolar map including a focal left-sided spot and posterior maximum; irregular activity does not cleanly fit a specific class.
+SavedFiles/0837_VDAudio_ICA.set,28,brain,eye,0.62,Broad anterior-central positive field with posterior/lateral opposite polarity and low-frequency-dominant spectral profile.
+SavedFiles/0837_VDAudio_ICA.set,29,eye,eye,0.78,Strong bilateral frontal/periocular topography with low-frequency-dominant spectrum supports ocular activity.
+SavedFiles/0837_VDAudio_ICA.set,30,brain,eye,0.83,Predominantly frontal scalp distribution and strongly decaying low-frequency spectrum are consistent with blink-related activity.
+SavedFiles/0837_VDAudio_ICA.set,31,muscle,channel_noise,0.96,Topography is dominated by an unmistakable isolated right-temporal electrode island without a smooth opposing pole.
+SavedFiles/0837_VDAudio_ICA.set,32,eye,eye,0.76,Anterior left-frontal focality plus low-frequency-dominant spectrum supports an ocular source rather than brain.
+SavedFiles/0837_VDAudio_ICA.set,33,brain,eye,0.81,Broad frontal/periocular positivity with posterior opposition and slow-frequency spectral dominance indicates eye activity.
+SavedFiles/0837_VDAudio_ICA.set,34,eye,other_artifact,0.58,"Focal anterior edge map is artifact-like, but activity lacks clear blink structure and spectrum is not convincingly muscle-dominant."
+SavedFiles/0837_VDAudio_ICA.set,36,brain,other_artifact,0.68,"Multipolar, irregular scalp map and noisy activity do not form a plausible dipolar brain or specific artifact pattern."
+SavedFiles/0837_VDAudio_ICA.set,37,other_artifact,muscle,0.79,Inferior right edge/temporal focality with intermittent sharp bursts and relatively flat higher-frequency spectrum suggests muscle.
+SavedFiles/0837_VDAudio_ICA.set,38,brain,brain,0.62,Broad central-posterior dipolar distribution and generally 1/f-like spectrum are most compatible with neural activity.
+SavedFiles/0837_VDAudio_ICA.set,39,brain,brain,0.8,"Smooth central-posterior dipolar map with a 1/f-like spectrum and no blink, cardiac, or high-frequency muscle pattern."
+SavedFiles/0837_VDAudio_ICA.set,40,brain,brain,0.72,Broad anterior-posterior dipolar distribution and declining spectrum; activity lacks the slow stereotyped structure of eye movements.
+SavedFiles/0837_VDAudio_ICA.set,41,muscle,brain,0.67,Focal right temporal dipole has a spatially smooth opposite pole rather than an isolated-electrode island; spectrum remains 1/f-like.
+SavedFiles/0837_VDAudio_ICA.set,42,brain,brain,0.7,Anterior-posterior dipolar scalp gradient with non-stereotyped activity and no low-frequency blink dominance or muscle spectrum.
+SavedFiles/0837_VDAudio_ICA.set,43,brain,other_artifact,0.53,"Topology is broad and irregular with edge-weighted positivity; spectrum is not muscular, but the map is not a convincing single neural dipole."
+SavedFiles/0837_VDAudio_ICA.set,44,other_artifact,other_artifact,0.55,"Frontal/edge-heavy map is diffuse and atypical for a clear brain source, while time series and spectrum provide no decisive alternative artifact signature."
+SavedFiles/0837_VDAudio_ICA.set,45,brain,brain,0.62,"Lateralized, broadly dipolar distribution with a declining spectrum and no clear ocular, cardiac, line-noise, or muscle pattern."
+SavedFiles/0837_VDAudio_ICA.set,46,brain,other_artifact,0.55,Multipolar and asymmetric scalp pattern is not a clean dipole; the otherwise 1/f-like spectrum does not resolve the ambiguous source.
+SavedFiles/0837_VDAudio_ICA.set,47,muscle,brain,0.64,"Right lateral temporal dipolar pattern with smooth spatial spread and a non-muscular, declining power spectrum."
+SavedFiles/0837_VDAudio_ICA.set,48,brain,brain,0.62,"Smooth, broadly dipolar central-to-peripheral topography with a generally decaying spectrum; activity is noisy but lacks a decisive artifact pattern."
+SavedFiles/0837_VDAudio_ICA.set,51,muscle,channel_noise,0.82,"Topography is dominated by a sharply localized right-temporal electrode-like island, with no convincing smooth opposing field."
+SavedFiles/0837_VDAudio_ICA.set,52,muscle,muscle,0.66,Splotchy lateral/frontal distribution and erratic spiky activity support a focal muscle-related artifact rather than a plausible neural dipole.
+SavedFiles/0837_VDAudio_ICA.set,53,muscle,muscle,0.74,"Highly focal left-temporal edge dipole with bursty, irregular activity and relatively sustained higher-frequency power is typical of muscle artifact."
+SavedFiles/0837_VDAudio_ICA.set,54,other_artifact,muscle,0.69,"Anterior/forehead-focused map and dense erratic high-frequency activity favor muscle over eye, with no clear slow blink morphology."
+SavedFiles/0837_VDAudio_ICA.set,56,brain,other_artifact,0.55,Broad but multipolar/splotchy topography and irregular activity do not form a convincing neural dipole or a specific artifact signature.
+SavedFiles/0837_VDAudio_ICA.set,57,brain,brain,0.58,"The broad central field with peripheral opposite polarity is reasonably dipolar, and the spectrum follows an overall 1/f-like decline."
+SavedFiles/0837_VDAudio_ICA.set,58,brain,brain,0.61,Smooth symmetric central-posterior field and generally falling spectrum are compatible with a brain component despite noisy activity.
+SavedFiles/0837_VDAudio_ICA.set,59,other_artifact,channel_noise,0.86,"A single intense left-edge electrode-like focus dominates the scalp map, while the other panels lack a clearer physiological source pattern."
+SavedFiles/0837_VDAudio_ICA.set,60,brain,brain,0.63,Broad central diagonal dipole with smooth spatial falloff and a predominantly 1/f spectrum; no clear ocular or high-frequency muscle pattern.
+SavedFiles/0837_VDAudio_ICA.set,61,brain,other_artifact,0.57,Spatial pattern is broad and multipolar/edge-influenced rather than a clean dipole; irregular activity lacks a decisive artifact signature.
+SavedFiles/0837_VDAudio_ICA.set,62,eye,eye,0.64,"Strong anterior midline distribution with low-frequency-dominant spectrum supports an ocular source, despite no single unmistakable blink in the short trace."
+SavedFiles/0837_VDAudio_ICA.set,63,brain,brain,0.58,Localized posterior-central dipolar-looking map and decaying 1/f spectrum are more consistent with neural activity than a specific artifact.
+SavedFiles/0837_VDAudio_ICA.set,64,brain,brain,0.55,"Broad posterior/temporal spatial gradient with a low-frequency-decaying spectrum; no decisive eye, line, or muscle evidence."
+SavedFiles/0837_VDAudio_ICA.set,65,brain,brain,0.59,Clear anterior-to-posterior polarity pattern and 1/f-like spectrum support a plausible neural dipole; activity is not blink-like.
+SavedFiles/0837_VDAudio_ICA.set,66,muscle,channel_noise,0.86,"Topography is dominated by a very sharp, isolated right-frontal electrode-sized island with minimal broad source structure."
+SavedFiles/0837_VDAudio_ICA.set,67,other_artifact,muscle,0.61,Strong lateral edge/temporal focus with erratic spiky activity and relatively sustained higher-frequency spectral power suggests muscle artifact.
+SavedFiles/0837_VDAudio_ICA.set,69,muscle,channel_noise,0.79,Highly focal right-lateral electrode-sized hotspot with an adjacent small opposite lobe is most consistent with an isolated noisy channel.
+SavedFiles/0837_VDAudio_ICA.set,70,brain,brain,0.72,Broad central-to-right-posterior dipolar pattern with a decaying 1/f spectrum and mild mid-frequency peak; activity is not blink- or burst-dominated.
+SavedFiles/0837_VDAudio_ICA.set,71,brain,other_artifact,0.56,"Topography is multipolar and asymmetric rather than a clean dipole; noisy activity and spectrum do not give a decisive eye, muscle, or channel-noise signature."
+SavedFiles/0837_VDAudio_ICA.set,73,brain,brain,0.7,Plausible focal central dipole with opposing right-sided field and a generally 1/f spectrum containing modest physiological mid-frequency structure.
+SavedFiles/0837_VDAudio_ICA.set,74,brain,other_artifact,0.68,"Splotchy, multipolar scalp distribution with erratic activity; spectrum is nonspecific and lacks a clear signature of a named artifact class."
+SavedFiles/0837_VDAudio_ICA.set,75,brain,other_artifact,0.62,Complex bilateral edge-focused/multipolar map and irregular activity do not form a convincing neural dipole or a decisive artifact pattern.
+SavedFiles/0837_VDAudio_ICA.set,76,muscle,muscle,0.88,"Localized left frontal/temporal edge source, late high-frequency bursting in the time series, and relatively flat elevated high-frequency spectrum support muscle."
+SavedFiles/0837_VDAudio_ICA.set,79,muscle,muscle,0.9,Focal right temporal edge distribution with pronounced bursty high-frequency activity and a flat high-frequency spectral profile.
+SavedFiles/0837_VDAudio_ICA.set,81,other_artifact,muscle,0.76,Edge-focused frontal/inferior focal fields and irregular spiky activity; spectrum loses its steep decline and remains relatively elevated at higher frequencies.
+SavedFiles/0837_VDAudio_ICA.set,82,muscle,muscle,0.8,Localized inferior-left edge source with late spiky bursts and a relatively flat high-frequency spectrum; map is not an unmistakable single-electrode island.
+SavedFiles/0837_VDAudio_ICA.set,83,eye,other_artifact,0.58,"Broad, non-clean frontal/central topology with irregular activity; spectrum is 1/f-like but lacks a clear neural rhythm or decisive ocular pattern."
+SavedFiles/0837_VDAudio_ICA.set,85,brain,muscle,0.74,"Edge/temporal-posterior focal map, highly erratic activity, dense segment image, and relatively sustained higher-frequency power support muscle artifact."
+SavedFiles/0837_VDAudio_ICA.set,86,muscle,muscle,0.76,Strong lateral edge-focused distribution with noisy high-frequency activity and a flattened spectrum above the low-frequency range.
+SavedFiles/0837_VDAudio_ICA.set,87,brain,muscle,0.7,Localized lower-right temporal/edge source with spiky irregular time series and broad high-frequency spectral content.
+SavedFiles/0837_VDAudio_ICA.set,91,muscle,channel_noise,0.82,"Topography is dominated by a very small, isolated frontal electrode-like hotspot without a smooth spatial dipole; activity is noisy."
+SavedFiles/0837_VDAudio_ICA.set,93,other_artifact,muscle,0.78,"Compact lateral temporal/edge focus, bursty irregular activity, and broad elevated high-frequency spectrum are characteristic of muscle."
+SavedFiles/0837_VDAudio_ICA.set,94,muscle,other_artifact,0.56,"Focal anterior multipolar pattern and noisy activity are artifact-like, but no unambiguous isolated channel, eye pattern, or high-frequency muscle signature is present."
+SavedFiles/0837_VDAudio_ICA.set,98,other_artifact,other_artifact,0.62,"Splotchy multipolar scalp map with irregular activity and no distinctive alpha, blink/saccade, QRS, or line-noise feature."
+SavedFiles/0837_VDAudio_ICA.set,102,other_artifact,other_artifact,0.6,"Posterior focal/multipolar topology and transient large deflections do not form a clear neural dipole or a convincing eye, heart, muscle, or channel-noise pattern."
+SavedFiles/0837_VDAudio_ICA.set,107,other_artifact,channel_noise,0.78,A sharply localized frontal-right electrode island dominates the map; activity is erratic without a physiologic rhythm and spectrum is nonspecific.
+SavedFiles/0837_VDAudio_ICA.set,108,other_artifact,channel_noise,0.9,"Map is dominated by an isolated extreme posterior electrode focus, with noisy irregular activity and no coherent brain rhythm."
+SavedFiles/0837_VDAudio_ICA.set,109,other_artifact,channel_noise,0.84,A compact isolated inferior-left scalp island and irregular nonrhythmic signal support a bad-channel source.
+SavedFiles/0837_VDAudio_ICA.set,110,channel_noise,channel_noise,0.8,"Very focal inferior midline hotspot with an abrupt local pattern, plus erratic activity, is more consistent with channel noise than brain."
+SavedFiles/0837_VDAudio_ICA.set,111,muscle,channel_noise,0.83,"Small, highly focal anterior-central electrode feature lacks a plausible broad dipolar field; time series is irregular."
+SavedFiles/0837_VDAudio_ICA.set,112,other_artifact,channel_noise,0.86,The scalp projection has a conspicuous single right-central focal island and the component activity is noisy rather than rhythmic.
+SavedFiles/0837_VDAudio_ICA.set,113,other_artifact,channel_noise,0.92,"An unmistakable isolated right-central electrode hotspot dominates an otherwise flat map, meeting the high bar for channel noise."
+SavedFiles/0837_VDAudio_ICA.set,114,other_artifact,channel_noise,0.91,"The compact isolated right-central scalp island, noisy time course, and lack of a physiologic spectral peak indicate channel noise."
+SavedFiles/0837_VDAudio_ICA.set,115,muscle,channel_noise,0.86,A sharply localized frontal-midline electrode island with irregular activity is characteristic of a single bad channel.
+SavedFiles/0837_VDAudio_ICA.set,116,other_artifact,channel_noise,0.86,Topography is dominated by a very focal right-frontal electrode-sized island without a convincing dipolar field; activity is irregular and lacks a brain rhythm or blink pattern.
+SavedFiles/0837_VDAudio_ICA.set,117,channel_noise,channel_noise,0.82,"A sharply localized central/posterior hotspot dominates an otherwise diffuse map, with noisy irregular activity and no clear eye, heart, muscle, or line-noise signature."
+SavedFiles/0837_VDNoAudio_ICA.set,0,eye,eye,0.97,Strong bilateral frontal/periocular map with large slow blink-like deflections and dominant low-frequency power.
+SavedFiles/0837_VDNoAudio_ICA.set,1,eye,eye,0.94,Opposing left-right frontal polarity and low-frequency-dominant activity support horizontal eye movements.
+SavedFiles/0837_VDNoAudio_ICA.set,2,eye,eye,0.82,Broad anterior scalp gradient and predominantly low-frequency spectrum favor an ocular source despite spiky activity.
+SavedFiles/0837_VDNoAudio_ICA.set,3,eye,eye,0.9,Prominent midline frontal map with low-frequency-heavy spectrum is consistent with vertical ocular activity.
+SavedFiles/0837_VDNoAudio_ICA.set,4,brain,brain,0.66,Smooth focal posterior/occipital topography and overall declining spectrum are compatible with a neural component.
+SavedFiles/0837_VDNoAudio_ICA.set,5,heart,muscle,0.74,"Lateral edge/temporal distribution, irregular sharp activity, and relatively elevated broad mid-frequency power suggest muscle artifact."
+SavedFiles/0837_VDNoAudio_ICA.set,6,brain,brain,0.7,Focal smooth centro-lateral map with a clear mid-frequency spectral bump and otherwise declining spectrum supports brain activity.
+SavedFiles/0837_VDNoAudio_ICA.set,7,brain,brain,0.64,Compact central scalp source has smooth spatial falloff rather than an isolated-electrode island; spectrum remains broadly 1/f-like.
+SavedFiles/0837_VDNoAudio_ICA.set,8,brain,brain,0.67,"Broad, smooth central-versus-peripheral scalp pattern and declining spectrum are more consistent with brain than a specific artifact."
+SavedFiles/0837_VDNoAudio_ICA.set,9,brain,brain,0.78,"Smooth left centro-temporal dipolar map with a broadly 1/f spectrum and no blink, QRS, or line-noise signature."
+SavedFiles/0837_VDNoAudio_ICA.set,10,eye,brain,0.62,Broad anterior dipolar distribution and decaying spectrum; activity is not clearly blink- or saccade-like.
+SavedFiles/0837_VDNoAudio_ICA.set,11,brain,brain,0.64,Symmetric central negative field with peripheral opposite polarity and a typical low-frequency-weighted spectrum.
+SavedFiles/0837_VDNoAudio_ICA.set,12,brain,brain,0.74,"Plausible posterior/right-lateralized dipole, 1/f spectral decay, and no decisive artifact pattern."
+SavedFiles/0837_VDNoAudio_ICA.set,13,brain,brain,0.7,Clear anterior-posterior dipolar scalp field with broadly declining spectral power and no large slow ocular events.
+SavedFiles/0837_VDNoAudio_ICA.set,14,brain,brain,0.59,"Spatially extended dipolar pattern and falling spectrum favor brain, though the time course is somewhat spiky."
+SavedFiles/0837_VDNoAudio_ICA.set,15,brain,brain,0.68,"Fronto-central dipolar topography with opposite lateral field and a low-frequency-weighted, non-muscle spectrum."
+SavedFiles/0837_VDNoAudio_ICA.set,16,brain,brain,0.7,"Broad central/right dipolar distribution and 1/f-like spectrum without a decisive ocular, cardiac, or line signature."
+SavedFiles/0837_VDNoAudio_ICA.set,17,muscle,muscle,0.78,"Relatively flat high-frequency spectral profile with persistently fast, erratic activity; posterior edge-focused map is artifact-like."
+SavedFiles/0837_VDNoAudio_ICA.set,18,brain,brain,0.66,"Broad central dipolar pattern with bilateral temporal opposition and a decaying 1/f-like spectrum; no blink, QRS, or line-noise signature."
+SavedFiles/0837_VDNoAudio_ICA.set,19,brain,brain,0.52,"Asymmetric but spatially smooth dipolar distribution and 1/f-like spectrum; activity is noisy, so confidence is moderate."
+SavedFiles/0837_VDNoAudio_ICA.set,20,brain,brain,0.55,"Smooth frontocentral-to-posterior gradient is compatible with a neural source, with no decisive ocular low-frequency or muscle-spectrum evidence."
+SavedFiles/0837_VDNoAudio_ICA.set,21,brain,brain,0.64,Clear broad anterior-negative/posterior-positive dipolar scalp distribution with declining spectrum and no specific artifact rhythm.
+SavedFiles/0837_VDNoAudio_ICA.set,22,brain,brain,0.59,Localized smooth right posterior-temporal dipolar field and predominantly declining spectrum support a neural source.
+SavedFiles/0837_VDNoAudio_ICA.set,23,brain,brain,0.54,Spatially extended left temporal/frontocentral dipolar pattern with 1/f-like spectral decline; no isolated-channel or high-frequency muscle pattern.
+SavedFiles/0837_VDNoAudio_ICA.set,24,brain,brain,0.51,Central positive versus lateral negative spatial pattern is broadly dipolar; the spectrum lacks a decisive artifact peak or high-frequency rise.
+SavedFiles/0837_VDNoAudio_ICA.set,25,brain,brain,0.61,Broad anterior-negative/posterior-positive dipolar map and decaying spectrum fit brain better than eye or muscle.
+SavedFiles/0837_VDNoAudio_ICA.set,26,brain,brain,0.56,Large smooth frontal-to-posterior opposing field with 1/f-like spectrum; no clear blink-like slow deflections despite anterior involvement.
+SavedFiles/0837_VDNoAudio_ICA.set,27,brain,brain,0.68,"Smooth, symmetric central scalp distribution with bilateral opposite-polarity surround and a broadly 1/f spectrum; no clear ocular or muscle signature."
+SavedFiles/0837_VDNoAudio_ICA.set,28,brain,brain,0.58,"Broad smooth centro-parietal negative field with peripheral opposite polarity and declining spectrum, though the topology is less clearly dipolar."
+SavedFiles/0837_VDNoAudio_ICA.set,29,brain,eye,0.67,Strong anterior-posterior polarity pattern with low-frequency-dominant spectrum supports a vertical ocular source despite the relatively noisy trace.
+SavedFiles/0837_VDNoAudio_ICA.set,30,brain,eye,0.63,"Predominantly frontal positive field opposed by posterior negativity, together with strong low-frequency spectral power, is most consistent with eye activity."
+SavedFiles/0837_VDNoAudio_ICA.set,32,brain,eye,0.71,Clear frontal negative versus posterior positive distribution and low-frequency-heavy spectrum support an ocular component.
+SavedFiles/0837_VDNoAudio_ICA.set,33,brain,brain,0.52,Localized smooth left posterior-temporal distribution with overall 1/f spectral decay; no broad high-frequency muscle elevation or isolated-channel island.
+SavedFiles/0837_VDNoAudio_ICA.set,34,brain,brain,0.66,Smooth midline central positive field with bilateral temporal opposite polarity and non-bursty 1/f-like spectrum fits a neural component.
+SavedFiles/0837_VDNoAudio_ICA.set,35,other_artifact,muscle,0.48,Irregular edge-frontal focality and relatively flattened mid/high-frequency spectral region favor muscle over brain; map is not a decisive isolated electrode.
+SavedFiles/0837_VDNoAudio_ICA.set,36,brain,eye,0.61,Anterior midline positivity opposed by posterior negativity and pronounced low-frequency power are most compatible with an ocular source.
+SavedFiles/0837_VDNoAudio_ICA.set,37,brain,other_artifact,0.68,"Splotchy, multipolar scalp map and noisy irregular activity lack a convincing dipolar neural pattern; spectrum is broadly 1/f-like without a decisive artifact signature."
+SavedFiles/0837_VDNoAudio_ICA.set,38,brain,brain,0.62,"Broad central-inferior versus lateral scalp gradient is plausibly dipolar, with a decaying 1/f-like spectrum and no blink, line-noise, or high-frequency muscle signature."
+SavedFiles/0837_VDNoAudio_ICA.set,39,brain,brain,0.58,Left anterior/inferior to right-central polarity pattern is reasonably dipolar and the spectrum decays with frequency; activity is not clearly ocular or muscular.
+SavedFiles/0837_VDNoAudio_ICA.set,40,brain,other_artifact,0.66,Complex peripheral and central multipolar distribution is not a clean source projection; noisy activity and nonspecific 1/f spectrum do not establish another class.
+SavedFiles/0837_VDNoAudio_ICA.set,41,brain,brain,0.63,"Anterior-negative to right-posterior-positive spatial pattern is plausibly dipolar, supported by a smoothly declining spectrum without clear blink or muscle features."
+SavedFiles/0837_VDNoAudio_ICA.set,42,brain,brain,0.64,Central-positive/posterior-negative topography is a plausible broad dipole and the spectrum has a neural 1/f-like decline without high-frequency excess.
+SavedFiles/0837_VDNoAudio_ICA.set,44,brain,brain,0.6,Broad frontal-central positive and posterior negative distribution is compatible with a neural dipole; no low-frequency blink-like or high-frequency muscle-dominant pattern is evident.
+SavedFiles/0837_VDNoAudio_ICA.set,45,brain,brain,0.61,"Smooth central-frontal positive field with lateral negative regions is plausibly dipolar, and the power spectrum follows a typical declining profile."
+SavedFiles/0837_VDNoAudio_ICA.set,46,muscle,other_artifact,0.76,"Late bursty, nonstationary activity and a relatively flat spectrum conflict with a stable neural source; the posterior focal map is not an unmistakable isolated-electrode island."
+SavedFiles/0837_VDNoAudio_ICA.set,47,brain,brain,0.72,"Broad smooth anterior-to-posterior dipolar map with a 1/f-like spectrum and no blink, line, or high-frequency muscle signature."
+SavedFiles/0837_VDNoAudio_ICA.set,48,brain,brain,0.66,Smooth lateral-to-central spatial gradient is plausibly dipolar; activity and spectrum are nonspecific but 1/f-like rather than artifact-defining.
+SavedFiles/0837_VDNoAudio_ICA.set,49,muscle,channel_noise,0.96,Topography is dominated by a sharply isolated right-temporal electrode-sized positive/negative island with little smooth spatial spread.
+SavedFiles/0837_VDNoAudio_ICA.set,50,brain,brain,0.69,Broad frontal-central positive field opposed by lateral negative regions is spatially smooth and plausibly neural; spectrum decays with frequency.
+SavedFiles/0837_VDNoAudio_ICA.set,51,brain,brain,0.63,"Diffuse central-frontal distribution with broad opposing lateral fields and a conventional falling spectrum, without decisive artifact features."
+SavedFiles/0837_VDNoAudio_ICA.set,52,brain,other_artifact,0.55,"The asymmetric edge-heavy map is not a clear dipole, while the noisy activity and ordinary falling spectrum do not strongly establish another artifact class."
+SavedFiles/0837_VDNoAudio_ICA.set,53,brain,other_artifact,0.61,"Concentric central-positive/peripheral-negative topology is non-dipolar and diffuse; no clear eye, muscle, cardiac, or line-noise pattern appears."
+SavedFiles/0837_VDNoAudio_ICA.set,54,brain,brain,0.65,"Broad posterior-negative versus anterior/lateral-positive spatial pattern is reasonably dipolar, with a falling spectrum and no decisive artifact cue."
+SavedFiles/0837_VDNoAudio_ICA.set,55,brain,brain,0.6,Broad central-posterior negative and frontal positive field is more spatially distributed than a bad channel; spectrum remains 1/f-like without artifact-defining peaks.
+SavedFiles/0837_VDNoAudio_ICA.set,56,brain,brain,0.72,"Broad, smooth central midline-negative versus peripheral-positive dipolar map with a clearly declining 1/f-like spectrum."
+SavedFiles/0837_VDNoAudio_ICA.set,57,channel_noise,channel_noise,0.92,Topography is dominated by a single sharply isolated right-frontal electrode island with little spatial spread.
+SavedFiles/0837_VDNoAudio_ICA.set,59,brain,brain,0.76,"Smooth anterior-negative/posterior-positive scalp gradient is plausibly dipolar, and the spectrum has a standard low-frequency-dominant decline."
+SavedFiles/0837_VDNoAudio_ICA.set,60,muscle,other_artifact,0.59,"Focal right-lateral map and irregular activity are not clearly dipolar, ocular, or convincingly high-frequency muscle-like."
+SavedFiles/0837_VDNoAudio_ICA.set,61,brain,other_artifact,0.67,"Splotchy multipolar scalp distribution conflicts with a clean neural dipole; no decisive ocular, cardiac, or line-noise signature."
+SavedFiles/0837_VDNoAudio_ICA.set,62,brain,brain,0.64,Broad lateral temporal distribution with smooth spatial falloff and a low-frequency-dominant 1/f-like spectrum is compatible with brain activity.
+SavedFiles/0837_VDNoAudio_ICA.set,63,brain,brain,0.68,"Smooth central-negative/peripheral-positive distribution is broadly dipolar, with no high-frequency or blink-like spectral/activity signature."
+SavedFiles/0837_VDNoAudio_ICA.set,64,brain,other_artifact,0.71,Irregular multipolar edge-weighted topography lacks a plausible single dipole and has no decisive signature for another artifact class.
+SavedFiles/0837_VDNoAudio_ICA.set,66,eye,eye,0.77,Strong frontal-polar distribution with marked low-frequency dominance and sustained segment structure supports an ocular component.
+SavedFiles/0837_VDNoAudio_ICA.set,67,brain,brain,0.72,"Broad central dipolar scalp distribution with a generally 1/f-like spectrum and no frontal blink, cardiac rhythm, or line-noise signature."
+SavedFiles/0837_VDNoAudio_ICA.set,68,brain,other_artifact,0.62,"Splotchy/multipolar scalp map and irregular activity lack a clear dipolar brain pattern or decisive eye, muscle, heart, line-noise, or isolated-channel signature."
+SavedFiles/0837_VDNoAudio_ICA.set,69,muscle,channel_noise,0.96,"Topography is dominated by a sharply localized left-frontal electrode-sized island with little smooth spatial spread, which is decisive for isolated channel noise."
+SavedFiles/1846_VDnoaudio_ICA.set,0,eye,eye,0.94,"Strong bilateral frontal/periocular map, slow large deflections, and predominantly low-frequency power support blink-related activity."
+SavedFiles/1846_VDnoaudio_ICA.set,1,brain,brain,0.72,Smooth localized posterior-inferior dipolar map with a 1/f-like spectrum and mid-frequency peak is consistent with neural activity.
+SavedFiles/1846_VDnoaudio_ICA.set,2,brain,brain,0.74,Localized right posterior dipolar scalp distribution and declining spectrum with a clear mid-frequency peak support a brain source.
+SavedFiles/1846_VDnoaudio_ICA.set,3,brain,brain,0.63,Broad central-posterior dipolar distribution and non-bursting 1/f-like spectral profile fit brain better than a specific artifact.
+SavedFiles/1846_VDnoaudio_ICA.set,4,brain,brain,0.66,Focal left posterior-temporal dipolar pattern with a declining spectrum and no decisive artifact signature suggests brain activity.
+SavedFiles/1846_VDnoaudio_ICA.set,5,muscle,eye,0.68,Anterior/frontal bilateral scalp emphasis and strong low-frequency-dominant spectrum favor an ocular source despite noisy activity.
+SavedFiles/1846_VDnoaudio_ICA.set,6,brain,muscle,0.58,"Lateral edge/temporal focality with erratic spiky activity is more compatible with muscle than a clean neural dipole, though spectral evidence is mixed."
+SavedFiles/1846_VDnoaudio_ICA.set,7,heart,heart,0.95,"Repeated sharp, highly regular approximately once-per-second deflections are a decisive QRS-like cardiac rhythm; the broad lateral gradient is compatible."
+SavedFiles/1846_VDnoaudio_ICA.set,8,eye,eye,0.84,Opposing left-right frontal/periocular poles with low-frequency-dominant power and intermittent saccade-like deflections indicate horizontal eye movement.
+SavedFiles/2319_VDaudio_ICA.set,0,eye,eye,0.88,Broad frontal/periocular topography with large slow deflections and strongly low-frequency-dominant spectrum.
+SavedFiles/2319_VDaudio_ICA.set,1,eye,eye,0.9,Anterior asymmetric dipole with a prominent slow saccade/blink-like excursion and low-frequency spectral dominance.
+SavedFiles/2319_VDaudio_ICA.set,2,eye,muscle,0.65,"Focal right frontal/temporal distribution and irregular high-frequency, spiky activity; spectrum lacks a clean rhythmic neural peak."
+SavedFiles/2319_VDaudio_ICA.set,3,heart,other_artifact,0.62,"Edge-weighted, non-dipolar map with intermittent sharp transients, but no clear high-frequency muscle profile or isolated-channel pattern."
+SavedFiles/2319_VDaudio_ICA.set,4,brain,muscle,0.78,Erratic fast activity and dense segment-image texture with a non-dipolar focal/edge distribution support muscle artifact.
+SavedFiles/2319_VDaudio_ICA.set,5,muscle,channel_noise,0.94,Topography is dominated by an unmistakable single left-temporal electrode island with noisy high-frequency activity.
+SavedFiles/2319_VDaudio_ICA.set,6,brain,muscle,0.72,"Noisy, rapid irregular time series and dense broadband segment texture with a non-clean central/temporal map favor muscle."
+SavedFiles/2319_VDaudio_ICA.set,7,muscle,channel_noise,0.93,A sharply isolated right-frontal electrode hotspot without a smooth opposing pole is characteristic of a bad channel.
+SavedFiles/2319_VDaudio_ICA.set,8,muscle,brain,0.66,Broad smooth posterior-inferior dipolar gradient and predominantly falling 1/f-like spectrum are most compatible with neural activity.
+SavedFiles/2319_VDaudio_ICA.set,9,muscle,muscle,0.82,Frontal edge-focused map with erratic high-frequency activity and a relatively flat/rising high-frequency spectrum.
+SavedFiles/2319_VDaudio_ICA.set,10,brain,brain,0.62,Broad smooth central-to-peripheral dipolar distribution and predominantly 1/f-like spectrum without artifact-specific temporal structure.
+SavedFiles/2319_VDaudio_ICA.set,11,eye,channel_noise,0.8,Topography is dominated by a sharply localized frontal electrode-sized island with little spatially coherent opposing field.
+SavedFiles/2319_VDaudio_ICA.set,12,brain,brain,0.67,Localized posterior/occipital dipolar-looking map and decaying spectrum are most consistent with neural activity.
+SavedFiles/2319_VDaudio_ICA.set,14,muscle,channel_noise,0.86,"Unmistakably isolated, compact right-temporal electrode island without a smooth broad dipole."
+SavedFiles/2319_VDaudio_ICA.set,15,muscle,muscle,0.72,"Inferior lateral edge focus, erratic spiky activity, and relatively sustained higher-frequency power suggest muscle artifact."
+SavedFiles/2319_VDaudio_ICA.set,16,brain,brain,0.58,"Spatially extended focal dipole rather than a single-electrode island, with a broadly decreasing spectrum and no decisive artifact pattern."
+SavedFiles/2319_VDaudio_ICA.set,17,muscle,channel_noise,0.88,Very sharp isolated left-edge electrode-sized hotspot with no meaningful smooth spatial counterpart.
+SavedFiles/2319_VDaudio_ICA.set,18,brain,brain,0.6,Broad posterior dipolar scalp distribution and 1/f-like spectral profile fit a neural component better than a specific artifact.
+SavedFiles/2319_VDaudio_ICA.set,19,muscle,muscle,0.78,"Inferior edge/neck-focused topography with irregular, spiky activity and broadly elevated high-frequency spectrum rather than a smooth neural 1/f pattern."
+SavedFiles/2818_VDnoaudio_ICA.set,0,eye,eye,0.98,Strong bilateral frontal/periocular map with large slow blink-like deflections and dominant low-frequency power.
+SavedFiles/2818_VDnoaudio_ICA.set,1,brain,brain,0.62,Localized lateral posterior/temporal dipolar map and 1/f-like spectrum with an alpha-range peak; activity lacks a clear artifact signature.
+SavedFiles/2818_VDnoaudio_ICA.set,2,brain,brain,0.58,"Right temporal-lateral focal dipolar distribution with declining spectrum and alpha-range peak, despite somewhat noisy activity."
+SavedFiles/2818_VDnoaudio_ICA.set,3,brain,brain,0.72,Broad posterior-central dipolar scalp pattern and predominantly 1/f spectral profile without distinctive ocular or muscle evidence.
+SavedFiles/2818_VDnoaudio_ICA.set,4,brain,brain,0.65,Plausible broad posterior/lateral dipole with a decaying spectrum and alpha-range structure rather than high-frequency muscle dominance.
+SavedFiles/2818_VDnoaudio_ICA.set,5,muscle,channel_noise,0.96,"Scalp map is dominated by a tiny isolated right-sided electrode island, with dense high-frequency activity."
+SavedFiles/2818_VDnoaudio_ICA.set,6,brain,brain,0.74,Smooth occipital/posterior dipolar topography and a conventional declining neural spectrum.
+SavedFiles/2818_VDnoaudio_ICA.set,7,heart,heart,0.97,"Repeated sharp, highly regular approximately once-per-second deflections are characteristic of ECG/QRS contamination."
+SavedFiles/2818_VDnoaudio_ICA.set,8,muscle,channel_noise,0.96,Unmistakable isolated right-temporal electrode island with high-frequency noisy activity and no smooth spatial source pattern.
+SavedFiles/2818_VDnoaudio_ICA.set,9,brain,brain,0.72,"Broad, smooth left-frontal to right-central dipolar map with a generally 1/f-like spectrum and no clear ocular or high-frequency muscle signature."
+SavedFiles/2818_VDnoaudio_ICA.set,10,muscle,muscle,0.67,"Very focal right-temporal source with rapid irregular activity and relatively broadband spectral content, consistent with local temporal muscle."
+SavedFiles/2818_VDnoaudio_ICA.set,11,brain,brain,0.68,"Large, smooth anterior-posterior dipolar distribution and declining spectrum; activity lacks decisive blink, ECG, or line-noise structure."
+SavedFiles/2818_VDnoaudio_ICA.set,12,brain,brain,0.74,Clear smooth lateral dipole across central/temporal scalp regions with a 1/f-shaped spectrum and non-bursting activity.
+SavedFiles/2818_VDnoaudio_ICA.set,14,eye,eye,0.62,"Anterior lateralized distribution plus prominent slow, step-like large deflections and dominant low-frequency power support ocular movement artifact."
+SavedFiles/2818_VDnoaudio_ICA.set,15,muscle,muscle,0.71,Compact right-temporal/edge-focused source with highly irregular fast activity and broadband spectrum is most consistent with muscle.
+SavedFiles/2818_VDnoaudio_ICA.set,18,brain,other_artifact,0.58,"Broad center-versus-periphery pattern is non-dipolar and the noisy activity/spectrum do not provide a clean match to eye, muscle, or brain."
+SavedFiles/2818_VDnoaudio_ICA.set,19,brain,other_artifact,0.64,"Splotchy, multipolar scalp distribution with irregular activity and no decisive spectral or temporal hallmark of a specific artifact class."
+SavedFiles/2818_VDnoaudio_ICA.set,20,brain,brain,0.65,Relatively smooth midline posterior-central dipolar map and overall declining spectrum are compatible with a neural source despite noisy time-series detail.
+SavedFiles/2818_VDnoaudio_ICA.set,21,brain,brain,0.72,"Broad, roughly dipolar central/right-central scalp pattern with a predominantly 1/f spectrum and no clear ocular, cardiac, or line-noise signature."
+SavedFiles/2818_VDnoaudio_ICA.set,22,brain,brain,0.68,Smooth central scalp distribution with opposing lateral field and low-frequency-dominant 1/f-like spectrum; activity lacks clear blink or muscle-burst structure.
+SavedFiles/2818_VDnoaudio_ICA.set,24,muscle,muscle,0.78,"Strong focal edge/right-temporal distribution, erratic sharp transient activity, and relatively flat/rising higher-frequency spectral profile support muscle artifact."
+SavedFiles/2818_VDnoaudio_ICA.set,25,muscle,brain,0.62,"Broad midline-central dipolar topography and overall decaying spectrum are more compatible with neural activity, despite somewhat noisy time-series appearance."
+SavedFiles/2818_VDnoaudio_ICA.set,26,eye,eye,0.84,Clear anterior/frontal scalp dominance with posterior opposite polarity and strong low-frequency spectral power supports an ocular component.

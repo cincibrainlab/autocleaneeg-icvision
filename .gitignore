@@ -302,6 +302,7 @@ data/
 *.csv
 !tests/**/*.csv
 !examples/**/*.csv
+!experiments/results/**/*.csv
 *.tsv
 *.parquet
 *.feather
