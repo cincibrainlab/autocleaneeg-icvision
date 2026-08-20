@@ -391,6 +391,7 @@ def classify_strip_image(
     base_url: Optional[str] = None,
     max_retries: int = 3,
     reasoning_effort: Optional[str] = None,
+    custom_prompt: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
     """Classify multiple ICA components from a single strip image.
 
@@ -406,6 +407,14 @@ def classify_strip_image(
         base_url: Optional custom API base URL
         max_retries: Maximum number of retry attempts (default: 3)
         reasoning_effort: Optional reasoning effort level ('none', 'minimal', 'low', 'medium', 'high', 'xhigh')
+        custom_prompt: Optional alternate template to use instead of the
+            default STRIP_PROMPT_TEMPLATE. Must contain the same {n}/{labels}/
+            {json_example} placeholders (see get_strip_prompt()) -- this is a
+            template re-formatted per call, not a pre-rendered string, so it
+            stays correct across batches of different sizes (e.g. a final,
+            shorter-than-strip_size batch). This is the mechanism used to
+            test alternative prompts (e.g. tightened_v1.txt, combined_v1.txt)
+            against strip mode; see plan/plan-log.md.
 
     Returns:
         List of classification results, each with keys:
@@ -458,7 +467,7 @@ def classify_strip_image(
         return []
 
     # Get prompt for this number of components
-    prompt = get_strip_prompt(n_components)
+    prompt = get_strip_prompt(n_components, template=custom_prompt)
 
     # Create client
     client = openai.OpenAI(api_key=api_key, base_url=base_url)
@@ -572,6 +581,7 @@ def classify_components_strip_batch(
     auto_exclude: bool = True,
     labels_to_exclude: Optional[List[str]] = None,
     reasoning_effort: Optional[str] = None,
+    custom_prompt: Optional[str] = None,
 ) -> Tuple[pd.DataFrame, Dict[str, Any]]:
     """Classify ICA components using strip layout (batches of 9).
 
@@ -591,6 +601,9 @@ def classify_components_strip_batch(
         confidence_threshold: Min confidence for auto-exclusion
         auto_exclude: If True, mark components for exclusion
         labels_to_exclude: Labels to exclude (default: all except brain)
+        custom_prompt: Optional alternate template (with {n}/{labels}/
+            {json_example} placeholders) instead of the default strip
+            template. See classify_strip_image() for details.
 
     Returns:
         Tuple of (results_df, metadata_dict) with same schema as
@@ -667,6 +680,7 @@ def classify_components_strip_batch(
             model_name=model_name,
             base_url=base_url,
             reasoning_effort=reasoning_effort,
+            custom_prompt=custom_prompt,
         )
 
         if batch_results:
