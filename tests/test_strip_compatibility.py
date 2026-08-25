@@ -290,6 +290,61 @@ class TestUpdateICAIntegration:
 # --- Test: Remainder Handling ---
 
 
+class TestStripRenderingSmoke:
+    """Smoke tests for real strip image rendering."""
+
+    @pytest.mark.parametrize("n_components", [1, 9, 10])
+    def test_create_strip_image_writes_nonempty_webp(
+        self, dummy_ica_data: mne.preprocessing.ICA, dummy_raw_data: mne.io.Raw, temp_test_dir: Path, n_components: int
+    ):
+        """Real strip rendering must produce a non-empty webp file."""
+        from icvision.plotting import create_strip_image
+
+        output_path = temp_test_dir / f"strip_render_{n_components}.webp"
+        component_indices = list(range(n_components))
+
+        result_path = create_strip_image(
+            dummy_ica_data,
+            dummy_raw_data,
+            component_indices,
+            output_path,
+        )
+
+        assert result_path == output_path
+        assert output_path.exists()
+        assert output_path.stat().st_size > 0
+
+    def test_ten_components_classify_as_nine_plus_one_batches(
+        self, dummy_ica_data: mne.preprocessing.ICA, dummy_raw_data: mne.io.Raw, temp_test_dir: Path
+    ):
+        """Ten components must classify as one 9-component batch plus one 1-component batch."""
+        from icvision.api import classify_components_strip_batch
+
+        calls = []
+
+        def mock_classify(_path, batch_indices, *args, **kwargs):
+            calls.append(list(batch_indices))
+            return [
+                {"component_idx": idx, "label": "brain", "confidence": 0.95, "reason": "Test"}
+                for idx in batch_indices
+            ]
+
+        with patch("icvision.api.classify_strip_image", side_effect=mock_classify):
+            with patch("icvision.api.create_strip_image"):
+                results_df, metadata = classify_components_strip_batch(
+                    ica_obj=dummy_ica_data,
+                    raw_obj=dummy_raw_data,
+                    api_key="test-key",
+                    component_indices=list(range(10)),
+                    output_dir=temp_test_dir,
+                )
+
+        assert calls == [list(range(9)), [9]]
+        assert len(results_df) == 10
+        assert metadata["n_batches"] == 2
+        assert metadata["status"] == "complete"
+
+
 class TestRemainderHandling:
     """Tests for handling component counts not divisible by 9."""
 

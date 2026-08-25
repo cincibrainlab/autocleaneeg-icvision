@@ -142,6 +142,7 @@ def label_components(
     base_url: Optional[str] = None,
     layout: str = "single",
     strip_size: int = 9,
+    custom_prompt: Optional[str] = None,
     reasoning_effort: Optional[str] = None,
 ) -> Dict[str, Union[np.ndarray, List[str]]]:
     """
@@ -165,6 +166,7 @@ def label_components(
         layout: Classification layout mode. 'single' processes one component per API call,
             'strip' batches multiple components (default: 'single').
         strip_size: Number of components per strip image when layout='strip' (default: 9).
+        custom_prompt: Optional custom classification prompt template.
 
     Returns:
         Dictionary with ICLabel-compatible structure:
@@ -206,6 +208,7 @@ def label_components(
             base_url=base_url,  # Pass through custom API endpoint
             layout=layout,  # Pass through layout mode
             strip_size=strip_size,  # Pass through strip size
+            custom_prompt=custom_prompt,  # Pass through custom prompt
             reasoning_effort=reasoning_effort,  # Pass through reasoning effort
         )
 

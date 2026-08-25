@@ -6,7 +6,7 @@ Tests verify:
 2. Exponential backoff is applied between retries
 3. Maximum retry count is respected
 4. Successful retries produce valid results
-5. All retries exhausted falls back appropriately
+5. All retries exhausted fails closed without synthetic labels
 """
 
 import time
@@ -142,17 +142,16 @@ class TestRetryBehavior:
             mock_path = temp_test_dir / "test_strip2.webp"
             mock_path.write_bytes(b"fake image data")
 
-            result = classify_strip_image(
-                image_path=mock_path,
-                component_indices=list(range(9)),
-                api_key="test-key",
-                max_retries=3,
-            )
+            with pytest.raises(RuntimeError, match="All 3 API attempts failed"):
+                classify_strip_image(
+                    image_path=mock_path,
+                    component_indices=list(range(9)),
+                    api_key="test-key",
+                    max_retries=3,
+                )
 
         # Should have tried exactly max_retries times (3)
         assert call_count[0] == 3
-        # Should return empty list on complete failure
-        assert result == []
 
 
 # --- Test: Exponential Backoff ---
@@ -203,6 +202,64 @@ class TestExponentialBackoff:
         assert delays[1] >= delays[0] * 1.5, f"Delays should increase: {delays}"
 
 
+class TestStrictStripParsing:
+    """Tests for strict lower-level strip response parsing."""
+
+    def test_missing_required_key_raises(self, temp_test_dir: Path):
+        """Strip responses must include component, label, confidence, and reason."""
+        import json
+        from icvision.api import classify_strip_image
+
+        mock_path = temp_test_dir / "missing_key.webp"
+        mock_path.write_bytes(b"fake image data")
+        response = json.dumps([{"component": "A", "confidence": 0.95, "reason": "Missing label"}])
+
+        with patch("icvision.api._call_openai_api", return_value=response):
+            with pytest.raises(ValueError, match="missing required keys: label"):
+                classify_strip_image(
+                    image_path=mock_path,
+                    component_indices=[0],
+                    api_key="test-key",
+                    max_retries=1,
+                )
+
+    def test_missing_reason_raises(self, temp_test_dir: Path):
+        """Reason is required and must not default to an empty string."""
+        import json
+        from icvision.api import classify_strip_image
+
+        mock_path = temp_test_dir / "missing_reason.webp"
+        mock_path.write_bytes(b"fake image data")
+        response = json.dumps([{"component": "A", "label": "brain", "confidence": 0.95}])
+
+        with patch("icvision.api._call_openai_api", return_value=response):
+            with pytest.raises(ValueError, match="missing required keys: reason"):
+                classify_strip_image(
+                    image_path=mock_path,
+                    component_indices=[0],
+                    api_key="test-key",
+                    max_retries=1,
+                )
+
+    def test_non_string_reason_raises(self, temp_test_dir: Path):
+        """Reason must be a string for auditability."""
+        import json
+        from icvision.api import classify_strip_image
+
+        mock_path = temp_test_dir / "bad_reason.webp"
+        mock_path.write_bytes(b"fake image data")
+        response = json.dumps([{"component": "A", "label": "brain", "confidence": 0.95, "reason": 123}])
+
+        with patch("icvision.api._call_openai_api", return_value=response):
+            with pytest.raises(ValueError, match="Invalid reason"):
+                classify_strip_image(
+                    image_path=mock_path,
+                    component_indices=[0],
+                    api_key="test-key",
+                    max_retries=1,
+                )
+
+
 # --- Test: Batch Integration ---
 
 
@@ -215,7 +272,7 @@ class TestBatchRetryIntegration:
         """classify_components_strip_batch() should retry failed batches."""
         from icvision.api import classify_components_strip_batch
 
-        # First batch succeeds, second batch fails then succeeds on retry
+        # First batch succeeds once; second batch fails then succeeds on retry.
         batch_results = [
             [{"component_idx": i, "label": "brain", "confidence": 0.95, "reason": "Test"} for i in range(9)],
             [],  # First attempt at batch 2 fails
@@ -240,22 +297,49 @@ class TestBatchRetryIntegration:
 
         # All 12 components should have results
         assert len(results_df) == 12
+        assert call_idx[0] == 3
+        assert metadata["status"] == "complete"
 
 
-# --- Test: Fallback on Exhausted Retries ---
+# --- Test: Fail Closed on Exhausted Retries ---
 
 
-class TestFallbackBehavior:
-    """Tests for fallback behavior when all retries exhausted."""
+class TestFailClosedBehavior:
+    """Strip classification must fail closed on incomplete results."""
 
-    def test_fallback_to_other_artifact_on_exhausted_retries(
+    def test_empty_batch_result_fails_closed(
         self, dummy_ica_data: mne.preprocessing.ICA, dummy_raw_data: mne.io.Raw, temp_test_dir: Path
     ):
-        """Components should be labeled 'other_artifact' when all retries fail."""
+        """An empty classifier response must not synthesize labels."""
         from icvision.api import classify_components_strip_batch
 
-        # All classification attempts fail
         with patch("icvision.api.classify_strip_image", return_value=[]):
+            with patch("icvision.api.create_strip_image"):
+                results_df, metadata = classify_components_strip_batch(
+                    ica_obj=dummy_ica_data,
+                    raw_obj=dummy_raw_data,
+                    api_key="test-key",
+                    component_indices=list(range(9)),
+                    output_dir=temp_test_dir,
+        )
+
+        assert results_df.empty
+        assert metadata["status"] == "unavailable"
+        assert metadata["failed_batches"][0]["component_indices"] == list(range(9))
+
+    def test_failed_batch_attempts_are_capped_at_five(
+        self, dummy_ica_data: mne.preprocessing.ICA, dummy_raw_data: mne.io.Raw, temp_test_dir: Path
+    ):
+        """A failed strip batch must make at most five API attempts."""
+        from icvision.api import classify_components_strip_batch
+
+        call_count = [0]
+
+        def empty_result(*args, **kwargs):
+            call_count[0] += 1
+            return []
+
+        with patch("icvision.api.classify_strip_image", side_effect=empty_result):
             with patch("icvision.api.create_strip_image"):
                 results_df, metadata = classify_components_strip_batch(
                     ica_obj=dummy_ica_data,
@@ -265,6 +349,114 @@ class TestFallbackBehavior:
                     output_dir=temp_test_dir,
                 )
 
-        # All components should be labeled as other_artifact
+        assert call_count[0] == 5
+        assert results_df.empty
+        assert metadata["status"] == "unavailable"
+        assert metadata["failed_batches"][0]["attempts"] == 5
+
+    def test_malformed_batch_result_fails_closed(
+        self, dummy_ica_data: mne.preprocessing.ICA, dummy_raw_data: mne.io.Raw, temp_test_dir: Path
+    ):
+        """Lower-layer malformed rows must not be converted into synthetic labels."""
+        from icvision.api import classify_components_strip_batch
+
+        malformed_results = [{"label": "brain", "confidence": 0.95, "reason": "missing component_idx"}]
+
+        with patch("icvision.api.classify_strip_image", return_value=malformed_results):
+            with patch("icvision.api.create_strip_image"):
+                results_df, metadata = classify_components_strip_batch(
+                    ica_obj=dummy_ica_data,
+                    raw_obj=dummy_raw_data,
+                    api_key="test-key",
+                    component_indices=list(range(9)),
+                    output_dir=temp_test_dir,
+                )
+
+        assert results_df.empty
+        assert metadata["status"] == "unavailable"
+
+    def test_partial_batch_result_fails_closed(
+        self, dummy_ica_data: mne.preprocessing.ICA, dummy_raw_data: mne.io.Raw, temp_test_dir: Path
+    ):
+        """Partial lower-layer results must not create placeholder rows."""
+        from icvision.api import classify_components_strip_batch
+
+        partial_results = [
+            {"component_idx": i, "label": "brain", "confidence": 0.95, "reason": "Test"}
+            for i in range(8)
+        ]
+
+        with patch("icvision.api.classify_strip_image", return_value=partial_results):
+            with patch("icvision.api.create_strip_image"):
+                results_df, metadata = classify_components_strip_batch(
+                    ica_obj=dummy_ica_data,
+                    raw_obj=dummy_raw_data,
+                    api_key="test-key",
+                    component_indices=list(range(9)),
+                    output_dir=temp_test_dir,
+                )
+
+        assert results_df.empty
+        assert metadata["status"] == "unavailable"
+
+    def test_duplicate_batch_result_fails_closed(
+        self, dummy_ica_data: mne.preprocessing.ICA, dummy_raw_data: mne.io.Raw, temp_test_dir: Path
+    ):
+        """Duplicate lower-layer component results must not be accepted."""
+        from icvision.api import classify_components_strip_batch
+
+        duplicate_results = [
+            {"component_idx": i, "label": "brain", "confidence": 0.95, "reason": "Test"}
+            for i in range(8)
+        ]
+        duplicate_results.append(
+            {"component_idx": 7, "label": "brain", "confidence": 0.95, "reason": "Duplicate"}
+        )
+
+        with patch("icvision.api.classify_strip_image", return_value=duplicate_results):
+            with patch("icvision.api.create_strip_image"):
+                results_df, metadata = classify_components_strip_batch(
+                    ica_obj=dummy_ica_data,
+                    raw_obj=dummy_raw_data,
+                    api_key="test-key",
+                    component_indices=list(range(9)),
+                    output_dir=temp_test_dir,
+                )
+
+        assert results_df.empty
+        assert metadata["status"] == "unavailable"
+
+    def test_successful_prior_batches_are_preserved_when_later_batch_fails(
+        self, dummy_ica_data: mne.preprocessing.ICA, dummy_raw_data: mne.io.Raw, temp_test_dir: Path
+    ):
+        """A later failed batch must not erase or rerun earlier successful rows."""
+        from icvision.api import classify_components_strip_batch
+
+        first_batch = [
+            {"component_idx": i, "label": "brain", "confidence": 0.95, "reason": "Test"}
+            for i in range(9)
+        ]
+        calls = []
+
+        def mock_classify(_path, batch_indices, *args, **kwargs):
+            calls.append(list(batch_indices))
+            if list(batch_indices) == list(range(9)):
+                return first_batch
+            return []
+
+        with patch("icvision.api.classify_strip_image", side_effect=mock_classify):
+            with patch("icvision.api.create_strip_image"):
+                results_df, metadata = classify_components_strip_batch(
+                    ica_obj=dummy_ica_data,
+                    raw_obj=dummy_raw_data,
+                    api_key="test-key",
+                    component_indices=list(range(12)),
+                    output_dir=temp_test_dir,
+                )
+
         assert len(results_df) == 9
-        assert all(results_df["label"] == "other_artifact")
+        assert list(results_df["component_index"]) == list(range(9))
+        assert calls.count(list(range(9))) == 1
+        assert calls.count([9, 10, 11]) == 5
+        assert metadata["status"] == "partial"
+        assert metadata["failed_batches"][0]["component_indices"] == [9, 10, 11]

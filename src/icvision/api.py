@@ -334,7 +334,7 @@ def _call_openai_api(
         model_name: Model to use
         prompt: Text prompt
         base64_image: Base64-encoded image data
-        reasoning_effort: Optional reasoning effort level ('none', 'minimal', 'low', 'medium', 'high', 'xhigh')
+        reasoning_effort: Optional reasoning effort level.
 
     Returns:
         Message content string or None on failure
@@ -396,8 +396,8 @@ def classify_strip_image(
     """Classify multiple ICA components from a single strip image.
 
     Sends a strip image containing multiple components to the vision API
-    and parses the batch response. Implements retry logic with exponential
-    backoff for transient failures.
+    and parses the batch response. Malformed, missing, duplicate, or unknown
+    response payloads raise instead of fabricating fallback classifications.
 
     Args:
         image_path: Path to the strip image (webp format)
@@ -405,8 +405,10 @@ def classify_strip_image(
         api_key: OpenAI API key
         model_name: Model to use (default: gpt-5.2)
         base_url: Optional custom API base URL
-        max_retries: Maximum number of retry attempts (default: 3)
-        reasoning_effort: Optional reasoning effort level ('none', 'minimal', 'low', 'medium', 'high', 'xhigh')
+        max_retries: Maximum number of low-level API attempts (default: 3).
+            The higher-level strip batch API uses one low-level attempt at a
+            time so failed batches are capped at five total attempts.
+        reasoning_effort: Optional reasoning effort level.
         custom_prompt: Optional alternate template to use instead of the
             default STRIP_PROMPT_TEMPLATE. Must contain the same {n}/{labels}/
             {json_example} placeholders (see get_strip_prompt()) -- this is a
@@ -423,6 +425,12 @@ def classify_strip_image(
         - confidence: float (0.0-1.0)
         - reason: str (explanation)
 
+    Raises:
+        FileNotFoundError: If the strip image does not exist.
+        ValueError: If the model response schema, labels, component mapping,
+            confidence, or reason fields are invalid.
+        RuntimeError: If all low-level API attempts fail.
+
     Example:
         >>> results = classify_strip_image(
         ...     Path("strip.webp"),
@@ -436,13 +444,13 @@ def classify_strip_image(
     import time
 
     if not image_path or not image_path.exists():
-        logger.error("Invalid or non-existent strip image path: %s", image_path)
-        return []
+        raise FileNotFoundError(f"Invalid or non-existent strip image path: {image_path}")
 
     n_components = len(component_indices)
     if n_components == 0:
-        logger.error("No component indices provided")
-        return []
+        raise ValueError("component_indices cannot be empty")
+    if n_components > 52:
+        raise ValueError("strip classification supports at most 52 labeled components per image")
 
     # Generate labels for mapping: A, B, C, ... Z, AA, AB, ...
     single_labels = [chr(ord("A") + i) for i in range(26)]
@@ -463,14 +471,13 @@ def classify_strip_image(
         with open(image_path, "rb") as f:
             base64_image = base64.b64encode(f.read()).decode("utf-8")
     except Exception as e:
-        logger.error("Failed to read image file %s: %s", image_path, e)
-        return []
+        raise RuntimeError(f"Failed to read image file {image_path}: {e}") from e
 
     # Get prompt for this number of components
     prompt = get_strip_prompt(n_components, template=custom_prompt)
 
     # Create client
-    client = openai.OpenAI(api_key=api_key, base_url=base_url)
+    client = openai.OpenAI(api_key=api_key, base_url=base_url, timeout=120, max_retries=0)
 
     # Retry loop with exponential backoff
     message_content = None
@@ -508,12 +515,9 @@ def classify_strip_image(
                 time.sleep(backoff_time)
 
     if not message_content:
-        logger.error(
-            "All %d API attempts failed for strip classification. Last error: %s",
-            max_retries,
-            last_error,
+        raise RuntimeError(
+            f"All {max_retries} API attempts failed for strip classification. Last error: {last_error}"
         )
-        return []
 
     # Parse the successful response
     try:
@@ -524,29 +528,62 @@ def classify_strip_image(
         # did not tolerate; see GH issue #13).
         json_str = _extract_json_payload(message_content, bracket="[")
         raw_results = json.loads(json_str)
+        if not isinstance(raw_results, list):
+            raise ValueError("Strip response must be a JSON array")
 
         # Map letter labels back to component indices
         results = []
+        seen_letters = set()
         for r in raw_results:
-            letter = r.get("component", "?")
+            if not isinstance(r, dict):
+                raise ValueError("Each strip response item must be an object")
+            missing_keys = {"component", "label", "confidence", "reason"} - set(r)
+            if missing_keys:
+                raise ValueError(
+                    "Strip response item missing required keys: "
+                    + ", ".join(sorted(missing_keys))
+                )
+
+            if not isinstance(r["component"], str):
+                raise ValueError("Invalid component label in strip response")
+            if not isinstance(r["label"], str):
+                raise ValueError(f"Invalid label type for component {r['component']}")
+            letter = r["component"]
             actual_idx = label_to_idx.get(letter)
             if actual_idx is None:
-                logger.warning("Unknown component label in response: %s", letter)
-                continue
+                raise ValueError(f"Unknown component label in response: {letter}")
+            if letter in seen_letters:
+                raise ValueError(f"Duplicate component label in response: {letter}")
+            seen_letters.add(letter)
 
-            label = r.get("label", "other_artifact").lower()
+            label = r["label"].lower()
             if label not in COMPONENT_LABELS:
-                logger.warning("Unknown label '%s' for IC%d, using 'other_artifact'", label, actual_idx)
-                label = "other_artifact"
+                raise ValueError(f"Unknown label '{label}' for IC{actual_idx}")
+
+            try:
+                confidence = float(r["confidence"])
+            except (KeyError, TypeError, ValueError) as e:
+                raise ValueError(f"Invalid confidence for component {letter}") from e
+            if not 0.0 <= confidence <= 1.0:
+                raise ValueError(f"Confidence out of range for component {letter}: {confidence}")
+            if not isinstance(r["reason"], str):
+                raise ValueError(f"Invalid reason for component {letter}")
 
             results.append(
                 {
                     "component_idx": actual_idx,
                     "label": label,
-                    "confidence": float(r.get("confidence", 0.8)),
-                    "reason": r.get("reason", ""),
+                    "confidence": confidence,
+                    "reason": r["reason"],
                 }
             )
+
+        expected_letters = set(labels)
+        missing = sorted(expected_letters - seen_letters)
+        if missing:
+            raise ValueError(f"Missing component labels in response: {', '.join(missing)}")
+        if len(results) != n_components:
+            raise ValueError(f"Expected {n_components} strip results, received {len(results)}")
 
         elapsed = time.time() - start_time
         logger.info(
@@ -560,11 +597,10 @@ def classify_strip_image(
         return results
 
     except json.JSONDecodeError as e:
-        logger.error("JSON parse error in strip response: %s", e)
-        return []
+        raise ValueError(f"JSON parse error in strip response: {e}") from e
     except Exception as e:
         logger.error("Unexpected error parsing strip response: %s", e)
-        return []
+        raise
 
 
 def classify_components_strip_batch(
@@ -586,7 +622,10 @@ def classify_components_strip_batch(
     """Classify ICA components using strip layout (batches of 9).
 
     This function creates strip images containing multiple components
-    and classifies them in batches, reducing API calls significantly.
+    and classifies them in batches, reducing API calls significantly. Failed
+    API batches are retried up to five attempts for that batch only; earlier
+    successful batches are preserved. No synthetic rows are fabricated for
+    failures.
 
     Args:
         ica_obj: Fitted MNE ICA object
@@ -607,7 +646,9 @@ def classify_components_strip_batch(
 
     Returns:
         Tuple of (results_df, metadata_dict) with same schema as
-        classify_components_batch for drop-in compatibility.
+        classify_components_batch for drop-in compatibility. Metadata status
+        is "complete", "partial", or "unavailable"; public core entry points
+        reject non-complete strip metadata before ICA update/save/report work.
     """
     import time
 
@@ -618,6 +659,8 @@ def classify_components_strip_batch(
         n_total,
         strip_size,
     )
+    if strip_size < 1 or strip_size > 52:
+        raise ValueError("strip_size must be between 1 and 52")
 
     if labels_to_exclude is None:
         labels_to_exclude = cast(List[str], DEFAULT_CONFIG["labels_to_exclude"])
@@ -633,6 +676,8 @@ def classify_components_strip_batch(
 
     all_results: List[Dict[str, Any]] = []
     n_batches = (n_total + strip_size - 1) // strip_size
+    max_batch_attempts = 5
+    failed_batch: Optional[Dict[str, Any]] = None
 
     # Process in batches of strip_size
     for batch_idx in range(n_batches):
@@ -659,44 +704,61 @@ def classify_components_strip_batch(
                 precomputed_sources=precomputed_sources,
             )
         except Exception as e:
-            logger.error("Failed to create strip image for batch %d: %s", batch_idx, e)
-            # Add fallback results for failed batch
-            for idx in batch_indices:
-                all_results.append(
-                    {
-                        "component_idx": idx,
-                        "label": "other_artifact",
-                        "confidence": 1.0,
-                        "reason": f"Strip image creation failed: {e}",
-                    }
-                )
-            continue
+            raise RuntimeError(f"Failed to create strip image for batch {batch_idx}: {e}") from e
 
-        # Classify the strip
-        batch_results = classify_strip_image(
-            strip_path,
-            batch_indices,
-            api_key,
-            model_name=model_name,
-            base_url=base_url,
-            reasoning_effort=reasoning_effort,
-            custom_prompt=custom_prompt,
-        )
-
-        if batch_results:
-            all_results.extend(batch_results)
-        else:
-            # Fallback for failed classification
-            logger.warning("Strip classification failed for batch %d, using fallback", batch_idx)
-            for idx in batch_indices:
-                all_results.append(
-                    {
-                        "component_idx": idx,
-                        "label": "other_artifact",
-                        "confidence": 1.0,
-                        "reason": "Strip classification API call failed",
-                    }
+        batch_results: Optional[List[Dict[str, Any]]] = None
+        last_error: Optional[Exception] = None
+        for attempt in range(max_batch_attempts):
+            try:
+                candidate_results = classify_strip_image(
+                    strip_path,
+                    batch_indices,
+                    api_key,
+                    model_name=model_name,
+                    base_url=base_url,
+                    max_retries=1,
+                    reasoning_effort=reasoning_effort,
+                    custom_prompt=custom_prompt,
                 )
+
+                returned_indices = [r.get("component_idx") for r in candidate_results]
+                if (
+                    len(returned_indices) != len(batch_indices)
+                    or len(set(returned_indices)) != len(returned_indices)
+                    or set(returned_indices) != set(batch_indices)
+                ):
+                    raise ValueError(
+                        f"Strip batch {batch_idx} returned an incomplete or mismatched component set"
+                    )
+
+                batch_results = candidate_results
+                break
+            except Exception as e:
+                last_error = e
+                logger.warning(
+                    "Strip batch %d attempt %d/%d failed: %s",
+                    batch_idx,
+                    attempt + 1,
+                    max_batch_attempts,
+                    e,
+                )
+
+        if batch_results is None:
+            failed_batch = {
+                "batch_index": batch_idx,
+                "component_indices": batch_indices,
+                "attempts": max_batch_attempts,
+                "error": str(last_error),
+            }
+            logger.error(
+                "Strip batch %d failed after %d attempts; returning %d classified rows as partial",
+                batch_idx,
+                max_batch_attempts,
+                len(all_results),
+            )
+            break
+
+        all_results.extend(batch_results)
 
     # Build DataFrame with same schema as single-image classification
     df_data = []
@@ -725,11 +787,23 @@ def classify_components_strip_batch(
             }
         )
 
-    results_df = pd.DataFrame(df_data)
+    df_columns = [
+        "component_index",
+        "component_name",
+        "label",
+        "confidence",
+        "reason",
+        "mne_label",
+        "exclude_vision",
+    ]
+    results_df = pd.DataFrame(df_data, columns=df_columns)
     results_df = results_df.sort_values("component_index").reset_index(drop=True)
     results_df = results_df.set_index("component_index", drop=False)
 
     elapsed = time.time() - start_time
+    status = "complete"
+    if failed_batch:
+        status = "partial" if len(results_df) > 0 else "unavailable"
     metadata = {
         "total_components": n_total,
         "n_batches": n_batches,
@@ -739,15 +813,26 @@ def classify_components_strip_batch(
         "model_name": model_name,
         "layout": "strip",
         "reasoning_effort": reasoning_effort,
+        "max_batch_attempts": max_batch_attempts,
+        "status": status,
+        "failed_batches": [failed_batch] if failed_batch else [],
     }
 
-    logger.info(
-        "Strip batch classification completed: %d components in %.2fs (%.2fs/component, %d API calls)",
-        n_total,
-        elapsed,
-        elapsed / n_total if n_total > 0 else 0,
-        n_batches,
-    )
+    if failed_batch:
+        logger.warning(
+            "Strip batch classification partial: %d/%d components classified in %.2fs",
+            len(results_df),
+            n_total,
+            elapsed,
+        )
+    else:
+        logger.info(
+            "Strip batch classification completed: %d components in %.2fs (%.2fs/component, %d API calls)",
+            n_total,
+            elapsed,
+            elapsed / n_total if n_total > 0 else 0,
+            n_batches,
+        )
 
     return results_df, metadata
 
@@ -820,6 +905,7 @@ def classify_components_batch(
             auto_exclude=auto_exclude,
             labels_to_exclude=labels_to_exclude,
             reasoning_effort=reasoning_effort,
+            custom_prompt=custom_prompt,
         )
 
     # Original single-image classification logic

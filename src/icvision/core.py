@@ -225,6 +225,12 @@ def label_components(
         else:  # Backward compatibility if API returns only DataFrame
             results_df = classification_result
             cost_tracking = {}
+        classification_status = cost_tracking.get("status") if isinstance(cost_tracking, dict) else None
+        if classification_status is not None and classification_status != "complete":
+            failed_batches = cost_tracking.get("failed_batches", []) if isinstance(cost_tracking, dict) else []
+            raise RuntimeError(
+                f"Classification metadata status is {classification_status!r}; failed_batches={failed_batches}"
+            )
     except Exception as e:
         logger.error("Component classification failed: %s", e)
         raise RuntimeError("Failed to classify components: {}".format(e))
