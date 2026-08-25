@@ -1,0 +1,276 @@
+{
+  "comparison_date": "2026-07-24",
+  "reference": "Grace expert-reviewed labels, 679 components",
+  "iclabel_baseline": {
+    "rows": 679,
+    "correct": 448,
+    "accuracy": 0.6597938144329897,
+    "wall_seconds": 134.7,
+    "mean_seconds_per_component": 0.198379970544919,
+    "tokens_total": 0,
+    "true_distribution": {
+      "eye": 86,
+      "brain": 224,
+      "muscle": 200,
+      "heart": 17,
+      "channel_noise": 29,
+      "other_artifact": 123
+    },
+    "predicted_distribution": {
+      "eye": 47,
+      "brain": 191,
+      "muscle": 139,
+      "heart": 11,
+      "other_artifact": 249,
+      "channel_noise": 41,
+      "line_noise": 1
+    },
+    "per_label": {
+      "brain": {
+        "support": 224,
+        "predicted": 191,
+        "tp": 153,
+        "fp": 38,
+        "fn": 71,
+        "precision": 0.8010471204188482,
+        "recall": 0.6830357142857143,
+        "f1": 0.7373493975903614
+      },
+      "channel_noise": {
+        "support": 29,
+        "predicted": 41,
+        "tp": 16,
+        "fp": 25,
+        "fn": 13,
+        "precision": 0.3902439024390244,
+        "recall": 0.5517241379310345,
+        "f1": 0.4571428571428572
+      },
+      "eye": {
+        "support": 86,
+        "predicted": 47,
+        "tp": 39,
+        "fp": 8,
+        "fn": 47,
+        "precision": 0.8297872340425532,
+        "recall": 0.45348837209302323,
+        "f1": 0.5864661654135338
+      },
+      "heart": {
+        "support": 17,
+        "predicted": 11,
+        "tp": 11,
+        "fp": 0,
+        "fn": 6,
+        "precision": 1.0,
+        "recall": 0.6470588235294118,
+        "f1": 0.7857142857142858
+      },
+      "line_noise": {
+        "support": 0,
+        "predicted": 1,
+        "tp": 0,
+        "fp": 1,
+        "fn": 0,
+        "precision": 0.0,
+        "recall": null,
+        "f1": 0
+      },
+      "muscle": {
+        "support": 200,
+        "predicted": 139,
+        "tp": 135,
+        "fp": 4,
+        "fn": 65,
+        "precision": 0.9712230215827338,
+        "recall": 0.675,
+        "f1": 0.7964601769911505
+      },
+      "other_artifact": {
+        "support": 123,
+        "predicted": 249,
+        "tp": 94,
+        "fp": 155,
+        "fn": 29,
+        "precision": 0.37751004016064255,
+        "recall": 0.7642276422764228,
+        "f1": 0.5053763440860216
+      }
+    },
+    "top_confusions": {
+      "brain->other_artifact": 71,
+      "muscle->other_artifact": 41,
+      "eye->other_artifact": 35,
+      "muscle->channel_noise": 14,
+      "other_artifact->brain": 13,
+      "eye->brain": 9,
+      "other_artifact->channel_noise": 8,
+      "muscle->brain": 7,
+      "channel_noise->other_artifact": 7,
+      "heart->brain": 5,
+      "other_artifact->eye": 5,
+      "channel_noise->brain": 4
+    }
+  },
+  "terra_updated_prompt": {
+    "rows": 679,
+    "correct": 335,
+    "accuracy": 0.49337260677466865,
+    "failed_rows": 0,
+    "wall_seconds_observed_concurrent": 502.2,
+    "sum_successful_call_latency_seconds": 3973.596,
+    "mean_seconds_per_component_call": 5.852,
+    "median_seconds_per_component_call": 5.412,
+    "p95_seconds_per_component_call": 9.12,
+    "max_seconds_per_component_call": 24.289,
+    "tokens_total": 963077,
+    "input_tokens_total": 838565,
+    "output_tokens_total": 124512,
+    "mean_total_tokens_per_component": 1418.376,
+    "true_distribution": {
+      "channel_noise": 29,
+      "other_artifact": 123,
+      "brain": 224,
+      "muscle": 200,
+      "eye": 86,
+      "heart": 17
+    },
+    "predicted_distribution": {
+      "channel_noise": 176,
+      "brain": 199,
+      "other_artifact": 90,
+      "muscle": 176,
+      "line_noise": 20,
+      "eye": 18
+    },
+    "per_label": {
+      "brain": {
+        "support": 224,
+        "predicted": 199,
+        "tp": 134,
+        "fp": 65,
+        "fn": 90,
+        "precision": 0.6733668341708543,
+        "recall": 0.5982142857142857,
+        "f1": 0.6335697399527187
+      },
+      "channel_noise": {
+        "support": 29,
+        "predicted": 176,
+        "tp": 24,
+        "fp": 152,
+        "fn": 5,
+        "precision": 0.13636363636363635,
+        "recall": 0.8275862068965517,
+        "f1": 0.23414634146341462
+      },
+      "eye": {
+        "support": 86,
+        "predicted": 18,
+        "tp": 15,
+        "fp": 3,
+        "fn": 71,
+        "precision": 0.8333333333333334,
+        "recall": 0.1744186046511628,
+        "f1": 0.2884615384615385
+      },
+      "heart": {
+        "support": 17,
+        "predicted": 0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 17,
+        "precision": null,
+        "recall": 0.0,
+        "f1": 0
+      },
+      "line_noise": {
+        "support": 0,
+        "predicted": 20,
+        "tp": 0,
+        "fp": 20,
+        "fn": 0,
+        "precision": 0.0,
+        "recall": null,
+        "f1": 0
+      },
+      "muscle": {
+        "support": 200,
+        "predicted": 176,
+        "tp": 128,
+        "fp": 48,
+        "fn": 72,
+        "precision": 0.7272727272727273,
+        "recall": 0.64,
+        "f1": 0.6808510638297872
+      },
+      "other_artifact": {
+        "support": 123,
+        "predicted": 90,
+        "tp": 34,
+        "fp": 56,
+        "fn": 89,
+        "precision": 0.37777777777777777,
+        "recall": 0.2764227642276423,
+        "f1": 0.31924882629107987
+      }
+    },
+    "top_confusions": {
+      "muscle->channel_noise": 54,
+      "other_artifact->channel_noise": 45,
+      "brain->channel_noise": 32,
+      "eye->brain": 29,
+      "brain->other_artifact": 28,
+      "other_artifact->muscle": 21,
+      "brain->muscle": 21,
+      "eye->channel_noise": 21,
+      "other_artifact->brain": 18,
+      "eye->other_artifact": 17,
+      "heart->brain": 14,
+      "muscle->line_noise": 7
+    }
+  },
+  "deltas": {
+    "accuracy_points_terra_minus_iclabel": -16.642,
+    "terra_correct_minus_iclabel_correct": -113,
+    "terra_mean_call_seconds_minus_iclabel_mean_row_seconds": 5.654,
+    "terra_tokens_minus_iclabel_tokens": 963077
+  },
+  "per_label_terra_minus_iclabel": {
+    "brain": {
+      "precision_delta": -0.128,
+      "recall_delta": -0.085,
+      "f1_delta": -0.104
+    },
+    "channel_noise": {
+      "precision_delta": -0.254,
+      "recall_delta": 0.276,
+      "f1_delta": -0.223
+    },
+    "eye": {
+      "precision_delta": 0.004,
+      "recall_delta": -0.279,
+      "f1_delta": -0.298
+    },
+    "heart": {
+      "precision_delta": null,
+      "recall_delta": -0.647,
+      "f1_delta": -0.786
+    },
+    "line_noise": {
+      "precision_delta": 0.0,
+      "recall_delta": null,
+      "f1_delta": 0
+    },
+    "muscle": {
+      "precision_delta": -0.244,
+      "recall_delta": -0.035,
+      "f1_delta": -0.116
+    },
+    "other_artifact": {
+      "precision_delta": 0.0,
+      "recall_delta": -0.488,
+      "f1_delta": -0.186
+    }
+  }
+}
