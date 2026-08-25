@@ -324,14 +324,10 @@ Example JSON response:
 OPENAI_ICA_PROMPT = load_prompt("default")
 
 
-# Strip prompt template for batch classification, externalized to
-# prompts/strip_default.txt (matches OPENAI_ICA_PROMPT's convention above --
-# previously this lived only as an inline Python string, which had no
-# load_prompt()-style override path and made it invisible to anyone auditing
-# prompts/ for "what prompts does this system use"). Supports variable
-# number of components (1-9) with letter labels A-I via {n}/{labels}/
-# {json_example} substitution at call time in get_strip_prompt().
-STRIP_PROMPT_TEMPLATE = load_prompt("strip_default")
+# Strip prompt template for batch classification. The production strip default
+# uses the tightened strip prompt; custom prompts still use the same
+# {n}/{labels}/{json_example} template substitution path.
+STRIP_PROMPT_TEMPLATE = load_prompt("tightened_v1_strip")
 
 
 def get_strip_prompt(n_components: int, template: Optional[str] = None) -> str:

@@ -285,6 +285,121 @@ def test_label_components_no_report(
     logger.info("No report generation test completed.")
 
 
+def test_label_components_strip_public_path_mocked(
+    dummy_raw_data: mne.io.Raw,
+    dummy_ica_data: mne.preprocessing.ICA,
+    temp_test_dir: Path,
+) -> None:
+    """Public core API should connect strip mode through to results and ICA exclusions."""
+    mock_strip_results = [
+        {"component_idx": 0, "label": "brain", "confidence": 0.95, "reason": "Mock brain"},
+        {"component_idx": 1, "label": "eye", "confidence": 0.96, "reason": "Mock eye"},
+        {"component_idx": 2, "label": "muscle", "confidence": 0.97, "reason": "Mock muscle"},
+    ]
+
+    output_subdir = temp_test_dir / "strip_public_path"
+    output_subdir.mkdir(exist_ok=True)
+
+    with patch("icvision.api.create_strip_image") as mock_create_strip:
+        with patch("icvision.api.classify_strip_image", return_value=mock_strip_results) as mock_classify_strip:
+            raw_cleaned, ica_updated, results_df = label_components(
+                raw_data=dummy_raw_data,
+                ica_data=dummy_ica_data,
+                api_key="FAKE_API_KEY",
+                output_dir=output_subdir,
+                generate_report=False,
+                layout="strip",
+                strip_size=9,
+            )
+
+    assert isinstance(raw_cleaned, mne.io.BaseRaw)
+    assert isinstance(ica_updated, mne.preprocessing.ICA)
+    assert set(results_df.columns) >= {
+        "component_index",
+        "component_name",
+        "label",
+        "mne_label",
+        "confidence",
+        "reason",
+        "exclude_vision",
+    }
+    assert list(results_df["component_index"]) == [0, 1, 2]
+    assert sorted(ica_updated.exclude) == [1, 2]
+    mock_create_strip.assert_called_once()
+    mock_classify_strip.assert_called_once()
+    assert mock_classify_strip.call_args.args[1] == [0, 1, 2]
+    assert mock_classify_strip.call_args.kwargs["max_retries"] == 1
+
+
+@patch("icvision.core.generate_classification_report")
+@patch("icvision.core.classify_components_batch")
+def test_label_components_strip_complete_results_generate_report(
+    mock_classify_batch_api: MagicMock,
+    mock_gen_report: MagicMock,
+    dummy_raw_data: mne.io.Raw,
+    dummy_ica_data: mne.preprocessing.ICA,
+    temp_test_dir: Path,
+) -> None:
+    """Complete strip results should update ICA and invoke report generation once."""
+    complete_results = pd.DataFrame(
+        [
+            {
+                "component_index": 0,
+                "component_name": "IC0",
+                "label": "brain",
+                "mne_label": ICVISION_TO_MNE_LABEL_MAP["brain"],
+                "confidence": 0.95,
+                "reason": "Mock brain",
+                "exclude_vision": False,
+            },
+            {
+                "component_index": 1,
+                "component_name": "IC1",
+                "label": "eye",
+                "mne_label": ICVISION_TO_MNE_LABEL_MAP["eye"],
+                "confidence": 0.96,
+                "reason": "Mock eye",
+                "exclude_vision": True,
+            },
+            {
+                "component_index": 2,
+                "component_name": "IC2",
+                "label": "muscle",
+                "mne_label": ICVISION_TO_MNE_LABEL_MAP["muscle"],
+                "confidence": 0.97,
+                "reason": "Mock muscle",
+                "exclude_vision": True,
+            },
+        ]
+    ).set_index("component_index", drop=False)
+    complete_metadata = {"layout": "strip", "status": "complete"}
+    mock_classify_batch_api.return_value = (complete_results, complete_metadata)
+    mock_gen_report.return_value = temp_test_dir / "strip_report.pdf"
+
+    output_subdir = temp_test_dir / "strip_report_path"
+    output_subdir.mkdir(exist_ok=True)
+
+    _, ica_updated, results_df = label_components(
+        raw_data=dummy_raw_data,
+        ica_data=dummy_ica_data,
+        api_key="FAKE_API_KEY",
+        output_dir=output_subdir,
+        generate_report=True,
+        layout="strip",
+        strip_size=9,
+    )
+
+    assert sorted(ica_updated.exclude) == [1, 2]
+    assert list(results_df["component_index"]) == [0, 1, 2]
+    assert mock_classify_batch_api.return_value[1]["status"] == "complete"
+    mock_gen_report.assert_called_once()
+    report_kwargs = mock_gen_report.call_args.kwargs
+    assert report_kwargs["ica_obj"] is ica_updated
+    assert report_kwargs["raw_obj"] is dummy_raw_data
+    pd.testing.assert_frame_equal(report_kwargs["results_df"], results_df)
+    assert report_kwargs["output_dir"] == output_subdir
+
+
 @patch("icvision.core.classify_components_batch")  # Mock to prevent actual API calls
 def test_label_components_invalid_inputs(mock_classify_api: MagicMock, temp_test_dir: Path) -> None:
     """Test label_components with various invalid inputs."""

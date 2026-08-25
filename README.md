@@ -110,6 +110,14 @@ autoclean-icvision data.set --layout strip
 
 Strip mode is recommended for production pipelines. Classification accuracy is comparable to single-image mode.
 
+Strip contract:
+
+- Default strip size is 9 components per image.
+- The built-in strip prompt is `tightened_v1_strip`; use `--prompt-file` or `custom_prompt=` to provide a custom strip prompt.
+- Failed strip API batches are retried up to 5 total attempts for that failed batch only; successful batches from the same invocation are not rerun.
+- Strip classification fails closed on malformed, missing, duplicate, or unknown component responses. It does not fabricate fallback labels such as `other_artifact`.
+- Low-level strip batch metadata reports `complete`, `partial`, or `unavailable`; the public `label_components()` path rejects non-`complete` strip results before updating ICA exclusions, saving outputs, or generating reports.
+
 ### Custom Endpoint Support (New in v0.2.1)
 
 Use OpenAI-compatible endpoints like CLIProxy or Azure OpenAI:

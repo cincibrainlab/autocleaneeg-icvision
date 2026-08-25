@@ -25,6 +25,22 @@ from _pytest.tmpdir import TempPathFactory
 # --- Fixtures ---
 
 
+def make_mock_results_df(component_indices=None) -> pd.DataFrame:
+    """Return a valid classification DataFrame for forwarding tests."""
+    if component_indices is None:
+        component_indices = [0, 1, 2, 3, 4]
+    df = pd.DataFrame({
+        "component_index": component_indices,
+        "component_name": [f"IC{i}" for i in component_indices],
+        "label": ["brain"] * len(component_indices),
+        "confidence": [0.95] * len(component_indices),
+        "reason": ["Test"] * len(component_indices),
+        "mne_label": ["brain"] * len(component_indices),
+        "exclude_vision": [False] * len(component_indices),
+    })
+    return df.set_index("component_index", drop=False)
+
+
 @pytest.fixture(scope="module")
 def temp_test_dir(tmp_path_factory: TempPathFactory) -> Iterator[Path]:
     """Create a temporary directory for test artifacts."""
@@ -121,6 +137,44 @@ class TestCLIArgumentParsing:
         args = parser.parse_args(["test.set"])
         assert args.strip_size == 9
 
+    def test_cli_passes_strip_layout_size_and_prompt_file(self, temp_test_dir: Path):
+        """CLI must pass strip layout controls and --prompt-file through to core."""
+        from icvision.cli import main
+
+        mock_df = make_mock_results_df([0])
+        custom_prompt = "CUSTOM CLI STRIP PROMPT {n}: {labels}\n{json_example}"
+        prompt_path = temp_test_dir / "custom_strip_prompt.txt"
+        prompt_path.write_text(custom_prompt, encoding="utf-8")
+
+        test_argv = [
+            "autoclean-icvision",
+            "test.set",
+            "--api-key",
+            "test-key",
+            "--layout",
+            "strip",
+            "--strip-size",
+            "9",
+            "--prompt-file",
+            str(prompt_path),
+            "--no-report",
+            "--output-dir",
+            str(temp_test_dir),
+        ]
+        with patch.object(sys, "argv", test_argv):
+            with patch("icvision.cli.CLIFormatter.print_welcome"):
+                with patch("icvision.cli.CLIFormatter.print_summary_stats"):
+                    with patch("icvision.cli.print_info"):
+                        with patch("icvision.cli.print_success"):
+                            with patch("icvision.cli.label_components", return_value=(MagicMock(), MagicMock(), mock_df)) as mock_lc:
+                                main()
+
+        call_kwargs = mock_lc.call_args.kwargs
+        assert call_kwargs["layout"] == "strip"
+        assert call_kwargs["strip_size"] == 9
+        assert call_kwargs["custom_prompt"] == custom_prompt
+        assert call_kwargs["generate_report"] is False
+
 
 # --- Test: label_components() API ---
 
@@ -135,15 +189,7 @@ class TestLabelComponentsAPI:
         from icvision.core import label_components
 
         # Mock API to avoid real calls
-        mock_df = pd.DataFrame({
-            "component_index": [0, 1, 2, 3, 4],
-            "component_name": ["IC0", "IC1", "IC2", "IC3", "IC4"],
-            "label": ["brain"] * 5,
-            "confidence": [0.95] * 5,
-            "reason": ["Test"] * 5,
-            "mne_label": ["brain"] * 5,
-            "exclude_vision": [False] * 5,
-        }).set_index("component_index", drop=False)
+        mock_df = make_mock_results_df()
 
         with patch("icvision.core.classify_components_batch", return_value=(mock_df, {})):
             with patch("icvision.core.generate_classification_report", return_value=None):
@@ -165,15 +211,7 @@ class TestLabelComponentsAPI:
         """label_components() must accept strip_size parameter."""
         from icvision.core import label_components
 
-        mock_df = pd.DataFrame({
-            "component_index": [0, 1, 2, 3, 4],
-            "component_name": ["IC0", "IC1", "IC2", "IC3", "IC4"],
-            "label": ["brain"] * 5,
-            "confidence": [0.95] * 5,
-            "reason": ["Test"] * 5,
-            "mne_label": ["brain"] * 5,
-            "exclude_vision": [False] * 5,
-        }).set_index("component_index", drop=False)
+        mock_df = make_mock_results_df()
 
         with patch("icvision.core.classify_components_batch", return_value=(mock_df, {})):
             with patch("icvision.core.generate_classification_report", return_value=None):
@@ -188,6 +226,66 @@ class TestLabelComponentsAPI:
                 )
 
         assert results_df is not None
+
+    def test_label_components_rejects_partial_strip_metadata(
+        self, dummy_raw_data: mne.io.Raw, dummy_ica_data: mne.preprocessing.ICA, temp_test_dir: Path
+    ):
+        """Partial strip metadata must not silently continue downstream."""
+        from icvision.core import label_components
+
+        partial_df = make_mock_results_df([0, 1])
+        partial_metadata = {
+            "layout": "strip",
+            "status": "partial",
+            "failed_batches": [{"batch_index": 1, "component_indices": [2, 3, 4]}],
+        }
+        original_exclude = list(dummy_ica_data.exclude)
+
+        with patch("icvision.core.classify_components_batch", return_value=(partial_df, partial_metadata)):
+            with patch("icvision.core.generate_classification_report") as mock_gen_report:
+                with pytest.raises(RuntimeError, match="partial.*failed_batches"):
+                    label_components(
+                        raw_data=dummy_raw_data,
+                        ica_data=dummy_ica_data,
+                        api_key="test-key",
+                        output_dir=temp_test_dir,
+                        generate_report=True,
+                        layout="strip",
+                        strip_size=9,
+                    )
+
+        assert dummy_ica_data.exclude == original_exclude
+        mock_gen_report.assert_not_called()
+
+    def test_label_components_rejects_unavailable_strip_metadata(
+        self, dummy_raw_data: mne.io.Raw, dummy_ica_data: mne.preprocessing.ICA, temp_test_dir: Path
+    ):
+        """Unavailable strip metadata must not silently continue downstream."""
+        from icvision.core import label_components
+
+        unavailable_df = make_mock_results_df([])
+        unavailable_metadata = {
+            "layout": "strip",
+            "status": "unavailable",
+            "failed_batches": [{"batch_index": 0, "component_indices": [0, 1, 2, 3, 4]}],
+        }
+        original_exclude = list(dummy_ica_data.exclude)
+
+        with patch("icvision.core.classify_components_batch", return_value=(unavailable_df, unavailable_metadata)):
+            with patch("icvision.core.generate_classification_report") as mock_gen_report:
+                with pytest.raises(RuntimeError, match="unavailable.*failed_batches"):
+                    label_components(
+                        raw_data=dummy_raw_data,
+                        ica_data=dummy_ica_data,
+                        api_key="test-key",
+                        output_dir=temp_test_dir,
+                        generate_report=True,
+                        layout="strip",
+                        strip_size=9,
+                    )
+
+        assert dummy_ica_data.exclude == original_exclude
+        mock_gen_report.assert_not_called()
 
     def test_label_components_default_layout_is_single(
         self, dummy_raw_data: mne.io.Raw, dummy_ica_data: mne.preprocessing.ICA, temp_test_dir: Path
@@ -212,18 +310,11 @@ class TestCompatLabelComponentsAPI:
     def test_compat_label_components_accepts_layout_parameter(
         self, dummy_raw_data: mne.io.Raw, dummy_ica_data: mne.preprocessing.ICA, temp_test_dir: Path
     ):
-        """compat.label_components() must accept layout parameter."""
+        """compat.label_components() must forward strip layout controls."""
         from icvision.compat import label_components
 
-        mock_df = pd.DataFrame({
-            "component_index": [0, 1, 2, 3, 4],
-            "component_name": ["IC0", "IC1", "IC2", "IC3", "IC4"],
-            "label": ["brain"] * 5,
-            "confidence": [0.95] * 5,
-            "reason": ["Test"] * 5,
-            "mne_label": ["brain"] * 5,
-            "exclude_vision": [False] * 5,
-        }).set_index("component_index", drop=False)
+        mock_df = make_mock_results_df()
+        custom_prompt = "CUSTOM COMPAT STRIP PROMPT {n}: {labels}\n{json_example}"
 
         # Mock the core label_components
         with patch("icvision.compat.icvision_label_components") as mock_lc:
@@ -237,9 +328,36 @@ class TestCompatLabelComponentsAPI:
                 generate_report=False,
                 output_dir=str(temp_test_dir),
                 layout="strip",  # NEW parameter
+                strip_size=9,
+                custom_prompt=custom_prompt,
             )
 
         assert result is not None
+        call_kwargs = mock_lc.call_args.kwargs
+        assert call_kwargs["layout"] == "strip"
+        assert call_kwargs["strip_size"] == 9
+        assert call_kwargs["custom_prompt"] == custom_prompt
+
+    def test_compat_does_not_swallow_strip_metadata_failure(
+        self, dummy_raw_data: mne.io.Raw, dummy_ica_data: mne.preprocessing.ICA, temp_test_dir: Path
+    ):
+        """Compatibility wrapper must not turn strip partial failure into success."""
+        from icvision.compat import label_components
+
+        with patch(
+            "icvision.compat.icvision_label_components",
+            side_effect=RuntimeError("Classification metadata status is 'partial'; failed_batches=[]"),
+        ):
+            with pytest.raises(RuntimeError, match="partial"):
+                label_components(
+                    inst=dummy_raw_data,
+                    ica=dummy_ica_data,
+                    method="icvision",
+                    generate_report=False,
+                    output_dir=str(temp_test_dir),
+                    layout="strip",
+                    strip_size=9,
+                )
 
 
 # --- Test: Layout Parameter Passthrough ---
@@ -254,15 +372,7 @@ class TestLayoutPassthrough:
         """classify_components_batch() must receive layout from label_components()."""
         from icvision.core import label_components
 
-        mock_df = pd.DataFrame({
-            "component_index": [0, 1, 2, 3, 4],
-            "component_name": ["IC0", "IC1", "IC2", "IC3", "IC4"],
-            "label": ["brain"] * 5,
-            "confidence": [0.95] * 5,
-            "reason": ["Test"] * 5,
-            "mne_label": ["brain"] * 5,
-            "exclude_vision": [False] * 5,
-        }).set_index("component_index", drop=False)
+        mock_df = make_mock_results_df()
 
         with patch("icvision.core.classify_components_batch", return_value=(mock_df, {})) as mock_ccb:
             with patch("icvision.core.generate_classification_report", return_value=None):
