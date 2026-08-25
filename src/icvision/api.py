@@ -677,7 +677,7 @@ def classify_components_strip_batch(
     all_results: List[Dict[str, Any]] = []
     n_batches = (n_total + strip_size - 1) // strip_size
     max_batch_attempts = 5
-    failed_batch: Optional[Dict[str, Any]] = None
+    failed_batches: List[Dict[str, Any]] = []
 
     # Process in batches of strip_size
     for batch_idx in range(n_batches):
@@ -704,7 +704,20 @@ def classify_components_strip_batch(
                 precomputed_sources=precomputed_sources,
             )
         except Exception as e:
-            raise RuntimeError(f"Failed to create strip image for batch {batch_idx}: {e}") from e
+            failed_batches.append(
+                {
+                    "batch_index": batch_idx,
+                    "component_indices": batch_indices,
+                    "attempts": 0,
+                    "error": f"image_generation: {e}",
+                }
+            )
+            logger.error(
+                "Could not create strip image for batch %d; continuing with later batches: %s",
+                batch_idx,
+                e,
+            )
+            continue
 
         batch_results: Optional[List[Dict[str, Any]]] = None
         last_error: Optional[Exception] = None
@@ -744,19 +757,19 @@ def classify_components_strip_batch(
                 )
 
         if batch_results is None:
-            failed_batch = {
+            failed_batches.append({
                 "batch_index": batch_idx,
                 "component_indices": batch_indices,
                 "attempts": max_batch_attempts,
                 "error": str(last_error),
-            }
+            })
             logger.error(
                 "Strip batch %d failed after %d attempts; returning %d classified rows as partial",
                 batch_idx,
                 max_batch_attempts,
                 len(all_results),
             )
-            break
+            continue
 
         all_results.extend(batch_results)
 
@@ -802,7 +815,7 @@ def classify_components_strip_batch(
 
     elapsed = time.time() - start_time
     status = "complete"
-    if failed_batch:
+    if failed_batches:
         status = "partial" if len(results_df) > 0 else "unavailable"
     metadata = {
         "total_components": n_total,
@@ -815,10 +828,10 @@ def classify_components_strip_batch(
         "reasoning_effort": reasoning_effort,
         "max_batch_attempts": max_batch_attempts,
         "status": status,
-        "failed_batches": [failed_batch] if failed_batch else [],
+        "failed_batches": failed_batches,
     }
 
-    if failed_batch:
+    if failed_batches:
         logger.warning(
             "Strip batch classification partial: %d/%d components classified in %.2fs",
             len(results_df),

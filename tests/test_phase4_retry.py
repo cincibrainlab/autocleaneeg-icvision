@@ -460,3 +460,72 @@ class TestFailClosedBehavior:
         assert calls.count([9, 10, 11]) == 5
         assert metadata["status"] == "partial"
         assert metadata["failed_batches"][0]["component_indices"] == [9, 10, 11]
+
+    def test_image_generation_failure_preserves_prior_results_and_continues(
+        self, dummy_ica_data: mne.preprocessing.ICA, dummy_raw_data: mne.io.Raw, temp_test_dir: Path
+    ):
+        """An image failure is recorded without discarding earlier successful rows."""
+        from icvision.api import classify_components_strip_batch
+
+        first_batch = [
+            {"component_idx": i, "label": "brain", "confidence": 0.95, "reason": "Test"}
+            for i in range(9)
+        ]
+        image_calls = []
+
+        def mock_image(_ica, _raw, indices, _path, **_kwargs):
+            image_calls.append(list(indices))
+            if list(indices) == list(range(9)):
+                return None
+            if list(indices) == list(range(9, 12)):
+                raise OSError("render failed")
+            return None
+
+        with patch("icvision.api.create_strip_image", side_effect=mock_image):
+            with patch("icvision.api.classify_strip_image", return_value=first_batch):
+                results_df, metadata = classify_components_strip_batch(
+                    ica_obj=dummy_ica_data,
+                    raw_obj=dummy_raw_data,
+                    api_key="test-key",
+                    component_indices=list(range(12)),
+                    output_dir=temp_test_dir,
+                )
+
+        assert len(results_df) == 9
+        assert image_calls == [list(range(9)), [9, 10, 11]]
+        assert metadata["status"] == "partial"
+        assert metadata["failed_batches"][0]["component_indices"] == [9, 10, 11]
+
+    def test_exhausted_batch_continues_to_later_independent_batch(
+        self, dummy_ica_data: mne.preprocessing.ICA, dummy_raw_data: mne.io.Raw, temp_test_dir: Path
+    ):
+        """A permanently failed batch does not prevent later batches from running."""
+        from icvision.api import classify_components_strip_batch
+
+        calls = []
+
+        def mock_classify(_path, batch_indices, *args, **kwargs):
+            calls.append(list(batch_indices))
+            if list(batch_indices) == list(range(9, 18)):
+                return []
+            return [
+                {"component_idx": i, "label": "brain", "confidence": 0.95, "reason": "Test"}
+                for i in batch_indices
+            ]
+
+        with patch("icvision.api.create_strip_image"):
+            with patch("icvision.api.classify_strip_image", side_effect=mock_classify):
+                results_df, metadata = classify_components_strip_batch(
+                    ica_obj=dummy_ica_data,
+                    raw_obj=dummy_raw_data,
+                    api_key="test-key",
+                    component_indices=list(range(27)),
+                    output_dir=temp_test_dir,
+                )
+
+        assert len(results_df) == 18
+        assert calls[:1] == [list(range(9))]
+        assert calls.count([9, 10, 11, 12, 13, 14, 15, 16, 17]) == 5
+        assert calls[-1] == [18, 19, 20, 21, 22, 23, 24, 25, 26]
+        assert metadata["status"] == "partial"
+        assert metadata["failed_batches"][0]["component_indices"] == list(range(9, 18))
