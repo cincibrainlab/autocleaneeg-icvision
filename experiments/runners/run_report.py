@@ -117,7 +117,7 @@ def build_report(run_dir: Path, manifest_path: Path, models: list, registry_path
     for label in VALID_LABELS:
         n = class_counts.get(label, 0)
         md.append(f"| {label} | {n} | {n / total:.1%} |" if n else f"| {label} | 0 | 0.0% |")
-    md.append("\n> Raw accuracy on a skewed batch is dominated by the majority classes. See section 9 for the balanced metric.\n")
+    md.append("\n> Raw accuracy on a skewed batch is dominated by the majority classes. See section 10 for the balanced metric.\n")
 
     n_strips = (total + 8) // 9
     md.append("\n## 5. Number of runs\n")
@@ -156,7 +156,37 @@ def build_report(run_dir: Path, manifest_path: Path, models: list, registry_path
             reasons_txt = f"\nDominant failure mode: **{t} read as {p}** ({n} cases). Model language across these errors leans on topography/spectrum cues that fit the predicted class template; see per-component reasoning below and annotated renders for the visual evidence."
         md.append(reasons_txt)
 
-    md.append("\n## 8. Model justification per component\n")
+    md.append("\n## 8. Most prevalent error modes\n")
+    for model in models:
+        csv_path = run_dir / f"{run_dir.name}_{model}.csv"
+        if not csv_path.exists():
+            continue
+        rows = list(csv.DictReader(csv_path.open(newline="", encoding="utf-8")))
+        errors = [r for r in rows if r["predicted_label"] != r["true_label_norm"]]
+        confusions = Counter((r["true_label_norm"], r["predicted_label"]) for r in errors)
+        truth_counts = Counter(r["true_label_norm"] for r in rows)
+        predicted_counts = Counter(r["predicted_label"] for r in rows)
+        bias = [(label, predicted_counts[label] - truth_counts[label]) for label in set(truth_counts) | set(predicted_counts)]
+        bias.sort(key=lambda item: abs(item[1]), reverse=True)
+        high_conf_errors = [r for r in errors if r.get("confidence") and float(r["confidence"]) >= 0.8]
+        md.append(f"\n### {model}\n")
+        md.append(f"- Errors: **{len(errors)}/{len(rows)}**; high-confidence errors (confidence ≥0.80): **{len(high_conf_errors)}**")
+        md.append("- Dominant confusion pairs:")
+        for (truth, predicted), count in confusions.most_common(5):
+            md.append(f"  - `{truth}` → `{predicted}`: {count}")
+        md.append("- Largest prediction-count biases (predicted minus true):")
+        for label, delta in bias[:5]:
+            if delta:
+                md.append(f"  - `{label}`: {delta:+d}")
+        recalls = per_class_stats(rows)
+        weakest = sorted(recalls.items(), key=lambda item: item[1]["correct"] / item[1]["total"])
+        if weakest:
+            label, values = weakest[0]
+            md.append(f"- Weakest class recall: `{label}` at {values['correct']}/{values['total']} ({values['correct'] / values['total']:.0%})")
+        if not errors:
+            md.append("- No error mode observed in this run.")
+
+    md.append("\n## 9. Model justification per component\n")
     for model in models:
         csv_path = run_dir / f"{run_dir.name}_{model}.csv"
         if not csv_path.exists():
@@ -171,7 +201,7 @@ def build_report(run_dir: Path, manifest_path: Path, models: list, registry_path
             reason = r["reason"].replace("|", "/").replace("\n", " ")
             md.append(f"| {r['component_index']} | {r['true_label_norm']} | {r['predicted_label']} | {r['confidence']} | {ok} | {reason} |")
 
-    md.append("\n## 9. Skew-normalized accuracy\n")
+    md.append("\n## 10. Skew-normalized accuracy\n")
     for model in models:
         csv_path = run_dir / f"{run_dir.name}_{model}.csv"
         if not csv_path.exists():

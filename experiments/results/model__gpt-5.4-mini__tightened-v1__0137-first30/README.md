@@ -1,6 +1,6 @@
-# Run report — `model__gemini-3.5-flash__tightened-v1__0137-first30-cli`
+# Run report — `model__gpt-5.4-mini__tightened-v1__0137-first30`
 
-**Variable tested:** transport: OpenCode CLI Google route for gemini-3.5-flash (same prompt, same 31 components)
+**Variable tested:** model: gpt-5.4-mini vs gpt-5.4-nano (same tightened_v1 prompt, same 31 components)
 
 Generated 2026-09-06 13:30 by `run_report.py`. All paths relative to repo root. This directory is self-contained: everything needed to audit or re-analyze this run lives here.
 
@@ -109,7 +109,7 @@ Respond with JSON array (one object per component, {n} objects total):
 
 ## 5. Number of runs
 
-- Models run: 1 (gemini-3.5-flash)
+- Models run: 1 (gpt-5.4-mini)
 - API calls per model: one per strip
 - Total classifications in this run: 31 components × 1 model(s)
 
@@ -121,92 +121,92 @@ Respond with JSON array (one object per component, {n} objects total):
 ## 7. Results breakdown
 
 
-### gemini-3.5-flash
+### gpt-5.4-mini
 
-- Raw accuracy: **10/31 = 32.3%**
-- Balanced (skew-normalized) accuracy: **42.9%**
+- Raw accuracy: **9/31 = 29.0%**
+- Balanced (skew-normalized) accuracy: **51.5%**
 
 | True class | Correct/Total | Recall |
 |------------|---------------|--------|
-| brain | 6/10 | 60% |
-| eye | 1/2 | 50% |
-| muscle | 2/17 | 12% |
+| brain | 5/10 | 50% |
+| eye | 2/2 | 100% |
+| muscle | 1/17 | 6% |
 | heart | 1/2 | 50% |
 
-Predicted-label distribution: channel_noise×14, brain×8, muscle×3, other_artifact×3, eye×2, heart×1
+Predicted-label distribution: brain×12, other_artifact×10, eye×3, muscle×3, channel_noise×2, heart×1
 
 Top confusions (truth → prediction):
-- muscle → channel_noise: 14
+- muscle → brain: 7
+- muscle → other_artifact: 6
 - brain → other_artifact: 3
-- eye → brain: 1
-- brain → muscle: 1
-- heart → brain: 1
-- muscle → eye: 1
+- brain → muscle: 2
+- muscle → channel_noise: 2
+- heart → other_artifact: 1
 
-Dominant failure mode: **muscle read as channel_noise** (14 cases). Model language across these errors leans on topography/spectrum cues that fit the predicted class template; see per-component reasoning below and annotated renders for the visual evidence.
+Dominant failure mode: **muscle read as brain** (7 cases). Model language across these errors leans on topography/spectrum cues that fit the predicted class template; see per-component reasoning below and annotated renders for the visual evidence.
 
 ## 8. Most prevalent error modes
 
 
-### gemini-3.5-flash
+### gpt-5.4-mini
 
-- Errors: **21/31**; high-confidence errors (confidence ≥0.80): **21**
+- Errors: **22/31**; high-confidence errors (confidence ≥0.80): **6**
 - Dominant confusion pairs:
-  - `muscle` → `channel_noise`: 14
+  - `muscle` → `brain`: 7
+  - `muscle` → `other_artifact`: 6
   - `brain` → `other_artifact`: 3
-  - `eye` → `brain`: 1
-  - `brain` → `muscle`: 1
-  - `heart` → `brain`: 1
+  - `brain` → `muscle`: 2
+  - `muscle` → `channel_noise`: 2
 - Largest prediction-count biases (predicted minus true):
-  - `channel_noise`: +14
   - `muscle`: -14
-  - `other_artifact`: +3
-  - `brain`: -2
-  - `heart`: -1
-- Weakest class recall: `muscle` at 2/17 (12%)
+  - `other_artifact`: +10
+  - `channel_noise`: +2
+  - `brain`: +2
+  - `eye`: +1
+- Weakest class recall: `muscle` at 1/17 (6%)
 
 ## 9. Model justification per component
 
 
-### gemini-3.5-flash
+### gpt-5.4-mini
 
 | IC | Truth | Predicted | Conf | Verdict | Model's stated reasoning |
 |----|-------|-----------|------|---------|--------------------------|
-| 0 | eye | eye | 0.95 | OK | Frontal scalp distribution with classic blink-like slow deflection in the time series and low-frequency dominated power spectrum. |
-| 1 | heart | heart | 0.95 | OK | Extremely regular, periodic QRS-like cardiac deflections in the time series (~1 Hz rhythm) and broad lateralized scalp map consistent with a distant source. |
-| 2 | eye | brain | 0.85 | WRONG | Frontal-central dipole scalp map with a smooth, rhythmic time series and a clear alpha band peak (around 10 Hz) in the power spectrum. |
-| 3 | brain | brain | 0.9 | OK | Symmetrical central-parietal dipolar scalp map, rhythmic time series, and 1/f spectral decay with a clear alpha peak. |
-| 4 | brain | muscle | 0.85 | WRONG | Left temporal scalp focus near the muscle insertion, spiky/erratic time series, and a broad spectrum with significant high-frequency power. |
-| 5 | heart | brain | 0.85 | WRONG | Clear sagittal dipolar scalp map with 1/f spectral decay and a prominent alpha peak. |
-| 6 | muscle | channel_noise | 0.95 | WRONG | Scalp map is unambiguously dominated by a single isolated-electrode 'island' with no smooth spatial falloff to neighboring channels. |
-| 7 | brain | other_artifact | 0.8 | WRONG | Non-dipolar, multipolar scalp map (central blue with bilateral temporal red regions) coupled with noisy, spiky time series activity and mixed spectral features. |
-| 8 | brain | brain | 0.98 | OK | Classic occipital-parietal dipolar scalp map with a highly prominent alpha peak in the power spectrum and smooth, rhythmic time series. |
-| 9 | brain | brain | 0.95 | OK | Clear dipolar central-parietal topography, smooth rhythmic time series, and 1/f spectrum with a distinct peak in the alpha band (~10 Hz). |
-| 10 | muscle | channel_noise | 0.9 | WRONG | Topography shows a highly isolated, sharp single-electrode 'island' on the left side with no smooth spatial falloff, accompanied by a flat high-frequency spectrum. |
-| 11 | muscle | channel_noise | 0.9 | WRONG | Topography displays a single isolated electrode 'island' on the right posterior/temporal edge, with a noisy time series and flat high-frequency spectrum. |
-| 12 | muscle | channel_noise | 0.9 | WRONG | Topography displays a sharp, single-electrode focus in the left frontal region with no spatial falloff, and a flat power spectrum. |
-| 13 | muscle | channel_noise | 0.9 | WRONG | Topography is dominated by an isolated single electrode on the left posterior edge, exhibiting a flat high-frequency spectrum. |
-| 14 | brain | brain | 0.95 | OK | Topography shows a smooth, broad central-parietal distribution, with a classic 1/f power spectrum and rhythmic time-series activity. |
-| 15 | muscle | channel_noise | 0.9 | WRONG | Topography shows a sharp, isolated single-electrode 'island' on the left posterior temporal edge, with a noisy time-series and non-1/f flat spectrum. |
-| 16 | brain | brain | 0.98 | OK | Beautifully clear, smooth central-parietal dipole topography, rhythmic time-series, and a classic 1/f spectrum with a prominent alpha-band peak. |
-| 17 | muscle | channel_noise | 0.9 | WRONG | Topography is dominated by a sharp, single-electrode focus on the left frontocentral region, with a flat power spectrum and noisy time-series. |
-| 18 | muscle | channel_noise | 0.95 | WRONG | Scalp map is dominated by a single isolated electrode island on the right frontal area with no smooth spatial falloff to neighboring sites. |
-| 19 | muscle | channel_noise | 0.95 | WRONG | Scalp map is dominated by a single isolated electrode on the right fronto-temporal region with no spatial falloff or opposite pole. |
-| 20 | brain | brain | 0.98 | OK | Perfect dipolar scalp map (central-parietal), clear 1/f power spectrum with a typical alpha peak (~10 Hz), and smooth rhythmic time series. |
-| 21 | muscle | channel_noise | 0.95 | WRONG | Scalp map shows a single isolated blue electrode island on the right frontal-temporal region with no spatial falloff. |
-| 22 | muscle | channel_noise | 0.95 | WRONG | Scalp map is dominated by a single isolated electrode on the front-left area with no spatial falloff. |
-| 23 | muscle | channel_noise | 0.95 | WRONG | Scalp map is dominated by a single isolated electrode at the top/frontal region with no spatial falloff. |
-| 24 | brain | other_artifact | 0.9 | WRONG | Scalp map is splotchy and non-dipolar (blue center, red peripheral ring). Power spectrum shows 1/f decay, which is inconsistent with muscle, fitting the other_artifact fallback category perfectly. |
-| 25 | muscle | channel_noise | 0.92 | WRONG | Scalp map shows a single isolated electrode island near the top-middle-left with no spatial falloff. |
-| 26 | muscle | channel_noise | 0.95 | WRONG | Scalp map is dominated by a single isolated electrode on the right temporal region with no smooth spatial falloff. |
-| 27 | brain | other_artifact | 0.8 | WRONG | The scalp map is splotchy, non-dipolar, and edge-focused (red at posterior and lateral edges, blue in center), and the time series is noisy without a clear classic artifact or brain rhythm, making other_artifact the most appropriate category. |
-| 28 | muscle | eye | 0.95 | WRONG | The scalp map shows a strong frontal/periocular concentration, the time series exhibits a large, slow deflection characteristic of an eye blink/movement, and the power spectrum is heavily concentrated below 5 Hz. |
-| 29 | muscle | muscle | 0.9 | OK | The scalp map is focused on the fronto-temporal edge, the time series is highly spiky and erratic, and the power spectrum shows broad, elevated high-frequency activity above 20 Hz. |
-| 30 | muscle | muscle | 0.9 | OK | The scalp map shows a highly localized lateral dipole, the time series is spiky and erratic, and the power spectrum has a flat or rising high-frequency profile above 20 Hz. |
+| 0 | eye | eye | 0.98 | OK | Strong frontal/periocular topography with large slow blink-like deflections and low-frequency-dominant spectrum. |
+| 1 | heart | heart | 0.96 | OK | Regular repeating sharp deflections about once per second in the time series, consistent with ECG/QRS artifact. |
+| 2 | eye | eye | 0.93 | OK | Frontal/asymmetric topography and slow, large-amplitude eye-movement-like activity with mostly low-frequency power. |
+| 3 | brain | other_artifact | 0.72 | WRONG | No clear dipolar brain pattern; time series is noisy/irregular and spectrum lacks a clean brain-like or specific artifact signature. |
+| 4 | brain | muscle | 0.88 | WRONG | Irregular spiky activity with relatively elevated high-frequency content and a non-brain, edge-weighted scalp pattern. |
+| 5 | heart | other_artifact | 0.66 | WRONG | Broad non-dipolar topography with noisy time series and no decisive blink, heart, line-noise, or isolated-channel signature. |
+| 6 | muscle | channel_noise | 0.97 | WRONG | Scalp map is dominated by a single isolated electrode island near the frontal area, which is the key criterion for channel_noise. |
+| 7 | brain | other_artifact | 0.74 | WRONG | Diffuse, non-dipolar topography and noisy broadband activity without a clear specific artifact pattern. |
+| 8 | brain | brain | 0.84 | OK | Reasonably dipolar scalp map with posterior/central focus and a smoother 1/f-like spectrum, more consistent with neural activity than artifact. |
+| 9 | brain | brain | 0.86 | OK | Roughly dipolar scalp map and a 1/f-like spectrum with no strong blink or muscle signature; time series looks irregular but not clearly artifact-like. |
+| 10 | muscle | other_artifact | 0.72 | WRONG | Very focal left-sided scalp hotspot with an odd spectrum that rises toward higher frequencies, but not a clean isolated bad channel and not a classic muscle or eye pattern. |
+| 11 | muscle | other_artifact | 0.78 | WRONG | Strong edge-focused, non-brain-like topography with a localized posterior-lateral pattern; spectrum and time series do not cleanly match eye, heart, or brain. |
+| 12 | muscle | other_artifact | 0.66 | WRONG | Frontal-lateral focal map and noisy time course, but no decisive blink rhythm, QRS pattern, or isolated bad electrode; mixed artifact appearance. |
+| 13 | muscle | other_artifact | 0.74 | WRONG | Left temporal focal map with opposite polarity nearby, but the spectrum is broad and not clearly brain-like or a classic muscle/eye signature. |
+| 14 | brain | brain | 0.9 | OK | Broad dipolar-looking topography and a clear falling 1/f spectrum; time series is irregular but compatible with neural activity rather than a specific artifact. |
+| 15 | muscle | other_artifact | 0.7 | WRONG | Left temporal focality with non-dipolar structure and a fairly flat/noisy spectrum; does not meet the threshold for channel_noise or a cleaner artifact class. |
+| 16 | brain | brain | 0.84 | OK | Reasonably dipolar scalp map and a spectrum that decays with frequency, without strong low-frequency blink structure or high-frequency muscle dominance. |
+| 17 | muscle | other_artifact | 0.68 | WRONG | Frontal-lateral asymmetric map with noisy activity and no decisive blink, heart, line-noise, or isolated-electrode evidence; best treated as mixed artifact. |
+| 18 | muscle | brain | 0.72 | WRONG | Focal but plausible dipolar scalp map with non-artifactual spectrum; time series is not blink-like or high-frequency dominated. |
+| 19 | muscle | brain | 0.68 | WRONG | Clear dipolar left-right pattern and broadly 1/f-like spectrum without strong low-frequency blink or high-frequency muscle signature. |
+| 20 | brain | muscle | 0.91 | WRONG | Irregular spiky activity with broad high-frequency power and a shallow/flat spectrum at higher frequencies; scalp map is edge/temporal-like. |
+| 21 | muscle | brain | 0.63 | WRONG | Somewhat dipolar map and spectrum that still falls with frequency; no decisive blink, heart, or line-noise cue. |
+| 22 | muscle | brain | 0.74 | WRONG | Small focal dipolar source near frontal region but spectrum is not muscle-like and time series is relatively non-blink-like. |
+| 23 | muscle | brain | 0.66 | WRONG | Anterior focal dipole with a mostly decaying spectrum; no clear QRS/blink/50-60 Hz pattern, so brain is the best fit. |
+| 24 | brain | other_artifact | 0.86 | WRONG | Broad non-dipolar, highly diffuse topography with mixed polarity and no clean brain-like source pattern; spectrum is not decisive for a specific artifact class. |
+| 25 | muscle | brain | 0.71 | WRONG | Localized frontal/central dipolar map with no strong artifact spectral signature; time series is noisy but not clearly muscle or eye-like. |
+| 26 | muscle | brain | 0.69 | WRONG | Focal lateral dipolar map and a broadly decaying spectrum without a sharp line-noise peak or obvious blink/QRS rhythm. |
+| 27 | brain | brain | 0.86 | OK | Scalp map is broad and roughly dipolar/central rather than frontal or isolated; spectrum shows a typical 1/f falloff without a sharp line-noise peak; time series is irregular but not blink-like. |
+| 28 | muscle | eye | 0.97 | WRONG | Strong frontal/periocular topography with a large slow deflection in the time series and power concentrated at very low frequencies, consistent with an eye blink component. |
+| 29 | muscle | channel_noise | 0.91 | WRONG | Topography is dominated by a very small, isolated single-electrode-like island near the frontal edge with little smooth spatial spread, which is the key cue for bad channel noise. |
+| 30 | muscle | muscle | 0.88 | OK | Left temporal/edge-focused map plus spiky irregular activity and a spectrum that is relatively elevated at higher frequencies compared with a clean brain-like 1/f shape, fitting muscle artifact. |
 
 ## 10. Skew-normalized accuracy
 
-- **gemini-3.5-flash**: raw 32.3% → balanced **42.9%** (unweighted mean of per-class recalls; every class counts equally regardless of frequency)
+- **gpt-5.4-mini**: raw 29.0% → balanced **51.5%** (unweighted mean of per-class recalls; every class counts equally regardless of frequency)
 
 Balanced accuracy is the headline metric while the first-30 batch remains imbalanced (muscle-heavy). A stratified manifest would remove the need for normalization; both are supported by the skeleton.
 
@@ -215,5 +215,5 @@ Balanced accuracy is the headline metric while the first-30 batch remains imbala
 
 - Manifest: `experiments/manifests/stage0_true_first30.csv` (sha256[:16] `8da094ff3a5ffd46`)
 - Model registry: `experiments/models_registry.yaml` (sha256[:16] `463a1800a9e69076`)
-- Call audit logs: `logs/model__gemini-3.5-flash__tightened-v1__0137-first30-cli_<model>.jsonl` (prompt sha, strip sha, raw responses, latency)
+- Call audit logs: `logs/model__gpt-5.4-mini__tightened-v1__0137-first30_<model>.jsonl` (prompt sha, strip sha, raw responses, latency)
 - Annotated renders: `annotated/<model>/IC*.png`; strips: `strips/`

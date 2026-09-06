@@ -2,7 +2,7 @@
 
 **Variable tested:** model: gpt-5.4-nano (baseline measurement, no comparison run yet)
 
-Generated 2026-09-06 12:11 by `run_report.py`. All paths relative to repo root. This directory is self-contained: everything needed to audit or re-analyze this run lives here.
+Generated 2026-09-06 13:29 by `run_report.py`. All paths relative to repo root. This directory is self-contained: everything needed to audit or re-analyze this run lives here.
 
 
 ## 1. Recording(s) used
@@ -20,34 +20,9 @@ Sampling rule for prelim runs: **contiguous first-30** (IC0–IC30 per recording
 
 ## 3. Prompt used
 
-- Prompt: `strip_default (icvision built-in)`
-- sha256: `d4c3f0e120964c9875bf7b80dc5b037cd41f698b3111dcc48b85268a0fd9e1e2`
-- Source file: `prompts/strip_default.txt`
-
-**Full prompt text:**
-
-```text
-Classify each of the {n} ICA components shown in this grid (labeled {labels}).
-
-Each component shows:
-- Topography map (scalp distribution)
-- Time series (first 2.5 seconds)
-- ERP-style image (continuous data segments)
-- Power spectrum (1-55Hz)
-
-Categories:
-- "brain": Dipolar pattern (can be central, parietal, OR lateral/temporal), 1/f spectrum with alpha (8-12Hz) or beta (13-30Hz) peaks. NOTE: Lateral/edge topography with alpha peak = brain, not muscle
-- "eye": Frontal/periocular focus with low-frequency dominated spectrum (<4Hz) AND large slow deflections in time series. Frontal focal + slow deflections = eye, even if topography looks focal
-- "muscle": Edge-focused topography AND flat/rising high-frequency spectrum (no alpha peak). Must have BOTH features
-- "heart": ~1Hz rhythmic deflections in time series, broad scalp distribution
-- "line_noise": Sharp narrow peak at 50/60Hz
-- "channel_noise": Single isolated focal spot (one sensor) with flat/noisy spectrum AND erratic/random time series. NOT eye if spectrum is low-frequency dominated with slow deflections
-- "other_artifact": Doesn't fit above categories
-
-Respond with JSON array (one object per component):
-{json_example}
-```
-
+- Prompt: `unknown`
+- sha256: `None`
+- Source file: `unknown`
 
 ## 4. Class distribution of the batch (skew report)
 
@@ -101,7 +76,27 @@ Top confusions (truth → prediction):
 
 Dominant failure mode: **muscle read as brain** (11 cases). Model language across these errors leans on topography/spectrum cues that fit the predicted class template; see per-component reasoning below and annotated renders for the visual evidence.
 
-## 8. Model justification per component
+## 8. Most prevalent error modes
+
+
+### gpt-5.4-nano
+
+- Errors: **25/31**; high-confidence errors (confidence ≥0.80): **2**
+- Dominant confusion pairs:
+  - `muscle` → `brain`: 11
+  - `brain` → `muscle`: 3
+  - `eye` → `brain`: 2
+  - `muscle` → `other_artifact`: 2
+  - `muscle` → `channel_noise`: 2
+- Largest prediction-count biases (predicted minus true):
+  - `muscle`: -12
+  - `brain`: +9
+  - `other_artifact`: +3
+  - `channel_noise`: +2
+  - `heart`: -2
+- Weakest class recall: `eye` at 0/2 (0%)
+
+## 9. Model justification per component
 
 
 ### gpt-5.4-nano
@@ -140,7 +135,7 @@ Dominant failure mode: **muscle read as brain** (11 cases). Model language acros
 | 29 | muscle | brain | 0.7 | WRONG | Dipolar central topography with a 1/f-like spectrum and visible alpha/beta-range activity; not dominated by <4 Hz slow deflections or a sharp 50/60 Hz peak. |
 | 30 | muscle | channel_noise | 0.6 | WRONG | Spectrum is relatively flat/noisy without a distinct alpha/beta peak and the time series looks irregular; topography is strongly focal (single-sensor-like) rather than a distributed dipole. |
 
-## 9. Skew-normalized accuracy
+## 10. Skew-normalized accuracy
 
 - **gpt-5.4-nano**: raw 19.4% → balanced **14.0%** (unweighted mean of per-class recalls; every class counts equally regardless of frequency)
 
@@ -150,6 +145,6 @@ Balanced accuracy is the headline metric while the first-30 batch remains imbala
 ## Provenance
 
 - Manifest: `experiments/manifests/stage0_true_first30.csv` (sha256[:16] `8da094ff3a5ffd46`)
-- Model registry: `experiments/models_registry.yaml` (sha256[:16] `36485c89009ab463`)
+- Model registry: `experiments/models_registry.yaml` (sha256[:16] `463a1800a9e69076`)
 - Call audit logs: `logs/model__gpt-5.4-nano__0137-first30_<model>.jsonl` (prompt sha, strip sha, raw responses, latency)
 - Annotated renders: `annotated/<model>/IC*.png`; strips: `strips/`

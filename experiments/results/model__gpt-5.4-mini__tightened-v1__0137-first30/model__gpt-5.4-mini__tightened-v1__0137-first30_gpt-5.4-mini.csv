@@ -1,0 +1,32 @@
+set_path,component_index,true_label_norm,predicted_label,confidence,reason
+SavedFiles/0137_VDAudio_ICA.set,0,eye,eye,0.98,Strong frontal/periocular topography with large slow blink-like deflections and low-frequency-dominant spectrum.
+SavedFiles/0137_VDAudio_ICA.set,1,heart,heart,0.96,"Regular repeating sharp deflections about once per second in the time series, consistent with ECG/QRS artifact."
+SavedFiles/0137_VDAudio_ICA.set,2,eye,eye,0.93,"Frontal/asymmetric topography and slow, large-amplitude eye-movement-like activity with mostly low-frequency power."
+SavedFiles/0137_VDAudio_ICA.set,3,brain,other_artifact,0.72,No clear dipolar brain pattern; time series is noisy/irregular and spectrum lacks a clean brain-like or specific artifact signature.
+SavedFiles/0137_VDAudio_ICA.set,4,brain,muscle,0.88,"Irregular spiky activity with relatively elevated high-frequency content and a non-brain, edge-weighted scalp pattern."
+SavedFiles/0137_VDAudio_ICA.set,5,heart,other_artifact,0.66,"Broad non-dipolar topography with noisy time series and no decisive blink, heart, line-noise, or isolated-channel signature."
+SavedFiles/0137_VDAudio_ICA.set,6,muscle,channel_noise,0.97,"Scalp map is dominated by a single isolated electrode island near the frontal area, which is the key criterion for channel_noise."
+SavedFiles/0137_VDAudio_ICA.set,7,brain,other_artifact,0.74,"Diffuse, non-dipolar topography and noisy broadband activity without a clear specific artifact pattern."
+SavedFiles/0137_VDAudio_ICA.set,8,brain,brain,0.84,"Reasonably dipolar scalp map with posterior/central focus and a smoother 1/f-like spectrum, more consistent with neural activity than artifact."
+SavedFiles/0137_VDAudio_ICA.set,9,brain,brain,0.86,Roughly dipolar scalp map and a 1/f-like spectrum with no strong blink or muscle signature; time series looks irregular but not clearly artifact-like.
+SavedFiles/0137_VDAudio_ICA.set,10,muscle,other_artifact,0.72,"Very focal left-sided scalp hotspot with an odd spectrum that rises toward higher frequencies, but not a clean isolated bad channel and not a classic muscle or eye pattern."
+SavedFiles/0137_VDAudio_ICA.set,11,muscle,other_artifact,0.78,"Strong edge-focused, non-brain-like topography with a localized posterior-lateral pattern; spectrum and time series do not cleanly match eye, heart, or brain."
+SavedFiles/0137_VDAudio_ICA.set,12,muscle,other_artifact,0.66,"Frontal-lateral focal map and noisy time course, but no decisive blink rhythm, QRS pattern, or isolated bad electrode; mixed artifact appearance."
+SavedFiles/0137_VDAudio_ICA.set,13,muscle,other_artifact,0.74,"Left temporal focal map with opposite polarity nearby, but the spectrum is broad and not clearly brain-like or a classic muscle/eye signature."
+SavedFiles/0137_VDAudio_ICA.set,14,brain,brain,0.9,Broad dipolar-looking topography and a clear falling 1/f spectrum; time series is irregular but compatible with neural activity rather than a specific artifact.
+SavedFiles/0137_VDAudio_ICA.set,15,muscle,other_artifact,0.7,Left temporal focality with non-dipolar structure and a fairly flat/noisy spectrum; does not meet the threshold for channel_noise or a cleaner artifact class.
+SavedFiles/0137_VDAudio_ICA.set,16,brain,brain,0.84,"Reasonably dipolar scalp map and a spectrum that decays with frequency, without strong low-frequency blink structure or high-frequency muscle dominance."
+SavedFiles/0137_VDAudio_ICA.set,17,muscle,other_artifact,0.68,"Frontal-lateral asymmetric map with noisy activity and no decisive blink, heart, line-noise, or isolated-electrode evidence; best treated as mixed artifact."
+SavedFiles/0137_VDAudio_ICA.set,18,muscle,brain,0.72,Focal but plausible dipolar scalp map with non-artifactual spectrum; time series is not blink-like or high-frequency dominated.
+SavedFiles/0137_VDAudio_ICA.set,19,muscle,brain,0.68,Clear dipolar left-right pattern and broadly 1/f-like spectrum without strong low-frequency blink or high-frequency muscle signature.
+SavedFiles/0137_VDAudio_ICA.set,20,brain,muscle,0.91,Irregular spiky activity with broad high-frequency power and a shallow/flat spectrum at higher frequencies; scalp map is edge/temporal-like.
+SavedFiles/0137_VDAudio_ICA.set,21,muscle,brain,0.63,"Somewhat dipolar map and spectrum that still falls with frequency; no decisive blink, heart, or line-noise cue."
+SavedFiles/0137_VDAudio_ICA.set,22,muscle,brain,0.74,Small focal dipolar source near frontal region but spectrum is not muscle-like and time series is relatively non-blink-like.
+SavedFiles/0137_VDAudio_ICA.set,23,muscle,brain,0.66,"Anterior focal dipole with a mostly decaying spectrum; no clear QRS/blink/50-60 Hz pattern, so brain is the best fit."
+SavedFiles/0137_VDAudio_ICA.set,24,brain,other_artifact,0.86,"Broad non-dipolar, highly diffuse topography with mixed polarity and no clean brain-like source pattern; spectrum is not decisive for a specific artifact class."
+SavedFiles/0137_VDAudio_ICA.set,25,muscle,brain,0.71,Localized frontal/central dipolar map with no strong artifact spectral signature; time series is noisy but not clearly muscle or eye-like.
+SavedFiles/0137_VDAudio_ICA.set,26,muscle,brain,0.69,Focal lateral dipolar map and a broadly decaying spectrum without a sharp line-noise peak or obvious blink/QRS rhythm.
+SavedFiles/0137_VDAudio_ICA.set,27,brain,brain,0.86,Scalp map is broad and roughly dipolar/central rather than frontal or isolated; spectrum shows a typical 1/f falloff without a sharp line-noise peak; time series is irregular but not blink-like.
+SavedFiles/0137_VDAudio_ICA.set,28,muscle,eye,0.97,"Strong frontal/periocular topography with a large slow deflection in the time series and power concentrated at very low frequencies, consistent with an eye blink component."
+SavedFiles/0137_VDAudio_ICA.set,29,muscle,channel_noise,0.91,"Topography is dominated by a very small, isolated single-electrode-like island near the frontal edge with little smooth spatial spread, which is the key cue for bad channel noise."
+SavedFiles/0137_VDAudio_ICA.set,30,muscle,muscle,0.88,"Left temporal/edge-focused map plus spiky irregular activity and a spectrum that is relatively elevated at higher frequencies compared with a clean brain-like 1/f shape, fitting muscle artifact."

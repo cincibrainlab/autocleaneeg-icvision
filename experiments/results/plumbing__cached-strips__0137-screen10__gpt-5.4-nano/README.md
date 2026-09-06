@@ -30,3 +30,16 @@ Fresh strip renders require the raw EEGLAB .set files (ICA decomposition + raw E
 ## Post-run scope correction (kept for audit honesty)
 
 - The initial run also scored 3 out-of-scope late components (IC34, IC46, IC59) inherited from the cached screen-120 strips; scope was corrected afterwards to the 7 first-30 comps (`stage0_0137_first30.csv`). Pilot-scope accuracy: 1/7. This run is superseded by `../model__gpt-5.4-nano__0137-first30/` (true contiguous first-30, fresh renders) and is retained only as the plumbing-validation artifact.
+
+## Most prevalent error modes
+
+This plumbing-only run had 8 errors out of 10 components. Its dominant error modes were:
+
+- `muscle` → `brain`: 3 cases
+- `eye` → `brain`: 1 case
+- `muscle` → `eye`: 1 case
+- `brain` → `muscle`: 1 case
+- `muscle` → `channel_noise`: 1 case
+- Prediction-count bias: `brain` +2, `channel_noise` +1, `other_artifact` +1, `muscle` -4
+
+These counts are diagnostic only because this run used the superseded cached-strip sample, not the contiguous first-30 manifest.
