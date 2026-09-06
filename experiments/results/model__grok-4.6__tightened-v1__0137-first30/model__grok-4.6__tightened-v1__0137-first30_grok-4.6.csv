@@ -1,0 +1,32 @@
+set_path,component_index,true_label_norm,predicted_label,confidence,reason
+SavedFiles/0137_VDAudio_ICA.set,0,eye,eye,0.88,"Large slow blink-like deflections, steep 1/f low-frequency spectrum, frontal-weighted map"
+SavedFiles/0137_VDAudio_ICA.set,1,heart,brain,0.62,Dipolar left-right topography with mid-band power then decay; not clearly saccadic or HF-muscle
+SavedFiles/0137_VDAudio_ICA.set,2,eye,eye,0.78,"Right-frontal/periocular focus, slow deflections, power concentrated at low frequencies"
+SavedFiles/0137_VDAudio_ICA.set,3,brain,brain,0.72,"Smooth anterior-posterior dipole, 1/f spectrum, no blink/QRS/HF-muscle pattern"
+SavedFiles/0137_VDAudio_ICA.set,4,brain,brain,0.68,Reasonably dipolar lateral map with falling spectrum; not isolated-channel or rising-HF muscle
+SavedFiles/0137_VDAudio_ICA.set,5,heart,brain,0.7,Posterior-anterior dipolar map and 1/f-like decay after a mid-band plateau
+SavedFiles/0137_VDAudio_ICA.set,6,muscle,muscle,0.92,Spectrum rises with frequency; focal temporal/frontal edge map and bursty high-frequency activity
+SavedFiles/0137_VDAudio_ICA.set,7,brain,brain,0.7,Central dipolar/sombrero map with clean 1/f decay and no QRS or line peak
+SavedFiles/0137_VDAudio_ICA.set,8,brain,brain,0.75,"Posterior/occipital dipolar focus with 1/f spectrum, not an isolated electrode or muscle HF profile"
+SavedFiles/0137_VDAudio_ICA.set,9,brain,brain,0.88,"Dipolar central/parietal map, 1/f-falling spectrum, relatively smooth rhythmic time series; not eye/edge/muscle-like."
+SavedFiles/0137_VDAudio_ICA.set,10,muscle,muscle,0.82,"Focal near-edge hotspot without a true single-electrode island; flat/broadband high-frequency spectrum and spiky activity point to EMG, not channel_noise."
+SavedFiles/0137_VDAudio_ICA.set,11,muscle,muscle,0.9,"Right temporal/edge focus, dense high-frequency time series/ERP streaks, and a flat elevated high-frequency spectrum."
+SavedFiles/0137_VDAudio_ICA.set,12,muscle,muscle,0.72,"Left frontal-temporal edge map; spectrum lacks clean 1/f and is not <5 Hz blink-like; activity is noisy rather than saccade/blink, so temporal EMG over eye/brain."
+SavedFiles/0137_VDAudio_ICA.set,13,muscle,muscle,0.9,Left posterior-lateral edge topography with bursty high-frequency activity and a flat/rising high-frequency spectrum.
+SavedFiles/0137_VDAudio_ICA.set,14,brain,brain,0.8,Broad dipolar anterior-posterior scalp map with clear 1/f spectral decay and smoother low-frequency time series.
+SavedFiles/0137_VDAudio_ICA.set,15,muscle,muscle,0.86,"Left inferior/temporal edge focus, spiky high-frequency traces, and a flat high-frequency spectrum typical of EMG."
+SavedFiles/0137_VDAudio_ICA.set,16,brain,brain,0.86,"Dipolar centro-parietal map, 1/f-like falling spectrum, and relatively smooth non-artifact time series."
+SavedFiles/0137_VDAudio_ICA.set,17,muscle,muscle,0.74,"Left temporal/edge dipole-like map but spectrum recovers at high frequencies and traces are irregular/high-frequency, favoring temporal muscle over brain."
+SavedFiles/0137_VDAudio_ICA.set,18,muscle,muscle,0.72,Focal right temporal hotspot; spectrum dips then stays elevated at high frequencies; noisy/spiky time series.
+SavedFiles/0137_VDAudio_ICA.set,19,muscle,muscle,0.85,Right temporal focus with spatial spread; rising high-frequency spectrum; erratic high-frequency activity.
+SavedFiles/0137_VDAudio_ICA.set,20,brain,brain,0.78,Posterior/occipital dipolar-ish map; 1/f spectrum with mid-frequency power then decay; relatively rhythmic time series.
+SavedFiles/0137_VDAudio_ICA.set,21,muscle,other_artifact,0.58,"Compact right-temporal focus but mixed panels: not a clean dipole, not a classic muscle HF rise, odd horizontal ERP banding; not an unambiguous single-electrode island."
+SavedFiles/0137_VDAudio_ICA.set,22,muscle,muscle,0.88,Left frontal/frontalis focus; classic muscle spectrum (dip then rise/plateau above ~20 Hz); high-frequency ERP streaking.
+SavedFiles/0137_VDAudio_ICA.set,23,muscle,muscle,0.68,Left frontotemporal edge-focused map; bursty time series; residual high-frequency power rather than clean brain 1/f.
+SavedFiles/0137_VDAudio_ICA.set,24,brain,other_artifact,0.82,Non-dipolar center-surround/rim topography; 1/f spectrum is not enough for brain; no QRS rhythm for heart.
+SavedFiles/0137_VDAudio_ICA.set,25,muscle,muscle,0.8,Focal left map; spectrum dips then rises and stays high; high-frequency ERP texture; not an isolated-electrode island.
+SavedFiles/0137_VDAudio_ICA.set,26,muscle,muscle,0.75,Right posterior-temporal focal map; broadband/flat high-frequency spectrum rather than 1/f; noisy activity.
+SavedFiles/0137_VDAudio_ICA.set,27,brain,other_artifact,0.58,"Rim-heavy posterior/lateral map is not a clean dipole; 1/f spectrum but no alpha, erratic TS, no eye/QRS/line/single-channel cue."
+SavedFiles/0137_VDAudio_ICA.set,28,muscle,muscle,0.88,Spectrum drops then rises toward 55 Hz; edge-frontal map; bursty TS and streaky segments.
+SavedFiles/0137_VDAudio_ICA.set,29,muscle,muscle,0.86,"Rising high-frequency spectrum; focal left frontal/temporal map with spiky erratic activity, not an isolated electrode."
+SavedFiles/0137_VDAudio_ICA.set,30,muscle,muscle,0.82,Left temporal focus with rising HF power and spiky TS; spectrum outweighs a plausible temporal dipole.

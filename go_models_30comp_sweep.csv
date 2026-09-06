@@ -13,7 +13,7 @@ GLM-5.2,glm-5.2,unknown,no,pending,,
 GLM-5.3,glm-5.3,unknown,no,pending,,
 GLM-5.3-Flash,glm-5.3-flash,yes,no,pending,,in registry
 GPT-5.6 Luna,gpt-5.6-luna,yes,no,pending,,premium tier
-Grok 4.6,grok-4.6,yes,no,pending,,in registry
+Grok 4.6,grok-4.6,yes,no,complete,83.9%,Go via CLI transport; 26/31; tightened_v1
 Hy3,hy3,unknown,no,pending,,
 Hy4 preview,hy4-preview,unknown,no,pending,,
 Kimi K2.6,kimi-k2.6,yes,no,pending,,in registry
