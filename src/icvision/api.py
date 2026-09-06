@@ -9,6 +9,7 @@ classification requests and parsing structured JSON responses.
 import base64
 import concurrent.futures
 import logging
+import math
 import re
 import tempfile
 from pathlib import Path
@@ -29,6 +30,14 @@ from .plotting import create_strip_image, plot_components_batch
 
 # Set up logging for the module
 logger = logging.getLogger("icvision.api")
+
+
+class StrictClassificationError(RuntimeError):
+    """A strict classification cell cannot be safely scored.
+
+    Strict mode is intentionally fail-closed: callers must not turn an image,
+    API, parsing, or response-integrity failure into a synthetic prediction.
+    """
 
 
 def _extract_json_payload(text: str, bracket: str = "{") -> str:
@@ -392,6 +401,7 @@ def classify_strip_image(
     max_retries: int = 3,
     reasoning_effort: Optional[str] = None,
     custom_prompt: Optional[str] = None,
+    strict_mode: bool = False,
 ) -> List[Dict[str, Any]]:
     """Classify multiple ICA components from a single strip image.
 
@@ -415,6 +425,10 @@ def classify_strip_image(
             shorter-than-strip_size batch). This is the mechanism used to
             test alternative prompts (e.g. tightened_v1.txt, combined_v1.txt)
             against strip mode; see plan/plan-log.md.
+        strict_mode: Fail the entire cell on rendering, API, parsing, or
+            response-integrity errors. Strict requests use a 120-second SDK
+            timeout, disable SDK retries, and make at most three runner-owned
+            retryable attempts.
 
     Returns:
         List of classification results, each with keys:
@@ -437,11 +451,15 @@ def classify_strip_image(
 
     if not image_path or not image_path.exists():
         logger.error("Invalid or non-existent strip image path: %s", image_path)
+        if strict_mode:
+            raise StrictClassificationError("Strip image is missing or invalid")
         return []
 
     n_components = len(component_indices)
     if n_components == 0:
         logger.error("No component indices provided")
+        if strict_mode:
+            raise StrictClassificationError("Strict classification requires components")
         return []
 
     # Generate labels for mapping: A, B, C, ... Z, AA, AB, ...
@@ -464,23 +482,29 @@ def classify_strip_image(
             base64_image = base64.b64encode(f.read()).decode("utf-8")
     except Exception as e:
         logger.error("Failed to read image file %s: %s", image_path, e)
+        if strict_mode:
+            raise StrictClassificationError("Failed to read strip image") from e
         return []
 
     # Get prompt for this number of components
     prompt = get_strip_prompt(n_components, template=custom_prompt)
 
     # Create client
-    client = openai.OpenAI(api_key=api_key, base_url=base_url)
+    client_kwargs: Dict[str, Any] = {"api_key": api_key, "base_url": base_url}
+    if strict_mode:
+        client_kwargs.update(timeout=120.0, max_retries=0)
+    client = openai.OpenAI(**client_kwargs)
 
     # Retry loop with exponential backoff
     message_content = None
     last_error = None
-    for attempt in range(max_retries):
+    max_attempts = min(max_retries, 3) if strict_mode else max_retries
+    for attempt in range(max_attempts):
         try:
             logger.debug(
                 "API call attempt %d/%d (model: %s, base_url: %s, components: %d)",
                 attempt + 1,
-                max_retries,
+                max_attempts,
                 model_name,
                 base_url or "default",
                 n_components,
@@ -498,10 +522,15 @@ def classify_strip_image(
             logger.warning(
                 "API call attempt %d/%d failed: %s",
                 attempt + 1,
-                max_retries,
+                max_attempts,
                 e,
             )
-            if attempt < max_retries - 1:
+            retryable = isinstance(e, (openai.APIConnectionError, openai.RateLimitError, TimeoutError)) or (
+                isinstance(e, openai.APIStatusError) and (getattr(e, "status_code", 0) or 0) >= 500
+            )
+            if strict_mode and not retryable:
+                raise StrictClassificationError("Non-retryable strict API failure") from e
+            if attempt < max_attempts - 1:
                 # Exponential backoff: 1s, 2s, 4s, ...
                 backoff_time = 2 ** attempt
                 logger.info("Retrying in %ds...", backoff_time)
@@ -510,9 +539,11 @@ def classify_strip_image(
     if not message_content:
         logger.error(
             "All %d API attempts failed for strip classification. Last error: %s",
-            max_retries,
+            max_attempts,
             last_error,
         )
+        if strict_mode:
+            raise StrictClassificationError("Strict API attempts exhausted") from last_error
         return []
 
     # Parse the successful response
@@ -524,29 +555,55 @@ def classify_strip_image(
         # did not tolerate; see GH issue #13).
         json_str = _extract_json_payload(message_content, bracket="[")
         raw_results = json.loads(json_str)
+        if not isinstance(raw_results, list):
+            raise ValueError("Strict strip response must be a JSON array")
 
         # Map letter labels back to component indices
         results = []
+        seen_components = set()
         for r in raw_results:
+            if not isinstance(r, dict):
+                raise ValueError("Strip response entries must be objects")
+            if strict_mode and not {"component", "label", "confidence", "reason"}.issubset(r):
+                raise StrictClassificationError("Strict strip response entry is missing required fields")
             letter = r.get("component", "?")
             actual_idx = label_to_idx.get(letter)
             if actual_idx is None:
                 logger.warning("Unknown component label in response: %s", letter)
+                if strict_mode:
+                    raise StrictClassificationError(f"Unknown component mapping: {letter!r}")
                 continue
+
+            if strict_mode and actual_idx in seen_components:
+                raise StrictClassificationError(f"Duplicate component mapping: {letter!r}")
+            seen_components.add(actual_idx)
 
             label = r.get("label", "other_artifact").lower()
             if label not in COMPONENT_LABELS:
                 logger.warning("Unknown label '%s' for IC%d, using 'other_artifact'", label, actual_idx)
+                if strict_mode:
+                    raise StrictClassificationError(f"Invalid component label: {label!r}")
                 label = "other_artifact"
+
+            confidence = float(r.get("confidence", 0.8))
+            if strict_mode and (not math.isfinite(confidence) or not 0.0 <= confidence <= 1.0):
+                raise StrictClassificationError(f"Invalid confidence for component {letter!r}")
+            reason = r.get("reason", "")
+            if strict_mode and not isinstance(reason, str):
+                raise StrictClassificationError(f"Invalid reason for component {letter!r}")
 
             results.append(
                 {
                     "component_idx": actual_idx,
                     "label": label,
-                    "confidence": float(r.get("confidence", 0.8)),
-                    "reason": r.get("reason", ""),
+                    "confidence": confidence,
+                    "reason": reason,
                 }
             )
+
+        if strict_mode and seen_components != set(component_indices):
+            missing = sorted(set(component_indices) - seen_components)
+            raise StrictClassificationError(f"Missing component mappings: {missing}")
 
         elapsed = time.time() - start_time
         logger.info(
@@ -559,11 +616,17 @@ def classify_strip_image(
 
         return results
 
-    except json.JSONDecodeError as e:
+    except StrictClassificationError:
+        raise
+    except (json.JSONDecodeError, TypeError, ValueError) as e:
         logger.error("JSON parse error in strip response: %s", e)
+        if strict_mode:
+            raise StrictClassificationError("Invalid strict response schema or JSON") from e
         return []
     except Exception as e:
         logger.error("Unexpected error parsing strip response: %s", e)
+        if strict_mode:
+            raise StrictClassificationError("Unexpected strict response parsing failure") from e
         return []
 
 
@@ -582,6 +645,7 @@ def classify_components_strip_batch(
     labels_to_exclude: Optional[List[str]] = None,
     reasoning_effort: Optional[str] = None,
     custom_prompt: Optional[str] = None,
+    strict_mode: bool = False,
 ) -> Tuple[pd.DataFrame, Dict[str, Any]]:
     """Classify ICA components using strip layout (batches of 9).
 
@@ -660,6 +724,8 @@ def classify_components_strip_batch(
             )
         except Exception as e:
             logger.error("Failed to create strip image for batch %d: %s", batch_idx, e)
+            if strict_mode:
+                raise StrictClassificationError(f"Failed to render strict strip batch {batch_idx}") from e
             # Add fallback results for failed batch
             for idx in batch_indices:
                 all_results.append(
@@ -681,6 +747,7 @@ def classify_components_strip_batch(
             base_url=base_url,
             reasoning_effort=reasoning_effort,
             custom_prompt=custom_prompt,
+            strict_mode=strict_mode,
         )
 
         if batch_results:
@@ -688,6 +755,8 @@ def classify_components_strip_batch(
         else:
             # Fallback for failed classification
             logger.warning("Strip classification failed for batch %d, using fallback", batch_idx)
+            if strict_mode:
+                raise StrictClassificationError(f"Strict strip classification failed for batch {batch_idx}")
             for idx in batch_indices:
                 all_results.append(
                     {
@@ -770,6 +839,7 @@ def classify_components_batch(
     layout: str = "single",
     strip_size: int = 9,
     reasoning_effort: Optional[str] = None,
+    strict_mode: bool = False,
 ) -> Tuple[pd.DataFrame, dict]:
     """
     Classifies ICA components in batches using OpenAI Vision API with parallel processing.
@@ -793,6 +863,8 @@ def classify_components_batch(
         layout: Classification layout - "single" (one image per component) or
             "strip" (multiple components per image). Default: "single".
         strip_size: Components per strip image when layout="strip". Default: 9.
+        strict_mode: In strip layout, fail closed rather than emitting fallback
+            labels after request, parsing, rendering, or mapping errors.
 
     Returns:
         Tuple of (pd.DataFrame with classification results, dict with cost tracking information).
@@ -820,6 +892,7 @@ def classify_components_batch(
             auto_exclude=auto_exclude,
             labels_to_exclude=labels_to_exclude,
             reasoning_effort=reasoning_effort,
+            strict_mode=strict_mode,
         )
 
     # Original single-image classification logic

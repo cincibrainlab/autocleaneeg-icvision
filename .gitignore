@@ -303,6 +303,7 @@ data/
 !tests/**/*.csv
 !examples/**/*.csv
 !experiments/results/**/*.csv
+!experiments/manifests/*.csv
 *.tsv
 *.parquet
 *.feather
@@ -464,3 +465,6 @@ backups/
 /rater/public/components
 /rater/scripts/control
 /rater/scripts/output
+
+# git worktrees
+.worktrees/

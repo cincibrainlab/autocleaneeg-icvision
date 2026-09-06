@@ -1,0 +1,30 @@
+{
+  "name": "autocleaneeg-icvision",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "workspaceFolder": "/workspaces/autocleaneeg-icvision",
+  "remoteUser": "vscode",
+  "containerEnv": {
+    "MPLBACKEND": "Agg",
+    "PYTHONUNBUFFERED": "1",
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "postCreateCommand": "python -m pip install --upgrade pip && python -m pip install -e '.[dev,test]'",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.testing.pytestEnabled": true,
+        "python.testing.pytestArgs": [
+          "tests"
+        ]
+      }
+    }
+  }
+}
