@@ -1,0 +1,106 @@
+# IC Vision sweep model registry.
+#
+# Adding a model = add an entry below. Nothing else changes.
+#   vision:   true if the model accepts images (sweeps skip vision:false)
+#   tier:     cheap | premium | free   (premium needs --allow-premium)
+#   gateway:  key into gateway_urls; api key resolved from api_keys
+#   enabled:  false = skipped entirely
+#
+# Pilot slate (stage 0/1): one model per family, all cheap/free via opencode-go.
+
+gateway_urls:
+  opencode-go: https://opencode.ai/zen/v1
+  clincog: https://openai.cincibrainlab.com/v1
+
+api_keys:
+  opencode-go:
+    env: OPENCODE_API_KEY
+    auth_json: opencode-go
+  clincog:
+    env: CLINCOG_API_KEY
+
+models:
+  # ---- pilot slate (cheap, vision-capable, one per family) ----
+  gpt-5.4-nano:
+    family: openai
+    vision: true
+    tier: cheap
+    gateway: opencode-go
+    enabled: true
+  claude-haiku-4-5:
+    family: anthropic
+    vision: true
+    tier: cheap
+    gateway: opencode-go
+    enabled: true
+  gemini-3.5-flash-lite:
+    family: google
+    vision: true
+    tier: cheap
+    gateway: opencode-go
+    enabled: true
+  kimi-k2.5-free:
+    family: moonshot
+    vision: true
+    tier: cheap
+    gateway: opencode-go
+    enabled: true
+  qwen3.6-plus-free:
+    family: alibaba
+    vision: true
+    tier: cheap
+    gateway: opencode-go
+    enabled: true
+  deepseek-v4-flash-vision-exp:
+    family: deepseek
+    vision: true
+    tier: cheap
+    gateway: opencode-go
+    enabled: true
+  minimax-m3-free:
+    family: minimax
+    vision: true
+    tier: cheap
+    gateway: opencode-go
+    enabled: true
+  glm-5.3-flash:
+    family: zhipu
+    vision: true
+    tier: cheap
+    gateway: opencode-go
+    enabled: true
+  muse-spark-1.3:
+    family: muse
+    vision: true
+    tier: cheap
+    gateway: opencode-go
+    enabled: true
+  grok-4.5:
+    family: xai
+    vision: true
+    tier: cheap
+    gateway: opencode-go
+    enabled: true
+
+  # ---- local baseline (no API cost) ----
+  ICLabel:
+    family: iclabel
+    vision: false
+    tier: free
+    gateway: local
+    enabled: true
+    kind: baseline
+
+  # ---- premium guard-rails: skipped unless --allow-premium ----
+  gpt-5.6-sol:
+    family: openai
+    vision: true
+    tier: premium
+    gateway: clincog
+    enabled: false
+  gpt-5.5:
+    family: openai
+    vision: true
+    tier: premium
+    gateway: clincog
+    enabled: false

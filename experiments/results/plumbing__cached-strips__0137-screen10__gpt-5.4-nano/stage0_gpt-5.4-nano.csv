@@ -1,0 +1,11 @@
+set_path,component_index,true_label_norm,predicted_label,confidence,reason
+SavedFiles/0137_VDAudio_ICA.set,0,eye,brain,0.72,Central/parietal dipolar topography with clear 8–12 Hz alpha peak and 1/f-like spectrum; time series shows typical oscillatory activity rather than slow eye/muscle.
+SavedFiles/0137_VDAudio_ICA.set,6,muscle,eye,0.78,Frontal/periocular topography with strong low-frequency (<4 Hz) dominance and large slow deflections in the time series.
+SavedFiles/0137_VDAudio_ICA.set,7,brain,muscle,0.7,"Edge/lateralized topography with high-frequency dominated spectrum (no clear alpha peak) and relatively noisy, non-oscillatory time course consistent with muscle artifact."
+SavedFiles/0137_VDAudio_ICA.set,19,muscle,brain,0.66,Parietal/central dipolar pattern with 1/f spectrum and a modest alpha/beta structure; time series looks like neural activity rather than rhythmic heart/eye.
+SavedFiles/0137_VDAudio_ICA.set,20,brain,brain,0.62,Midline frontal/central dipolar topography with alpha/beta-like spectral structure (not strongly <4 Hz) and no edge-focused high-frequency muscle signature.
+SavedFiles/0137_VDAudio_ICA.set,23,muscle,channel_noise,0.74,Highly focal topography (single-sensor-like) with flat/erratic spectrum and irregular time series lacking alpha/beta peaks.
+SavedFiles/0137_VDAudio_ICA.set,25,muscle,brain,0.6,Broad central topography with 1/f spectrum and some alpha/beta presence; time series shows more structured oscillatory fluctuations than artifacts.
+SavedFiles/0137_VDAudio_ICA.set,34,muscle,brain,0.58,Central/parietal dipolar topography with 1/f-like spectrum and no strong <4 Hz eye pattern or edge-focused high-frequency muscle pattern.
+SavedFiles/0137_VDAudio_ICA.set,46,brain,other_artifact,0.55,"Lateral/temporal topography with broad activity but spectrum/time course do not match clean categories (not a sharp 50/60 Hz line, not clear heart ~1 Hz, not clear eye <4 Hz slow deflections, and not clearly edge-focused high-frequency muscle)."
+SavedFiles/0137_VDAudio_ICA.set,59,muscle,muscle,0.78,"Topography is edge-focused (lateral/temporal rim) and the power spectrum is dominated by high frequencies without a clear alpha (8–12 Hz) or beta (13–30 Hz) peak; time series shows fast, irregular activity consistent with muscle."

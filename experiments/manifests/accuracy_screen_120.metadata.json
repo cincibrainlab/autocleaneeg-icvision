@@ -1,0 +1,32 @@
+{
+  "algorithm_version": "subject-balanced-proportional-v1",
+  "holdout_rows": 559,
+  "holdout_sha256": "ed2f7d728d17912c964aeedfb9624efe1047405d9d614cff75bf3438138ebac7",
+  "recording_allocation": {
+    "SavedFiles/0137_VDAudio_ICA.set": 10,
+    "SavedFiles/0161_VD_audio_ICA.set": 10,
+    "SavedFiles/0161_VD_noaudio_ICA.set": 10,
+    "SavedFiles/0206_VDaudio_ICA.set": 10,
+    "SavedFiles/0206_VDnoaudio_ICA.set": 10,
+    "SavedFiles/0589_VDAudio_ICA.set": 10,
+    "SavedFiles/0604_VDaudio_ICA.set": 10,
+    "SavedFiles/0837_VDAudio_ICA.set": 11,
+    "SavedFiles/0837_VDNoAudio_ICA.set": 10,
+    "SavedFiles/1846_VDnoaudio_ICA.set": 9,
+    "SavedFiles/2319_VDaudio_ICA.set": 10,
+    "SavedFiles/2818_VDnoaudio_ICA.set": 10
+  },
+  "screen_label_counts": {
+    "brain": 43,
+    "channel_noise": 3,
+    "eye": 18,
+    "heart": 4,
+    "muscle": 38,
+    "other_artifact": 14
+  },
+  "screen_rows": 120,
+  "screen_sha256": "f61dca5feb4549522e741a7443a481a16be1805e112c34653bd918744826fce5",
+  "seed": 20260820,
+  "source": "experiments/manifests/grace_679_manifest_local.csv",
+  "source_sha256": "39c34622f0c0861961d10c89c6394384dbf7f4da6dbb7292e744e1397556690d"
+}
