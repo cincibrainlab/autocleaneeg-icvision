@@ -27,6 +27,12 @@ models:
     tier: cheap
     gateway: opencode-go
     enabled: true
+  gpt-5.4-mini:
+    family: openai
+    vision: true
+    tier: cheap
+    gateway: opencode-go
+    enabled: true
   claude-haiku-4-5:
     family: anthropic
     vision: true
