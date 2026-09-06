@@ -473,3 +473,9 @@ backups/
 !experiments/results/**/logs/*.jsonl
 !experiments/results/**/annotated/**/*.png
 !experiments/results/**/overlays/**/*.png
+
+# sweep run artifacts (audit evidence — per-run dirs only)
+!experiments/results/**/logs/*.jsonl
+!experiments/results/**/annotated/**/*.png
+!experiments/results/**/overlays/**/*.png
+!experiments/results/**/strips/**/*.webp
