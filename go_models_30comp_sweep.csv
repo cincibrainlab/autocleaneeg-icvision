@@ -1,0 +1,30 @@
+display_name,registry_id,vision,already_tested,status,accuracy,notes
+Gemini 3.5 Flash (OpenCode CLI),gemini-3.5-flash,yes,yes,complete,32.3%,Zen Google route via opencode CLI; 31 components; tightened_v1
+Gemini 3.5 Flash Lite (OpenCode CLI),gemini-3.5-flash-lite,yes,no,blocked,,,Go endpoint rejected model; use CLI route if separately tested
+GLM-5.1,glm-5.1,unknown,no,pending,,,
+Omen Alpha,omen-alpha,unknown,no,pending,,,
+Qwen3.6 Plus,qwen3.6-plus-free,yes,no,pending,,registry has -free variant
+Qwen3.8 Flash,qwen3.8-flash,unknown,no,pending,,
+Qwen3.8 Max,qwen3.8-max,unknown,no,pending,,
+DeepSeek V4 Flash,deepseek-v4-flash,unknown,no,pending,,
+DeepSeek V4 Flash Vision Exp,deepseek-v4-flash-vision-exp,yes,no,pending,,in registry
+DeepSeek V4 Pro (New),deepseek-v4-pro,unknown,no,pending,,
+GLM-5.2,glm-5.2,unknown,no,pending,,
+GLM-5.3,glm-5.3,unknown,no,pending,,
+GLM-5.3-Flash,glm-5.3-flash,yes,no,pending,,in registry
+GPT-5.6 Luna,gpt-5.6-luna,yes,no,pending,,premium tier
+Grok 4.6,grok-4.6,yes,no,pending,,in registry
+Hy3,hy3,unknown,no,pending,,
+Hy4 preview,hy4-preview,unknown,no,pending,,
+Kimi K2.6,kimi-k2.6,yes,no,pending,,in registry
+Kimi K2.7 Code,kimi-k2.7-code,unknown,no,pending,,
+Kimi K3,kimi-k3,unknown,no,pending,,
+LongCat-2.0,longcat-2.0,unknown,no,pending,,
+MiMo V2.5,mimo-v2.5-free,yes,no,pending,,registry has -free variant
+MiMo V2.5 Pro,mimo-v2.5-pro,unknown,no,pending,,
+MiniMax-M2.7,minimax-m2.7,unknown,no,pending,,
+MiniMax-M3,minimax-m3-free,yes,no,pending,,registry has -free variant
+Muse Spark 1.2 Contributor,muse-spark-1.2-contributor-free,yes,no,pending,,registry has -free variant
+Muse Spark 1.3 Contributor,muse-spark-1.3,yes,no,pending,,in registry
+Qwen3.7 Max,qwen3.7-max,unknown,no,pending,,
+Qwen3.7 Plus,qwen3.7-plus,unknown,no,pending,,

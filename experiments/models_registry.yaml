@@ -9,7 +9,7 @@
 # Pilot slate (stage 0/1): one model per family, all cheap/free via opencode-go.
 
 gateway_urls:
-  opencode-go: https://opencode.ai/zen/v1
+  opencode-go: https://opencode.ai/zen/go/v1
   clincog: https://openai.cincibrainlab.com/v1
 
 api_keys:
@@ -38,6 +38,14 @@ models:
     vision: true
     tier: cheap
     gateway: opencode-go
+    enabled: true
+  gemini-3.5-flash:
+    family: google
+    vision: true
+    tier: cheap
+    gateway: opencode-go
+    protocol: opencode-cli
+    cli_model: opencode/gemini-3.5-flash
     enabled: true
   kimi-k2.5-free:
     family: moonshot

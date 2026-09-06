@@ -29,6 +29,7 @@ import yaml
 from PIL import Image, ImageDraw, ImageFont
 
 from icvision.api import StrictClassificationError, classify_strip_image
+from cli_transport import classify_strip_cli
 
 FIELDS = ("set_path", "component_index", "true_label_norm", "predicted_label", "confidence", "reason")
 VALID_LABELS = {"brain", "eye", "muscle", "heart", "channel_noise", "other_artifact"}
@@ -181,7 +182,7 @@ def run_model(model: str, spec: dict, registry: dict, strips: list, images_root:
             if line.strip():
                 done.add(json.loads(line)["strip_key"])
     api_key = resolve_api_key(registry, spec["gateway"], spec.get("auth_entry") or {"opencode-go": "opencode-go", "clincog": None}.get(spec["gateway"]))
-    base_url = registry["gateway_urls"][spec["gateway"]]
+    base_url = registry.get("gateway_urls", {}).get(spec.get("gateway"))
     prompt_name = "strip_default (icvision built-in)"
     custom_prompt = None
     if prompt_file is not None:
@@ -214,7 +215,13 @@ def run_model(model: str, spec: dict, registry: dict, strips: list, images_root:
             record = {"model": model, "strip_key": strip_key, "strip": str(strip_path), "indices": indices, "prompt_name": prompt_name, "prompt_sha256": prompt_sha, "strip_sha256": hashlib.sha256(open(strip_path, "rb").read()).hexdigest()[:16]}
             start = time.time()
             try:
-                parsed = classify_strip_image(strip_path, indices, api_key, model_name=model, base_url=base_url, strict_mode=True)
+                raw_cli = None
+                if spec.get("protocol") == "opencode-cli":
+                    from icvision.config import get_strip_prompt
+                    cli_prompt = get_strip_prompt(len(indices), template=custom_prompt)
+                    parsed, raw_cli = classify_strip_cli(strip_path, cli_prompt, spec["cli_model"], indices)
+                else:
+                    parsed = classify_strip_image(strip_path, indices, api_key, model_name=model, base_url=base_url, strict_mode=True, custom_prompt=custom_prompt)
             except (StrictClassificationError, Exception) as exc:
                 record.update({"status": "error", "error": f"{type(exc).__name__}: {exc}", "latency_s": round(time.time() - start, 2)})
                 log.write(json.dumps(record) + "\n")
@@ -222,6 +229,8 @@ def run_model(model: str, spec: dict, registry: dict, strips: list, images_root:
             latency = round(time.time() - start, 2)
             results = {int(r["component_idx"]): r for r in parsed}
             record.update({"status": "ok", "latency_s": latency, "response": parsed})
+            if raw_cli is not None:
+                record["cli_raw_output"] = raw_cli
             log.write(json.dumps(record) + "\n")
             stats["calls"] += 1
             stats["latency"].append(latency)

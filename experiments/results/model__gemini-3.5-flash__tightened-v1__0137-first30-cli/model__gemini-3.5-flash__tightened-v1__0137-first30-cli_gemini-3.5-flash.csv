@@ -1,0 +1,32 @@
+set_path,component_index,true_label_norm,predicted_label,confidence,reason
+SavedFiles/0137_VDAudio_ICA.set,0,eye,eye,0.95,Frontal scalp distribution with classic blink-like slow deflection in the time series and low-frequency dominated power spectrum.
+SavedFiles/0137_VDAudio_ICA.set,1,heart,heart,0.95,"Extremely regular, periodic QRS-like cardiac deflections in the time series (~1 Hz rhythm) and broad lateralized scalp map consistent with a distant source."
+SavedFiles/0137_VDAudio_ICA.set,2,eye,brain,0.85,"Frontal-central dipole scalp map with a smooth, rhythmic time series and a clear alpha band peak (around 10 Hz) in the power spectrum."
+SavedFiles/0137_VDAudio_ICA.set,3,brain,brain,0.9,"Symmetrical central-parietal dipolar scalp map, rhythmic time series, and 1/f spectral decay with a clear alpha peak."
+SavedFiles/0137_VDAudio_ICA.set,4,brain,muscle,0.85,"Left temporal scalp focus near the muscle insertion, spiky/erratic time series, and a broad spectrum with significant high-frequency power."
+SavedFiles/0137_VDAudio_ICA.set,5,heart,brain,0.85,Clear sagittal dipolar scalp map with 1/f spectral decay and a prominent alpha peak.
+SavedFiles/0137_VDAudio_ICA.set,6,muscle,channel_noise,0.95,Scalp map is unambiguously dominated by a single isolated-electrode 'island' with no smooth spatial falloff to neighboring channels.
+SavedFiles/0137_VDAudio_ICA.set,7,brain,other_artifact,0.8,"Non-dipolar, multipolar scalp map (central blue with bilateral temporal red regions) coupled with noisy, spiky time series activity and mixed spectral features."
+SavedFiles/0137_VDAudio_ICA.set,8,brain,brain,0.98,"Classic occipital-parietal dipolar scalp map with a highly prominent alpha peak in the power spectrum and smooth, rhythmic time series."
+SavedFiles/0137_VDAudio_ICA.set,9,brain,brain,0.95,"Clear dipolar central-parietal topography, smooth rhythmic time series, and 1/f spectrum with a distinct peak in the alpha band (~10 Hz)."
+SavedFiles/0137_VDAudio_ICA.set,10,muscle,channel_noise,0.9,"Topography shows a highly isolated, sharp single-electrode 'island' on the left side with no smooth spatial falloff, accompanied by a flat high-frequency spectrum."
+SavedFiles/0137_VDAudio_ICA.set,11,muscle,channel_noise,0.9,"Topography displays a single isolated electrode 'island' on the right posterior/temporal edge, with a noisy time series and flat high-frequency spectrum."
+SavedFiles/0137_VDAudio_ICA.set,12,muscle,channel_noise,0.9,"Topography displays a sharp, single-electrode focus in the left frontal region with no spatial falloff, and a flat power spectrum."
+SavedFiles/0137_VDAudio_ICA.set,13,muscle,channel_noise,0.9,"Topography is dominated by an isolated single electrode on the left posterior edge, exhibiting a flat high-frequency spectrum."
+SavedFiles/0137_VDAudio_ICA.set,14,brain,brain,0.95,"Topography shows a smooth, broad central-parietal distribution, with a classic 1/f power spectrum and rhythmic time-series activity."
+SavedFiles/0137_VDAudio_ICA.set,15,muscle,channel_noise,0.9,"Topography shows a sharp, isolated single-electrode 'island' on the left posterior temporal edge, with a noisy time-series and non-1/f flat spectrum."
+SavedFiles/0137_VDAudio_ICA.set,16,brain,brain,0.98,"Beautifully clear, smooth central-parietal dipole topography, rhythmic time-series, and a classic 1/f spectrum with a prominent alpha-band peak."
+SavedFiles/0137_VDAudio_ICA.set,17,muscle,channel_noise,0.9,"Topography is dominated by a sharp, single-electrode focus on the left frontocentral region, with a flat power spectrum and noisy time-series."
+SavedFiles/0137_VDAudio_ICA.set,18,muscle,channel_noise,0.95,Scalp map is dominated by a single isolated electrode island on the right frontal area with no smooth spatial falloff to neighboring sites.
+SavedFiles/0137_VDAudio_ICA.set,19,muscle,channel_noise,0.95,Scalp map is dominated by a single isolated electrode on the right fronto-temporal region with no spatial falloff or opposite pole.
+SavedFiles/0137_VDAudio_ICA.set,20,brain,brain,0.98,"Perfect dipolar scalp map (central-parietal), clear 1/f power spectrum with a typical alpha peak (~10 Hz), and smooth rhythmic time series."
+SavedFiles/0137_VDAudio_ICA.set,21,muscle,channel_noise,0.95,Scalp map shows a single isolated blue electrode island on the right frontal-temporal region with no spatial falloff.
+SavedFiles/0137_VDAudio_ICA.set,22,muscle,channel_noise,0.95,Scalp map is dominated by a single isolated electrode on the front-left area with no spatial falloff.
+SavedFiles/0137_VDAudio_ICA.set,23,muscle,channel_noise,0.95,Scalp map is dominated by a single isolated electrode at the top/frontal region with no spatial falloff.
+SavedFiles/0137_VDAudio_ICA.set,24,brain,other_artifact,0.9,"Scalp map is splotchy and non-dipolar (blue center, red peripheral ring). Power spectrum shows 1/f decay, which is inconsistent with muscle, fitting the other_artifact fallback category perfectly."
+SavedFiles/0137_VDAudio_ICA.set,25,muscle,channel_noise,0.92,Scalp map shows a single isolated electrode island near the top-middle-left with no spatial falloff.
+SavedFiles/0137_VDAudio_ICA.set,26,muscle,channel_noise,0.95,Scalp map is dominated by a single isolated electrode on the right temporal region with no smooth spatial falloff.
+SavedFiles/0137_VDAudio_ICA.set,27,brain,other_artifact,0.8,"The scalp map is splotchy, non-dipolar, and edge-focused (red at posterior and lateral edges, blue in center), and the time series is noisy without a clear classic artifact or brain rhythm, making other_artifact the most appropriate category."
+SavedFiles/0137_VDAudio_ICA.set,28,muscle,eye,0.95,"The scalp map shows a strong frontal/periocular concentration, the time series exhibits a large, slow deflection characteristic of an eye blink/movement, and the power spectrum is heavily concentrated below 5 Hz."
+SavedFiles/0137_VDAudio_ICA.set,29,muscle,muscle,0.9,"The scalp map is focused on the fronto-temporal edge, the time series is highly spiky and erratic, and the power spectrum shows broad, elevated high-frequency activity above 20 Hz."
+SavedFiles/0137_VDAudio_ICA.set,30,muscle,muscle,0.9,"The scalp map shows a highly localized lateral dipole, the time series is spiky and erratic, and the power spectrum has a flat or rising high-frequency profile above 20 Hz."
