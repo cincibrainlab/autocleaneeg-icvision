@@ -468,3 +468,8 @@ backups/
 
 # git worktrees
 .worktrees/
+
+# sweep run artifacts (audit evidence)
+!experiments/results/**/logs/*.jsonl
+!experiments/results/**/annotated/**/*.png
+!experiments/results/**/overlays/**/*.png
