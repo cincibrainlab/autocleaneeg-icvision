@@ -2,7 +2,7 @@
 
 **Variable tested:** model: deepseek-v4-flash-vision-exp (OpenCode Go via CLI transport; same prompt, same 31 components)
 
-Generated 2026-09-08 09:19 by `run_report.py`. All paths relative to repo root. This directory is self-contained: everything needed to audit or re-analyze this run lives here.
+Generated 2026-09-08 10:02 by `run_report.py`. All paths relative to repo root. This directory is self-contained: everything needed to audit or re-analyze this run lives here.
 
 
 ## 1. Recording(s) used
@@ -104,7 +104,7 @@ Respond with JSON array (one object per component, {n} objects total):
 | channel_noise | 0 | 0.0% |
 | other_artifact | 0 | 0.0% |
 
-> Raw accuracy on a skewed batch is dominated by the majority classes. See section 11 for the balanced metric.
+> Raw accuracy on a skewed batch is dominated by the majority classes. See section 12 for the balanced metric.
 
 
 ## 5. Number of runs
@@ -124,7 +124,13 @@ Respond with JSON array (one object per component, {n} objects total):
 |-------|-----------|------|-------|
 | `deepseek-v4-flash-vision-exp` | 4 | $0.0122 | **actual** (summed from CLI step_finish cost events; Go-subscription models are covered by quota, Zen models are out-of-pocket) |
 
-## 8. Results breakdown
+## 8. Time
+
+| Model | Strips | Total time | Median/strip | Min | Max |
+|-------|--------|------------|--------------|-----|-----|
+| `deepseek-v4-flash-vision-exp` | 4 | 189.6 s | 42.4 s | 18.1 s | 102.6 s |
+
+## 9. Results breakdown
 
 
 ### deepseek-v4-flash-vision-exp
@@ -151,7 +157,7 @@ Top confusions (truth → prediction):
 
 Dominant failure mode: **brain read as other_artifact** (5 cases). Model language across these errors leans on topography/spectrum cues that fit the predicted class template; see per-component reasoning below and annotated renders for the visual evidence.
 
-## 9. Most prevalent error modes
+## 10. Most prevalent error modes
 
 
 ### deepseek-v4-flash-vision-exp
@@ -171,7 +177,7 @@ Dominant failure mode: **brain read as other_artifact** (5 cases). Model languag
   - `heart`: -2
 - Weakest class recall: `heart` at 0/2 (0%)
 
-## 10. Model justification per component
+## 11. Model justification per component
 
 
 ### deepseek-v4-flash-vision-exp
@@ -210,7 +216,7 @@ Dominant failure mode: **brain read as other_artifact** (5 cases). Model languag
 | 29 | muscle | muscle | 0.6 | OK | Brain-like central dipole map is contradicted by a rising broadband high-frequency spectrum and spiky/erratic time series, the leading muscle cue. |
 | 30 | muscle | muscle | 0.6 | OK | Central dipolar map but spectrum rises to a broadband hump around 20-30 Hz rather than 1/f decay, with noisy/spiky activity; muscle spectral pattern dominates. |
 
-## 11. Skew-normalized accuracy
+## 12. Skew-normalized accuracy
 
 - **deepseek-v4-flash-vision-exp**: raw 54.8% → balanced **50.1%** (unweighted mean of per-class recalls; every class counts equally regardless of frequency)
 
@@ -220,6 +226,6 @@ Balanced accuracy is the headline metric while the first-30 batch remains imbala
 ## Provenance
 
 - Manifest: `experiments/manifests/stage0_true_first30.csv` (sha256[:16] `8da094ff3a5ffd46`)
-- Model registry: `experiments/models_registry.yaml` (sha256[:16] `d1580df675d545e9`)
+- Model registry: `experiments/models_registry.yaml` (sha256[:16] `a89f17b039b05c72`)
 - Call audit logs: `logs/model__deepseek-v4-flash-vision-exp__tightened-v1__0137-first30_<model>.jsonl` (prompt sha, strip sha, raw responses, latency)
 - Annotated renders: `annotated/<model>/IC*.png`; strips: `strips/`

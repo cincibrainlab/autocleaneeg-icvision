@@ -1,0 +1,32 @@
+set_path,component_index,true_label_norm,predicted_label,confidence,reason
+SavedFiles/0137_VDAudio_ICA.set,0,eye,eye,0.95,Frontal midline topography with large slow blink-like deflections in time series and low-frequency-dominant spectrum.
+SavedFiles/0137_VDAudio_ICA.set,1,heart,eye,0.9,Left-right frontal polarity map with step-like saccade activity (stable intervals separated by fast transitions).
+SavedFiles/0137_VDAudio_ICA.set,2,eye,brain,0.55,"Roughly dipolar map with opposite pole, 1/f-like decaying spectrum, and some ERP banding; spiky time series lowers confidence."
+SavedFiles/0137_VDAudio_ICA.set,3,brain,heart,0.6,Broad near-linear gradient scalp map (distant source) with repeated QRS-like sharp deflections about once per second.
+SavedFiles/0137_VDAudio_ICA.set,4,brain,muscle,0.7,"Left temporal edge-focused map, spiky/erratic bursty activity, and broad sustained high-frequency spectral power."
+SavedFiles/0137_VDAudio_ICA.set,5,heart,heart,0.5,Broad anterior-posterior gradient map with recurring sharp spiky deflections consistent with a distant cardiac source; less regular than D.
+SavedFiles/0137_VDAudio_ICA.set,6,muscle,channel_noise,0.6,"Tiny isolated single-electrode island with no opposite pole, spectrum rising toward high frequencies, and dense high-frequency striping in segment image."
+SavedFiles/0137_VDAudio_ICA.set,7,brain,muscle,0.55,Left temporal edge-focused map with dense spiky bursty activity and sustained high-frequency spectral shoulder; not step-like like eye.
+SavedFiles/0137_VDAudio_ICA.set,8,brain,brain,0.6,Dipolar map with occipital focus and broad spectral hump in alpha range; bursty time series consistent with occipital alpha.
+SavedFiles/0137_VDAudio_ICA.set,9,brain,brain,0.6,Broadly dipolar frontal-vs-posterior-temporal map with 1/f-decaying spectrum and low-frequency hump; time series irregular but no blink/saccade or high-frequency profile.
+SavedFiles/0137_VDAudio_ICA.set,10,muscle,muscle,0.6,"Spectrum clearly rises above ~20 Hz to a high plateau (broad high-frequency power); small focal island at left temporal edge is not an unmistakable isolated-electrode map, so muscle wins."
+SavedFiles/0137_VDAudio_ICA.set,11,muscle,brain,0.5,Lateral right-temporal dipolar map with smoothly decaying 1/f spectrum; spiky series is a bit noisy but no flat/rising high-frequency profile to indicate muscle.
+SavedFiles/0137_VDAudio_ICA.set,12,muscle,muscle,0.65,Spectrum dips then rises with substantial power above ~30 Hz; focal edge map near left frontal/temporal rim and bursty spiky series fit temporalis/frontalis muscle.
+SavedFiles/0137_VDAudio_ICA.set,13,muscle,brain,0.5,"Left-temporal edge dipole with smooth 1/f-decaying spectrum; dense spiky series raises some doubt, but no high-frequency spectral prominence for muscle."
+SavedFiles/0137_VDAudio_ICA.set,14,brain,eye,0.75,"Frontal-central positive map with large slow biphasic deflections, low-frequency-dominant spectrum, and coarse blobby ERP structure consistent with blinks."
+SavedFiles/0137_VDAudio_ICA.set,15,muscle,muscle,0.55,"Left-temporal edge-focused map with spiky activity and spectrum that flattens (fails to decay) above ~20 Hz, fitting shallow temporal muscle."
+SavedFiles/0137_VDAudio_ICA.set,16,brain,brain,0.55,Dipolar map (left central blue vs frontal yellow) with decaying spectrum and low-frequency hump; large deflections are slow but not clearly blink/step-like and map is not frontal-bilateral.
+SavedFiles/0137_VDAudio_ICA.set,17,muscle,muscle,0.6,"Left-temporal edge dipole with bursty spiky series and spectrum that rises again above ~35 Hz, indicating broad high-frequency muscle power."
+SavedFiles/0137_VDAudio_ICA.set,18,muscle,muscle,0.7,Spiky bursty time series with spectrum that stays elevated/flat into high frequencies rather than 1/f decay; focal near-edge central map.
+SavedFiles/0137_VDAudio_ICA.set,19,muscle,muscle,0.6,"Map is dipolar but spectrum is flat with sustained HF power and series is erratic/spiky, unlike clean 1/f brain decay."
+SavedFiles/0137_VDAudio_ICA.set,20,brain,muscle,0.55,Very focal left posterior/edge map with continuous erratic high-frequency-looking activity and blotchy segment image; spectrum decay is the one conflicting cue.
+SavedFiles/0137_VDAudio_ICA.set,21,muscle,other_artifact,0.5,"Small edge-focal map, intermittent sharp spikes, low overall power, and banded ERP image; cues don't cleanly fit muscle, eye, or channel_noise."
+SavedFiles/0137_VDAudio_ICA.set,22,muscle,muscle,0.75,Spectrum clearly rises from ~10 Hz into the 20-40 Hz range with spiky bursty series; frontal focality is not low-frequency blink-like.
+SavedFiles/0137_VDAudio_ICA.set,23,muscle,eye,0.7,"Frontal left-right dipolar map with power concentrated at low frequencies and large slow deflections, consistent with blink/saccade activity."
+SavedFiles/0137_VDAudio_ICA.set,24,brain,heart,0.75,Broad near-linear peripheral-to-central gradient map with regularly repeating QRS-like spiky deflections in the time series.
+SavedFiles/0137_VDAudio_ICA.set,25,muscle,muscle,0.6,Spectrum shows a rising HF plateau above ~15 Hz with spiky bursts despite a small focal central map.
+SavedFiles/0137_VDAudio_ICA.set,26,muscle,muscle,0.7,Dense spiky continuous activity with flat sustained spectrum into 40+ Hz and blotchy segment image; dipolar posterior map is atypical but spectrum/activity dominate.
+SavedFiles/0137_VDAudio_ICA.set,27,brain,brain,0.55,Clean central radial dipolar topography and 1/f-like decaying spectrum support brain; spiky time series and noisy ERP image lower confidence.
+SavedFiles/0137_VDAudio_ICA.set,28,muscle,eye,0.85,"Frontal/periocular dipolar map (eye-to-vertex polarity), low-frequency-dominant spectrum, and a large blink-like transient in the time series."
+SavedFiles/0137_VDAudio_ICA.set,29,muscle,muscle,0.7,"Spectrum rises steadily toward 55 Hz (high-frequency dominant), spiky erratic time series; frontal focal spot has smooth spread, not an isolated single-electrode island."
+SavedFiles/0137_VDAudio_ICA.set,30,muscle,muscle,0.75,"Rising high-frequency spectral profile, spiky bursting time series, and shallow temporal/edge dipolar map consistent with temporal/jaw muscle."

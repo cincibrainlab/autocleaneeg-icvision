@@ -2,7 +2,7 @@
 
 **Variable tested:** transport: OpenCode CLI Google route for gemini-3.5-flash (same prompt, same 31 components)
 
-Generated 2026-09-08 09:19 by `run_report.py`. All paths relative to repo root. This directory is self-contained: everything needed to audit or re-analyze this run lives here.
+Generated 2026-09-08 10:02 by `run_report.py`. All paths relative to repo root. This directory is self-contained: everything needed to audit or re-analyze this run lives here.
 
 
 ## 1. Recording(s) used
@@ -104,7 +104,7 @@ Respond with JSON array (one object per component, {n} objects total):
 | channel_noise | 0 | 0.0% |
 | other_artifact | 0 | 0.0% |
 
-> Raw accuracy on a skewed batch is dominated by the majority classes. See section 11 for the balanced metric.
+> Raw accuracy on a skewed batch is dominated by the majority classes. See section 12 for the balanced metric.
 
 
 ## 5. Number of runs
@@ -124,7 +124,13 @@ Respond with JSON array (one object per component, {n} objects total):
 |-------|-----------|------|-------|
 | `gemini-3.5-flash` | 4 | $0.1870 | **actual** (summed from CLI step_finish cost events; Go-subscription models are covered by quota, Zen models are out-of-pocket) |
 
-## 8. Results breakdown
+## 8. Time
+
+| Model | Strips | Total time | Median/strip | Min | Max |
+|-------|--------|------------|--------------|-----|-----|
+| `gemini-3.5-flash` | 4 | 106.7 s | 28.9 s | 19.9 s | 33.0 s |
+
+## 9. Results breakdown
 
 
 ### gemini-3.5-flash
@@ -151,7 +157,7 @@ Top confusions (truth → prediction):
 
 Dominant failure mode: **muscle read as channel_noise** (14 cases). Model language across these errors leans on topography/spectrum cues that fit the predicted class template; see per-component reasoning below and annotated renders for the visual evidence.
 
-## 9. Most prevalent error modes
+## 10. Most prevalent error modes
 
 
 ### gemini-3.5-flash
@@ -164,14 +170,14 @@ Dominant failure mode: **muscle read as channel_noise** (14 cases). Model langua
   - `brain` → `muscle`: 1
   - `heart` → `brain`: 1
 - Largest prediction-count biases (predicted minus true):
-  - `muscle`: -14
   - `channel_noise`: +14
+  - `muscle`: -14
   - `other_artifact`: +3
   - `brain`: -2
   - `heart`: -1
 - Weakest class recall: `muscle` at 2/17 (12%)
 
-## 10. Model justification per component
+## 11. Model justification per component
 
 
 ### gemini-3.5-flash
@@ -210,7 +216,7 @@ Dominant failure mode: **muscle read as channel_noise** (14 cases). Model langua
 | 29 | muscle | muscle | 0.9 | OK | The scalp map is focused on the fronto-temporal edge, the time series is highly spiky and erratic, and the power spectrum shows broad, elevated high-frequency activity above 20 Hz. |
 | 30 | muscle | muscle | 0.9 | OK | The scalp map shows a highly localized lateral dipole, the time series is spiky and erratic, and the power spectrum has a flat or rising high-frequency profile above 20 Hz. |
 
-## 11. Skew-normalized accuracy
+## 12. Skew-normalized accuracy
 
 - **gemini-3.5-flash**: raw 32.3% → balanced **42.9%** (unweighted mean of per-class recalls; every class counts equally regardless of frequency)
 
@@ -220,6 +226,6 @@ Balanced accuracy is the headline metric while the first-30 batch remains imbala
 ## Provenance
 
 - Manifest: `experiments/manifests/stage0_true_first30.csv` (sha256[:16] `8da094ff3a5ffd46`)
-- Model registry: `experiments/models_registry.yaml` (sha256[:16] `d1580df675d545e9`)
+- Model registry: `experiments/models_registry.yaml` (sha256[:16] `a89f17b039b05c72`)
 - Call audit logs: `logs/model__gemini-3.5-flash__tightened-v1__0137-first30-cli_<model>.jsonl` (prompt sha, strip sha, raw responses, latency)
 - Annotated renders: `annotated/<model>/IC*.png`; strips: `strips/`

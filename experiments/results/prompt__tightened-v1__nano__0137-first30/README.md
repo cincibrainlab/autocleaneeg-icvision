@@ -2,7 +2,7 @@
 
 **Variable tested:** prompt: tightened_v1 with gpt-5.4-nano (same 31 components)
 
-Generated 2026-09-08 09:19 by `run_report.py`. All paths relative to repo root. This directory is self-contained: everything needed to audit or re-analyze this run lives here.
+Generated 2026-09-08 10:02 by `run_report.py`. All paths relative to repo root. This directory is self-contained: everything needed to audit or re-analyze this run lives here.
 
 
 ## 1. Recording(s) used
@@ -104,7 +104,7 @@ Respond with JSON array (one object per component, {n} objects total):
 | channel_noise | 0 | 0.0% |
 | other_artifact | 0 | 0.0% |
 
-> Raw accuracy on a skewed batch is dominated by the majority classes. See section 11 for the balanced metric.
+> Raw accuracy on a skewed batch is dominated by the majority classes. See section 12 for the balanced metric.
 
 
 ## 5. Number of runs
@@ -124,7 +124,13 @@ Respond with JSON array (one object per component, {n} objects total):
 |-------|-----------|------|-------|
 | `gpt-5.4-nano` | 4 | ~$0.0078 | **estimated** (Zen pricing $0.2/$1M in, $1.25/$1M out × ~6000in/600out tokens per strip; images dominate input; actual cost not metered by this API path) |
 
-## 8. Results breakdown
+## 8. Time
+
+| Model | Strips | Total time | Median/strip | Min | Max |
+|-------|--------|------------|--------------|-----|-----|
+| `gpt-5.4-nano` | 4 | 16.0 s | 3.8 s | 3.6 s | 4.9 s |
+
+## 9. Results breakdown
 
 
 ### gpt-5.4-nano
@@ -151,7 +157,7 @@ Top confusions (truth → prediction):
 
 Dominant failure mode: **muscle read as brain** (7 cases). Model language across these errors leans on topography/spectrum cues that fit the predicted class template; see per-component reasoning below and annotated renders for the visual evidence.
 
-## 9. Most prevalent error modes
+## 10. Most prevalent error modes
 
 
 ### gpt-5.4-nano
@@ -167,11 +173,11 @@ Dominant failure mode: **muscle read as brain** (7 cases). Model language across
   - `muscle`: -5
   - `other_artifact`: +3
   - `brain`: +2
-  - `heart`: -1
   - `eye`: +1
+  - `heart`: -1
 - Weakest class recall: `eye` at 0/2 (0%)
 
-## 10. Model justification per component
+## 11. Model justification per component
 
 
 ### gpt-5.4-nano
@@ -210,7 +216,7 @@ Dominant failure mode: **muscle read as brain** (7 cases). Model language across
 | 29 | muscle | brain | 0.62 | WRONG | More dipolar/central-parietal distribution with a smoother, less blink-like time course; spectrum shows typical EEG-like 1/f decay with some mid-band activity. |
 | 30 | muscle | other_artifact | 0.45 | WRONG | Scalp map is focal near left temporal/frontal but not an unmistakable single-electrode island; time series and spectrum are mixed (not clearly line-noise/heart/eye, and not cleanly muscle-dominant). |
 
-## 11. Skew-normalized accuracy
+## 12. Skew-normalized accuracy
 
 - **gpt-5.4-nano**: raw 29.0% → balanced **15.3%** (unweighted mean of per-class recalls; every class counts equally regardless of frequency)
 
@@ -220,6 +226,6 @@ Balanced accuracy is the headline metric while the first-30 batch remains imbala
 ## Provenance
 
 - Manifest: `experiments/manifests/stage0_true_first30.csv` (sha256[:16] `8da094ff3a5ffd46`)
-- Model registry: `experiments/models_registry.yaml` (sha256[:16] `d1580df675d545e9`)
+- Model registry: `experiments/models_registry.yaml` (sha256[:16] `a89f17b039b05c72`)
 - Call audit logs: `logs/prompt__tightened-v1__nano__0137-first30_<model>.jsonl` (prompt sha, strip sha, raw responses, latency)
 - Annotated renders: `annotated/<model>/IC*.png`; strips: `strips/`

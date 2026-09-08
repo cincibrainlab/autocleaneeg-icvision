@@ -2,7 +2,7 @@
 
 **Variable tested:** model: minimax-m3 (OpenCode Go via CLI transport; same prompt, same 31 components)
 
-Generated 2026-09-08 09:19 by `run_report.py`. All paths relative to repo root. This directory is self-contained: everything needed to audit or re-analyze this run lives here.
+Generated 2026-09-08 10:02 by `run_report.py`. All paths relative to repo root. This directory is self-contained: everything needed to audit or re-analyze this run lives here.
 
 
 ## 1. Recording(s) used
@@ -104,7 +104,7 @@ Respond with JSON array (one object per component, {n} objects total):
 | channel_noise | 0 | 0.0% |
 | other_artifact | 0 | 0.0% |
 
-> Raw accuracy on a skewed batch is dominated by the majority classes. See section 11 for the balanced metric.
+> Raw accuracy on a skewed batch is dominated by the majority classes. See section 12 for the balanced metric.
 
 
 ## 5. Number of runs
@@ -124,7 +124,13 @@ Respond with JSON array (one object per component, {n} objects total):
 |-------|-----------|------|-------|
 | `minimax-m3` | 4 | $0.0244 | **actual** (summed from CLI step_finish cost events; Go-subscription models are covered by quota, Zen models are out-of-pocket) |
 
-## 8. Results breakdown
+## 8. Time
+
+| Model | Strips | Total time | Median/strip | Min | Max |
+|-------|--------|------------|--------------|-----|-----|
+| `minimax-m3` | 4 | 215.4 s | 53.5 s | 16.5 s | 125.8 s |
+
+## 9. Results breakdown
 
 
 ### minimax-m3
@@ -151,7 +157,7 @@ Top confusions (truth → prediction):
 
 Dominant failure mode: **muscle read as brain** (5 cases). Model language across these errors leans on topography/spectrum cues that fit the predicted class template; see per-component reasoning below and annotated renders for the visual evidence.
 
-## 9. Most prevalent error modes
+## 10. Most prevalent error modes
 
 
 ### minimax-m3
@@ -164,14 +170,14 @@ Dominant failure mode: **muscle read as brain** (5 cases). Model language across
   - `heart` → `eye`: 1
   - `heart` → `brain`: 1
 - Largest prediction-count biases (predicted minus true):
-  - `eye`: +6
   - `muscle`: -6
+  - `eye`: +6
   - `other_artifact`: +2
-  - `heart`: -1
   - `brain`: -1
+  - `heart`: -1
 - Weakest class recall: `heart` at 0/2 (0%)
 
-## 10. Model justification per component
+## 11. Model justification per component
 
 
 ### minimax-m3
@@ -210,7 +216,7 @@ Dominant failure mode: **muscle read as brain** (5 cases). Model language across
 | 29 | muscle | brain | 0.55 | WRONG | ERP image has clear vertical (inter-trial consistent) structure and the time series/spectrum look like clean oscillatory neural activity (1/f decay). The scalp map is unusually focal at the vertex — could be a focal source or partial bad-channel contamination — but the activity panels are not noise-like, so brain is preferred over channel_noise/other_artifact. |
 | 30 | muscle | muscle | 0.6 | OK | Spiky, erratic time series and focal temporal/lateral scalp map (blue/red cluster on the side, rest of map near neutral) are consistent with temporalis/jaw muscle artifact. Per the rules, when there is spiky/erratic activity with temporal focality, prefer muscle over channel_noise even if the map looks somewhat isolated. |
 
-## 11. Skew-normalized accuracy
+## 12. Skew-normalized accuracy
 
 - **minimax-m3**: raw 45.2% → balanced **45.7%** (unweighted mean of per-class recalls; every class counts equally regardless of frequency)
 
@@ -220,6 +226,6 @@ Balanced accuracy is the headline metric while the first-30 batch remains imbala
 ## Provenance
 
 - Manifest: `experiments/manifests/stage0_true_first30.csv` (sha256[:16] `8da094ff3a5ffd46`)
-- Model registry: `experiments/models_registry.yaml` (sha256[:16] `d1580df675d545e9`)
+- Model registry: `experiments/models_registry.yaml` (sha256[:16] `a89f17b039b05c72`)
 - Call audit logs: `logs/model__minimax-m3__tightened-v1__0137-first30_<model>.jsonl` (prompt sha, strip sha, raw responses, latency)
 - Annotated renders: `annotated/<model>/IC*.png`; strips: `strips/`

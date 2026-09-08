@@ -1,0 +1,32 @@
+set_path,component_index,true_label_norm,predicted_label,confidence,reason
+SavedFiles/0137_VDAudio_ICA.set,0,eye,brain,0.75,"roughly dipolar scalp, clean 1/f spectrum, structured horizontal bands in segment image"
+SavedFiles/0137_VDAudio_ICA.set,1,heart,eye,0.95,"left-right frontal polarity, step-like time series typical of horizontal eye movement"
+SavedFiles/0137_VDAudio_ICA.set,2,eye,brain,0.8,"dipolar scalp map, clean 1/f spectrum, consistent segment structure"
+SavedFiles/0137_VDAudio_ICA.set,3,brain,muscle,0.7,"spiky erratic high-frequency time series, frontal scalp, noisy unstructured segment"
+SavedFiles/0137_VDAudio_ICA.set,4,brain,muscle,0.85,"highly spiky erratic time series, noisy speckled segment, non-dipolar scalp"
+SavedFiles/0137_VDAudio_ICA.set,5,heart,brain,0.6,"clean 1/f spectrum, time series lacks clear blink/saccade or high-freq burst pattern"
+SavedFiles/0137_VDAudio_ICA.set,6,muscle,other_artifact,0.7,"focal non-dipolar scalp spot, single large spike, high-freq power in spectrum, mixed evidence"
+SavedFiles/0137_VDAudio_ICA.set,7,brain,brain,0.6,"roughly dipolar scalp map, clean 1/f spectrum"
+SavedFiles/0137_VDAudio_ICA.set,8,brain,brain,0.6,"dipolar scalp map, clean 1/f spectrum"
+SavedFiles/0137_VDAudio_ICA.set,9,brain,brain,0.9,"Central/vertical dipolar map, rhythmic time series, clean 1/f spectrum decline"
+SavedFiles/0137_VDAudio_ICA.set,10,muscle,eye,0.75,"Left frontal red focus, initial large deflection, low-freq dominant with non-1/f spectrum"
+SavedFiles/0137_VDAudio_ICA.set,11,muscle,muscle,0.85,"Spiky high-frequency time series, spectrum rises/flat at high freq, non-dipolar map"
+SavedFiles/0137_VDAudio_ICA.set,12,muscle,eye,0.85,"Frontal red/blue focus, slow large deflection at start, strong low-freq power"
+SavedFiles/0137_VDAudio_ICA.set,13,muscle,muscle,0.9,"Highly erratic bursty/spiky time series across entire segment, high-frequency power"
+SavedFiles/0137_VDAudio_ICA.set,14,brain,brain,0.85,"Roughly dipolar (top yellow, bottom blue), rhythmic waves, clean 1/f spectrum"
+SavedFiles/0137_VDAudio_ICA.set,15,muscle,brain,0.7,"Rhythmic time series, declining spectrum, map somewhat lateralized but not clearly artifactual"
+SavedFiles/0137_VDAudio_ICA.set,16,brain,brain,0.8,"Plausible dipolar-ish map, oscillatory activity, 1/f-like spectrum"
+SavedFiles/0137_VDAudio_ICA.set,17,muscle,eye,0.8,"Left red frontal focus, initial large deflection, low-frequency heavy spectrum"
+SavedFiles/0137_VDAudio_ICA.set,18,muscle,other_artifact,0.65,right frontal focal red without clear dipole or isolated electrode; frontal but no strong blink/saccade structure in time series or segments
+SavedFiles/0137_VDAudio_ICA.set,19,muscle,eye,0.7,frontal/periocular map with left-right polarity; low-freq dominant time series consistent with eye activity
+SavedFiles/0137_VDAudio_ICA.set,20,brain,eye,0.85,strong central-frontal red focus (classic vertical EOG); scattered high-amplitude events in segment image; frontal map + low-freq pattern
+SavedFiles/0137_VDAudio_ICA.set,21,muscle,other_artifact,0.6,"edge-focused blue spot on right; initial large deflection but no clear category match; not isolated channel, not dipolar brain, not frontal eye"
+SavedFiles/0137_VDAudio_ICA.set,22,muscle,eye,0.75,left frontal red focus (periocular); frontal map with some low-freq content
+SavedFiles/0137_VDAudio_ICA.set,23,muscle,eye,0.75,left frontal red with right blue polarity; periocular location and low-freq spectrum
+SavedFiles/0137_VDAudio_ICA.set,24,brain,eye,0.8,strong left-right polarity across frontal area consistent with horizontal eye movement; dipolar but anterior/frontal rather than central brain
+SavedFiles/0137_VDAudio_ICA.set,25,muscle,channel_noise,0.7,small isolated blue spot on right with minimal spatial spread and no opposite pole; spiky time series; fits single bad electrode better than muscle or other
+SavedFiles/0137_VDAudio_ICA.set,26,muscle,channel_noise,0.65,"focal red spot lower right, quite localized with little falloff; late component with no clear dipole or eye pattern"
+SavedFiles/0137_VDAudio_ICA.set,27,brain,brain,0.6,"central scalp map with blue focus, clean 1/f spectrum decay, time series relatively smooth without strong artifact patterns"
+SavedFiles/0137_VDAudio_ICA.set,28,muscle,eye,0.8,"frontal topography (red at top of map), large deflection in time series, low-frequency dominant spectrum"
+SavedFiles/0137_VDAudio_ICA.set,29,muscle,muscle,0.75,"spiky/erratic time series, focal edge topography, relatively higher high-frequency power in spectrum"
+SavedFiles/0137_VDAudio_ICA.set,30,muscle,other_artifact,0.6,somewhat dipolar map but contradicted by spiky high-frequency bursting time series; spectrum 1/f but does not cleanly fit brain or muscle

@@ -110,6 +110,27 @@ def compute_cost(run_dir: Path, models: list, n_strips: int) -> list:
     return lines
 
 
+def compute_duration(run_dir: Path, models: list) -> list:
+    lines = []
+    for model in models:
+        jsonl = run_dir / "logs" / f"{run_dir.name}_{model}.jsonl"
+        latencies = []
+        if jsonl.exists():
+            for line in jsonl.read_text(encoding="utf-8").splitlines():
+                if not line.strip():
+                    continue
+                rec = json.loads(line)
+                if rec.get("status") == "ok" and isinstance(rec.get("latency_s"), (int, float)):
+                    latencies.append(rec["latency_s"])
+        if latencies:
+            total = sum(latencies)
+            med = sorted(latencies)[len(latencies) // 2]
+            lines.append(f"| `{model}` | {len(latencies)} | {total:.1f} s | {med:.1f} s | {min(latencies):.1f} s | {max(latencies):.1f} s |")
+        else:
+            lines.append(f"| `{model}` | 0 | n/a | n/a | n/a | n/a |")
+    return lines
+
+
 def build_report(run_dir: Path, manifest_path: Path, models: list, registry_path: Path = None, base_dir: str = None, variable: str = "unspecified") -> Path:
     manifest_rows = list(csv.DictReader(manifest_path.open(newline="", encoding="utf-8")))
     by_file = defaultdict(list)
@@ -158,7 +179,7 @@ def build_report(run_dir: Path, manifest_path: Path, models: list, registry_path
     for label in VALID_LABELS:
         n = class_counts.get(label, 0)
         md.append(f"| {label} | {n} | {n / total:.1%} |" if n else f"| {label} | 0 | 0.0% |")
-    md.append("\n> Raw accuracy on a skewed batch is dominated by the majority classes. See section 11 for the balanced metric.\n")
+    md.append("\n> Raw accuracy on a skewed batch is dominated by the majority classes. See section 12 for the balanced metric.\n")
 
     n_strips = (total + 8) // 9
     md.append("\n## 5. Number of runs\n")
@@ -175,7 +196,12 @@ def build_report(run_dir: Path, manifest_path: Path, models: list, registry_path
     md.append("|-------|-----------|------|-------|")
     md.extend(compute_cost(run_dir, models, n_strips))
 
-    md.append("\n## 8. Results breakdown\n")
+    md.append("\n## 8. Time\n")
+    md.append("| Model | Strips | Total time | Median/strip | Min | Max |")
+    md.append("|-------|--------|------------|--------------|-----|-----|")
+    md.extend(compute_duration(run_dir, models))
+
+    md.append("\n## 9. Results breakdown\n")
     for model in models:
         csv_path = run_dir / f"{run_dir.name}_{model}.csv"
         if not csv_path.exists():
@@ -202,7 +228,7 @@ def build_report(run_dir: Path, manifest_path: Path, models: list, registry_path
             reasons_txt = f"\nDominant failure mode: **{t} read as {p}** ({n} cases). Model language across these errors leans on topography/spectrum cues that fit the predicted class template; see per-component reasoning below and annotated renders for the visual evidence."
         md.append(reasons_txt)
 
-    md.append("\n## 9. Most prevalent error modes\n")
+    md.append("\n## 10. Most prevalent error modes\n")
     for model in models:
         csv_path = run_dir / f"{run_dir.name}_{model}.csv"
         if not csv_path.exists():
@@ -232,7 +258,7 @@ def build_report(run_dir: Path, manifest_path: Path, models: list, registry_path
         if not errors:
             md.append("- No error mode observed in this run.")
 
-    md.append("\n## 10. Model justification per component\n")
+    md.append("\n## 11. Model justification per component\n")
     for model in models:
         csv_path = run_dir / f"{run_dir.name}_{model}.csv"
         if not csv_path.exists():
@@ -247,7 +273,7 @@ def build_report(run_dir: Path, manifest_path: Path, models: list, registry_path
             reason = r["reason"].replace("|", "/").replace("\n", " ")
             md.append(f"| {r['component_index']} | {r['true_label_norm']} | {r['predicted_label']} | {r['confidence']} | {ok} | {reason} |")
 
-    md.append("\n## 11. Skew-normalized accuracy\n")
+    md.append("\n## 12. Skew-normalized accuracy\n")
     for model in models:
         csv_path = run_dir / f"{run_dir.name}_{model}.csv"
         if not csv_path.exists():

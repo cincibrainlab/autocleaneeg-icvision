@@ -1,0 +1,32 @@
+set_path,component_index,true_label_norm,predicted_label,confidence,reason
+SavedFiles/0137_VDAudio_ICA.set,0,eye,eye,0.92,Frontal bilateral topography with large slow biphasic blink-like deflections and spectrum concentrated below ~5Hz with 1/f decay.
+SavedFiles/0137_VDAudio_ICA.set,1,heart,heart,0.9,Regular sharp narrow downward QRS-like spikes about 4 in 2.5s on flat baseline with broad left-right gradient consistent with distant cardiac source.
+SavedFiles/0137_VDAudio_ICA.set,2,eye,eye,0.68,"Frontal/periocular involvement with large slow irregular deflections and low-frequency dominant 1/f spectrum, blink/saccade-like."
+SavedFiles/0137_VDAudio_ICA.set,3,brain,brain,0.65,"Roughly dipolar central topography, smoother rhythmic continuous time series, 1/f-like spectrum with mid-frequency shoulder, no clear artifact cue."
+SavedFiles/0137_VDAudio_ICA.set,4,brain,muscle,0.78,"Temporal/jaw edge-focused map, spiky erratic bursty time series, broad elevated high-frequency power above 20Hz without clean 1/f decay."
+SavedFiles/0137_VDAudio_ICA.set,5,heart,other_artifact,0.55,"Mixed cues: broad frontal-occipital gradient, irregular sharp spikes plus high-frequency burst, plateau spectrum neither low-frequency eye nor clean brain nor broad muscle."
+SavedFiles/0137_VDAudio_ICA.set,6,muscle,channel_noise,0.97,"Unmistakable single isolated right-frontal electrode island with no spatial falloff, decisive for bad channel."
+SavedFiles/0137_VDAudio_ICA.set,7,brain,brain,0.62,"Central dipolar-like topography, continuous rhythmic activity, 1/f falling spectrum, no blink, QRS, high-frequency muscle or line-peak evidence."
+SavedFiles/0137_VDAudio_ICA.set,8,brain,brain,0.68,"Posterior occipital focal with opposite frontal pole, continuous activity, 1/f-like spectrum with 5-30Hz shoulder, plausible visual brain source."
+SavedFiles/0137_VDAudio_ICA.set,9,brain,brain,0.8,"Broad central dipolar map, smoother rhythmic time series, blotchy low-frequency ERP image, 1/f spectrum decaying from low frequencies without high-frequency rise."
+SavedFiles/0137_VDAudio_ICA.set,10,muscle,muscle,0.82,"Left-frontal edge focal map, spiky transient time series, U-shaped spectrum with trough ~10Hz then flat high high-frequency plateau."
+SavedFiles/0137_VDAudio_ICA.set,11,muscle,muscle,0.88,"Right-temporal edge bipolar focal map, continuous spiky high-frequency time series, flat high-frequency spectrum."
+SavedFiles/0137_VDAudio_ICA.set,12,muscle,muscle,0.82,"Left-frontal focal map, bursty time series, spectrum dips then stays high with broad >20Hz power."
+SavedFiles/0137_VDAudio_ICA.set,13,muscle,muscle,0.88,"Left-temporal edge focal map, continuous noisy bursting time series, flat high high-frequency spectrum."
+SavedFiles/0137_VDAudio_ICA.set,14,brain,brain,0.85,"Central-anterior vs posterior dipolar-like map, smoother rhythmic time series, blotchy ERP image, clean 1/f decaying spectrum."
+SavedFiles/0137_VDAudio_ICA.set,15,muscle,muscle,0.86,"Left-posterior edge focal bipolar map, spiky noisy time series, flat high-frequency spectrum."
+SavedFiles/0137_VDAudio_ICA.set,16,brain,brain,0.85,"Central posterior vs anterior dipolar pattern, smoother time series, blotchy low-frequency ERP image, low-frequency dominant decaying spectrum."
+SavedFiles/0137_VDAudio_ICA.set,17,muscle,muscle,0.84,"Left-lateral edge bipolar focal map, spiky high-frequency time series, U-shaped spectrum with high flat high-frequency plateau."
+SavedFiles/0137_VDAudio_ICA.set,18,muscle,muscle,0.85,Edge-focused right-temporal focal map with U-shaped spectrum showing flat/rising broad high-frequency power above ~20Hz and spiky early time series.
+SavedFiles/0137_VDAudio_ICA.set,19,muscle,muscle,0.85,"Right-temporal edge focal map with continuous noisy time series and U-shaped spectrum rising to high high-frequency power, typical muscle."
+SavedFiles/0137_VDAudio_ICA.set,20,brain,brain,0.6,"Posterior roughly dipolar red-blue map with 1/f spectrum showing 5-15Hz hump near alpha and decaying high frequencies, no muscle HF rise."
+SavedFiles/0137_VDAudio_ICA.set,21,muscle,eye,0.6,"Right-frontal focal map with transient large spikes then quiet and spectrum dominated below ~5Hz with low high frequencies, saccade/blink-like."
+SavedFiles/0137_VDAudio_ICA.set,22,muscle,muscle,0.8,Left-frontal edge focal map with noisy bursty time series and spectrum dipping near 10Hz then jagged rise to high high-frequency power.
+SavedFiles/0137_VDAudio_ICA.set,23,muscle,eye,0.9,"Frontal/periocular red-blue map with isolated large slow spike in time series and sharp low-frequency-dominant spectrum, classic blink."
+SavedFiles/0137_VDAudio_ICA.set,24,brain,other_artifact,0.7,Highly multipolar/splotchy peripheral-red central-blue map that is non-dipolar and implausible for brain despite 1/f-like decaying spectrum.
+SavedFiles/0137_VDAudio_ICA.set,25,muscle,muscle,0.65,"Frontal small focal map with early burst then quiet and U-shaped spectrum rising to high high-frequency plateau, frontalis muscle."
+SavedFiles/0137_VDAudio_ICA.set,26,muscle,muscle,0.8,Right-temporal edge red-blue focal map with continuous high-frequency noisy time series and sustained flat high-frequency spectrum.
+SavedFiles/0137_VDAudio_ICA.set,27,brain,brain,0.7,"Central blue with surrounding positivity, roughly dipolar not eye/edge focused; 1/f falling spectrum; continuous noisy but non-blink time series."
+SavedFiles/0137_VDAudio_ICA.set,28,muscle,eye,0.9,Frontal/periocular map with strong anterior focus; large slow blink-like deflection in time series; spectrum dominated below ~5Hz with dip then flat.
+SavedFiles/0137_VDAudio_ICA.set,29,muscle,channel_noise,0.85,Scalp map shows sharp single-electrode red island left-frontal with no smooth falloff on flat green background; unambiguous isolated channel.
+SavedFiles/0137_VDAudio_ICA.set,30,muscle,muscle,0.75,Edge-focused left temporal splotchy map; spiky erratic time series; spectrum dips low then rises to 55Hz with broad high-frequency power.
