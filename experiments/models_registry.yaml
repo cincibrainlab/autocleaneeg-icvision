@@ -64,6 +64,8 @@ models:
     vision: true
     tier: cheap
     gateway: opencode-go
+    protocol: opencode-cli
+    cli_model: opencode-go/deepseek-v4-flash-vision-exp
     enabled: true
   minimax-m3-free:
     family: minimax
@@ -76,6 +78,22 @@ models:
     vision: true
     tier: cheap
     gateway: opencode-go
+    enabled: true
+  minimax-m3:
+    family: minimax
+    vision: true
+    tier: cheap
+    gateway: opencode-go
+    protocol: opencode-cli
+    cli_model: opencode-go/minimax-m3
+    enabled: true
+  qwen3.6-plus:
+    family: alibaba
+    vision: true
+    tier: cheap
+    gateway: opencode-go
+    protocol: opencode-cli
+    cli_model: opencode-go/qwen3.6-plus
     enabled: true
   muse-spark-1.3:
     family: muse

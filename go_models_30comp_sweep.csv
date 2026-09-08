@@ -3,7 +3,7 @@ Gemini 3.5 Flash (OpenCode CLI),gemini-3.5-flash,yes,yes,complete,32.3%,Zen Goog
 Gemini 3.5 Flash Lite (OpenCode CLI),gemini-3.5-flash-lite,yes,no,blocked,,,Go endpoint rejected model; use CLI route if separately tested
 GLM-5.1,glm-5.1,unknown,no,pending,,,
 Omen Alpha,omen-alpha,unknown,no,pending,,,
-Qwen3.6 Plus,qwen3.6-plus-free,yes,no,pending,,registry has -free variant
+Qwen3.6 Plus,qwen3.6-plus,yes,no,complete,45.2%,Go via CLI transport; 14/31; tightened_v1; brain 8/10
 Qwen3.8 Flash,qwen3.8-flash,unknown,no,pending,,
 Qwen3.8 Max,qwen3.8-max,unknown,no,pending,,
 DeepSeek V4 Flash,deepseek-v4-flash,unknown,no,pending,,
@@ -23,7 +23,8 @@ LongCat-2.0,longcat-2.0,unknown,no,pending,,
 MiMo V2.5,mimo-v2.5-free,yes,no,pending,,registry has -free variant
 MiMo V2.5 Pro,mimo-v2.5-pro,unknown,no,pending,,
 MiniMax-M2.7,minimax-m2.7,unknown,no,pending,,
-MiniMax-M3,minimax-m3-free,yes,no,pending,,registry has -free variant
+MiniMax-M3,minimax-m3,yes,no,complete,45.2%,Go via CLI transport; 14/31; tightened_v1; eye 2/2
+Qwen3.6 Plus,qwen3.6-plus,yes,no,complete,45.2%,Go via CLI transport; 14/31; tightened_v1; brain 8/10
 Muse Spark 1.2 Contributor,muse-spark-1.2-contributor-free,yes,no,pending,,registry has -free variant
 Muse Spark 1.3 Contributor,muse-spark-1.3,yes,no,pending,,in registry
 Qwen3.7 Max,qwen3.7-max,unknown,no,pending,,

@@ -29,14 +29,14 @@ def classify_strip_cli(
     prompt: str,
     model: str,
     component_indices: List[int],
-    timeout: int = 300,
+    timeout: int = 600,
 ) -> Tuple[List[Dict[str, Any]], str]:
     config = {
         "agent": {
             "classifier": {
                 "mode": "primary",
                 "model": model,
-                "steps": 1,
+                "steps": 2,
                 "permission": {"*": "deny"},
             }
         }

@@ -1,0 +1,32 @@
+set_path,component_index,true_label_norm,predicted_label,confidence,reason
+SavedFiles/0137_VDAudio_ICA.set,0,eye,brain,0.85,"Dipolar topography with central distribution, 1/f spectrum, and rhythmic time series consistent with cortical activity."
+SavedFiles/0137_VDAudio_ICA.set,1,heart,eye,0.95,"Strong frontal topography, low-frequency dominant spectrum, and time series with large blink-like deflections."
+SavedFiles/0137_VDAudio_ICA.set,2,eye,brain,0.8,"Left temporal/frontal dipolar map, 1/f spectrum, and mixed frequency activity typical of brain signals."
+SavedFiles/0137_VDAudio_ICA.set,3,brain,brain,0.85,"Frontal-central dipole, 1/f spectrum, and continuous activity consistent with brain sources."
+SavedFiles/0137_VDAudio_ICA.set,4,brain,muscle,0.75,"Focal temporal topography, bursty time series, and spectrum with significant high-frequency power suggest muscle artifact."
+SavedFiles/0137_VDAudio_ICA.set,5,heart,brain,0.8,"Frontal dipolar map, spectrum with possible alpha bump, and rhythmic activity pattern."
+SavedFiles/0137_VDAudio_ICA.set,6,muscle,channel_noise,0.85,"Highly focal topography resembling a single electrode, erratic high-frequency time series, and broadband spectrum indicate a bad channel."
+SavedFiles/0137_VDAudio_ICA.set,7,brain,muscle,0.9,"Broad gradient topography, high-frequency continuous activity, and broadband spectrum are characteristic of muscle noise."
+SavedFiles/0137_VDAudio_ICA.set,8,brain,brain,0.85,"Occipital-parietal dipolar map, 1/f spectrum, and structured activity consistent with posterior brain sources."
+SavedFiles/0137_VDAudio_ICA.set,9,brain,brain,0.8,"Dipolar scalp map with 1/f spectrum and slow wave activity, consistent with a cortical source."
+SavedFiles/0137_VDAudio_ICA.set,10,muscle,muscle,0.9,"Bursty high-frequency activity in time series, broadband spectrum, and temporal scalp focus."
+SavedFiles/0137_VDAudio_ICA.set,11,muscle,muscle,0.9,Continuous high-frequency noise in time series and ERP image with flat broadband spectrum.
+SavedFiles/0137_VDAudio_ICA.set,12,muscle,muscle,0.9,Bursty activity with broadband spectrum and focal temporal topography.
+SavedFiles/0137_VDAudio_ICA.set,13,muscle,muscle,0.9,Bursty activity with broadband spectrum and focal temporal topography.
+SavedFiles/0137_VDAudio_ICA.set,14,brain,brain,0.6,Large dipolar topography with 1/f spectrum; lacks blink-like deflections or low-frequency dominance typical of eye artifacts.
+SavedFiles/0137_VDAudio_ICA.set,15,muscle,brain,0.9,"Occipital-positive dipolar map consistent with alpha rhythm, supported by 1/f spectrum."
+SavedFiles/0137_VDAudio_ICA.set,16,brain,brain,0.8,Posterior-positive dipolar map with 1/f spectrum and slow wave activity.
+SavedFiles/0137_VDAudio_ICA.set,17,muscle,muscle,0.9,Bursty high-frequency activity with broadband spectrum and focal temporal map.
+SavedFiles/0137_VDAudio_ICA.set,18,muscle,brain,0.9,"Dipolar right frontal topography, 1/f spectrum, rhythmic time series typical of neural activity"
+SavedFiles/0137_VDAudio_ICA.set,19,muscle,brain,0.9,"Dipolar frontal topography, 1/f spectrum, rhythmic time series typical of neural activity"
+SavedFiles/0137_VDAudio_ICA.set,20,brain,brain,0.9,"Dipolar central-parietal topography, 1/f spectrum, rhythmic time series typical of neural activity"
+SavedFiles/0137_VDAudio_ICA.set,21,muscle,brain,0.9,"Dipolar right frontal topography, 1/f spectrum, rhythmic time series typical of neural activity"
+SavedFiles/0137_VDAudio_ICA.set,22,muscle,brain,0.9,"Dipolar right temporal topography, 1/f spectrum, rhythmic time series typical of neural activity"
+SavedFiles/0137_VDAudio_ICA.set,23,muscle,brain,0.9,"Dipolar frontal topography, 1/f spectrum, rhythmic time series typical of neural activity"
+SavedFiles/0137_VDAudio_ICA.set,24,brain,brain,0.9,"Large dipolar distribution, 1/f spectrum, rhythmic time series typical of neural activity"
+SavedFiles/0137_VDAudio_ICA.set,25,muscle,brain,0.9,"Dipolar frontal topography, 1/f spectrum, rhythmic time series typical of neural activity"
+SavedFiles/0137_VDAudio_ICA.set,26,muscle,brain,0.9,"Dipolar right temporal topography, 1/f spectrum, rhythmic time series typical of neural activity"
+SavedFiles/0137_VDAudio_ICA.set,27,brain,brain,0.95,"Dipolar topography, clear 1/f spectrum with alpha peak, and rhythmic time series."
+SavedFiles/0137_VDAudio_ICA.set,28,muscle,eye,0.95,"Frontal topography, power concentrated in low frequencies, and blink/saccade-like time series."
+SavedFiles/0137_VDAudio_ICA.set,29,muscle,muscle,0.8,"Spectrum shows broad high-frequency power, time series is spiky/erratic, and topography is localized to muscle-prone areas."
+SavedFiles/0137_VDAudio_ICA.set,30,muscle,brain,0.85,"Dipolar topography and 1/f spectral decay, despite some high-frequency noise."
