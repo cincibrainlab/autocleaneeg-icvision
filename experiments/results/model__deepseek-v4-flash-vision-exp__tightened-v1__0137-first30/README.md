@@ -1,6 +1,6 @@
-# Run report — `model__grok-4.6__tightened-v1__0137-first30`
+# Run report — `model__deepseek-v4-flash-vision-exp__tightened-v1__0137-first30`
 
-**Variable tested:** model: grok-4.6 (OpenCode Go via CLI transport; same prompt, same 31 components)
+**Variable tested:** model: deepseek-v4-flash-vision-exp (OpenCode Go via CLI transport; same prompt, same 31 components)
 
 Generated 2026-09-08 09:19 by `run_report.py`. All paths relative to repo root. This directory is self-contained: everything needed to audit or re-analyze this run lives here.
 
@@ -109,7 +109,7 @@ Respond with JSON array (one object per component, {n} objects total):
 
 ## 5. Number of runs
 
-- Models run: 1 (grok-4.6)
+- Models run: 1 (deepseek-v4-flash-vision-exp)
 - API calls per model: one per strip
 - Total classifications in this run: 31 components × 1 model(s)
 
@@ -122,90 +122,97 @@ Respond with JSON array (one object per component, {n} objects total):
 
 | Model | API calls | Cost | Basis |
 |-------|-----------|------|-------|
-| `grok-4.6` | 4 | $0.1616 | **actual** (summed from CLI step_finish cost events; Go-subscription models are covered by quota, Zen models are out-of-pocket) |
+| `deepseek-v4-flash-vision-exp` | 4 | $0.0122 | **actual** (summed from CLI step_finish cost events; Go-subscription models are covered by quota, Zen models are out-of-pocket) |
 
 ## 8. Results breakdown
 
 
-### grok-4.6
+### deepseek-v4-flash-vision-exp
 
-- Raw accuracy: **26/31 = 83.9%**
-- Balanced (skew-normalized) accuracy: **68.5%**
+- Raw accuracy: **17/31 = 54.8%**
+- Balanced (skew-normalized) accuracy: **50.1%**
 
 | True class | Correct/Total | Recall |
 |------------|---------------|--------|
-| brain | 8/10 | 80% |
+| brain | 3/10 | 30% |
 | eye | 2/2 | 100% |
-| muscle | 16/17 | 94% |
+| muscle | 12/17 | 71% |
 | heart | 0/2 | 0% |
 
-Predicted-label distribution: muscle×16, brain×10, other_artifact×3, eye×2
+Predicted-label distribution: muscle×12, other_artifact×10, eye×5, brain×4
 
 Top confusions (truth → prediction):
-- heart → brain: 2
-- brain → other_artifact: 2
-- muscle → other_artifact: 1
+- brain → other_artifact: 5
+- muscle → other_artifact: 4
+- brain → eye: 2
+- heart → eye: 1
+- heart → other_artifact: 1
+- muscle → brain: 1
 
-Dominant failure mode: **heart read as brain** (2 cases). Model language across these errors leans on topography/spectrum cues that fit the predicted class template; see per-component reasoning below and annotated renders for the visual evidence.
+Dominant failure mode: **brain read as other_artifact** (5 cases). Model language across these errors leans on topography/spectrum cues that fit the predicted class template; see per-component reasoning below and annotated renders for the visual evidence.
 
 ## 9. Most prevalent error modes
 
 
-### grok-4.6
+### deepseek-v4-flash-vision-exp
 
-- Errors: **5/31**; high-confidence errors (confidence ≥0.80): **1**
+- Errors: **14/31**; high-confidence errors (confidence ≥0.80): **3**
 - Dominant confusion pairs:
-  - `heart` → `brain`: 2
-  - `brain` → `other_artifact`: 2
-  - `muscle` → `other_artifact`: 1
+  - `brain` → `other_artifact`: 5
+  - `muscle` → `other_artifact`: 4
+  - `brain` → `eye`: 2
+  - `heart` → `eye`: 1
+  - `heart` → `other_artifact`: 1
 - Largest prediction-count biases (predicted minus true):
-  - `other_artifact`: +3
+  - `other_artifact`: +10
+  - `brain`: -6
+  - `muscle`: -5
+  - `eye`: +3
   - `heart`: -2
-  - `muscle`: -1
 - Weakest class recall: `heart` at 0/2 (0%)
 
 ## 10. Model justification per component
 
 
-### grok-4.6
+### deepseek-v4-flash-vision-exp
 
 | IC | Truth | Predicted | Conf | Verdict | Model's stated reasoning |
 |----|-------|-----------|------|---------|--------------------------|
-| 0 | eye | eye | 0.88 | OK | Large slow blink-like deflections, steep 1/f low-frequency spectrum, frontal-weighted map |
-| 1 | heart | brain | 0.62 | WRONG | Dipolar left-right topography with mid-band power then decay; not clearly saccadic or HF-muscle |
-| 2 | eye | eye | 0.78 | OK | Right-frontal/periocular focus, slow deflections, power concentrated at low frequencies |
-| 3 | brain | brain | 0.72 | OK | Smooth anterior-posterior dipole, 1/f spectrum, no blink/QRS/HF-muscle pattern |
-| 4 | brain | brain | 0.68 | OK | Reasonably dipolar lateral map with falling spectrum; not isolated-channel or rising-HF muscle |
-| 5 | heart | brain | 0.7 | WRONG | Posterior-anterior dipolar map and 1/f-like decay after a mid-band plateau |
-| 6 | muscle | muscle | 0.92 | OK | Spectrum rises with frequency; focal temporal/frontal edge map and bursty high-frequency activity |
-| 7 | brain | brain | 0.7 | OK | Central dipolar/sombrero map with clean 1/f decay and no QRS or line peak |
-| 8 | brain | brain | 0.75 | OK | Posterior/occipital dipolar focus with 1/f spectrum, not an isolated electrode or muscle HF profile |
-| 9 | brain | brain | 0.88 | OK | Dipolar central/parietal map, 1/f-falling spectrum, relatively smooth rhythmic time series; not eye/edge/muscle-like. |
-| 10 | muscle | muscle | 0.82 | OK | Focal near-edge hotspot without a true single-electrode island; flat/broadband high-frequency spectrum and spiky activity point to EMG, not channel_noise. |
-| 11 | muscle | muscle | 0.9 | OK | Right temporal/edge focus, dense high-frequency time series/ERP streaks, and a flat elevated high-frequency spectrum. |
-| 12 | muscle | muscle | 0.72 | OK | Left frontal-temporal edge map; spectrum lacks clean 1/f and is not <5 Hz blink-like; activity is noisy rather than saccade/blink, so temporal EMG over eye/brain. |
-| 13 | muscle | muscle | 0.9 | OK | Left posterior-lateral edge topography with bursty high-frequency activity and a flat/rising high-frequency spectrum. |
-| 14 | brain | brain | 0.8 | OK | Broad dipolar anterior-posterior scalp map with clear 1/f spectral decay and smoother low-frequency time series. |
-| 15 | muscle | muscle | 0.86 | OK | Left inferior/temporal edge focus, spiky high-frequency traces, and a flat high-frequency spectrum typical of EMG. |
-| 16 | brain | brain | 0.86 | OK | Dipolar centro-parietal map, 1/f-like falling spectrum, and relatively smooth non-artifact time series. |
-| 17 | muscle | muscle | 0.74 | OK | Left temporal/edge dipole-like map but spectrum recovers at high frequencies and traces are irregular/high-frequency, favoring temporal muscle over brain. |
-| 18 | muscle | muscle | 0.72 | OK | Focal right temporal hotspot; spectrum dips then stays elevated at high frequencies; noisy/spiky time series. |
-| 19 | muscle | muscle | 0.85 | OK | Right temporal focus with spatial spread; rising high-frequency spectrum; erratic high-frequency activity. |
-| 20 | brain | brain | 0.78 | OK | Posterior/occipital dipolar-ish map; 1/f spectrum with mid-frequency power then decay; relatively rhythmic time series. |
-| 21 | muscle | other_artifact | 0.58 | WRONG | Compact right-temporal focus but mixed panels: not a clean dipole, not a classic muscle HF rise, odd horizontal ERP banding; not an unambiguous single-electrode island. |
-| 22 | muscle | muscle | 0.88 | OK | Left frontal/frontalis focus; classic muscle spectrum (dip then rise/plateau above ~20 Hz); high-frequency ERP streaking. |
-| 23 | muscle | muscle | 0.68 | OK | Left frontotemporal edge-focused map; bursty time series; residual high-frequency power rather than clean brain 1/f. |
-| 24 | brain | other_artifact | 0.82 | WRONG | Non-dipolar center-surround/rim topography; 1/f spectrum is not enough for brain; no QRS rhythm for heart. |
-| 25 | muscle | muscle | 0.8 | OK | Focal left map; spectrum dips then rises and stays high; high-frequency ERP texture; not an isolated-electrode island. |
-| 26 | muscle | muscle | 0.75 | OK | Right posterior-temporal focal map; broadband/flat high-frequency spectrum rather than 1/f; noisy activity. |
-| 27 | brain | other_artifact | 0.58 | WRONG | Rim-heavy posterior/lateral map is not a clean dipole; 1/f spectrum but no alpha, erratic TS, no eye/QRS/line/single-channel cue. |
-| 28 | muscle | muscle | 0.88 | OK | Spectrum drops then rises toward 55 Hz; edge-frontal map; bursty TS and streaky segments. |
-| 29 | muscle | muscle | 0.86 | OK | Rising high-frequency spectrum; focal left frontal/temporal map with spiky erratic activity, not an isolated electrode. |
-| 30 | muscle | muscle | 0.82 | OK | Left temporal focus with rising HF power and spiky TS; spectrum outweighs a plausible temporal dipole. |
+| 0 | eye | eye | 0.7 | OK | Frontal-dominant scalp map with large slow spike deflections and low-frequency-dominant spectrum; blink-like. |
+| 1 | heart | eye | 0.85 | WRONG | Strong lateralized frontal dipole with clear step-like plateaus separated by fast transitions; decisive horizontal saccade pattern. |
+| 2 | eye | eye | 0.65 | OK | Frontal/periocular map with large slow blip deflections and low-frequency-dominant spectrum; blink-like. |
+| 3 | brain | other_artifact | 0.55 | WRONG | Splotchy non-dipolar central map with noisy, spiky time series and broad declining spectrum; no clear category. |
+| 4 | brain | other_artifact | 0.5 | WRONG | Right temporal/lateral dipole with erratic spiky activity and broad spectrum; no decisive muscle or brain cue. |
+| 5 | heart | other_artifact | 0.55 | WRONG | Frontal-pole map with rhythmic high-frequency bursts; neither clear blink/saccade, muscle, nor brain pattern. |
+| 6 | muscle | other_artifact | 0.55 | WRONG | Weak/flat non-dipolar map with large slow rhythmic oscillation and low-frequency spectrum; low-variance-looking. |
+| 7 | brain | other_artifact | 0.5 | WRONG | Central-looking map but slow irregular deflections and steep low-frequency spectrum without clear alpha peak; mixed evidence. |
+| 8 | brain | other_artifact | 0.5 | WRONG | Small central/vertex focus with noisy time series and grainy ERP image; ambiguous, no clear category. |
+| 9 | brain | eye | 0.95 | WRONG | Bilateral frontal/orbital negative scalp map with slow large blink deflections in time series and low-frequency-dominated spectrum declining with frequency. |
+| 10 | muscle | muscle | 0.65 | OK | Left temporal/frontal focality, spiky erratic time series, and flat/rising high-frequency spectrum consistent with jaw/temporal muscle. |
+| 11 | muscle | brain | 0.5 | WRONG | Temporal dipolar topography with smoother, more rhythmic time series and a mid-frequency spectral peak rather than flat high-frequency rise. |
+| 12 | muscle | muscle | 0.6 | OK | Left frontal/temporal focus, large spiky bursts, and broad flat high-frequency spectrum. |
+| 13 | muscle | muscle | 0.6 | OK | Left frontal focus, spiky bursty activity, and flat/rising high-frequency spectrum. |
+| 14 | brain | brain | 0.5 | OK | Central-frontal dipolar map with slow large-amplitude waves and 1/f-declining spectrum; some spikiness creates uncertainty. |
+| 15 | muscle | muscle | 0.6 | OK | Left frontal focus, bursty erratic time series, and broad high-frequency spectral power. |
+| 16 | brain | eye | 0.95 | WRONG | Bilateral frontal negative topography, slow blink-like deflections, and low-frequency-dominant spectrum. |
+| 17 | muscle | muscle | 0.55 | OK | Left frontal focality with moderate spiky activity and broad spectrum; not an isolated single-electrode island. |
+| 18 | muscle | other_artifact | 0.4 | WRONG | Diffuse, non-dipolar map; noisy time series with a few sharp spikes; spectrum shows a broad low-mid bump with no clean 1/f or rhythmic alpha. Mixed/unclear source. |
+| 19 | muscle | muscle | 0.5 | OK | Erratic, spiky high-frequency time series with a flat/low spectrum and a focal central blob; consistent with bursty muscle activity rather than a clean dipolar brain source. |
+| 20 | brain | other_artifact | 0.4 | WRONG | Broad frontal map with a 1/f-like falling spectrum but a highly speckled high-variance segment image; conflicting brain vs muscle evidence, so fallback. |
+| 21 | muscle | muscle | 0.6 | OK | Horizontal banding in the segment image (classic sustained muscle signature) with noisy spiky time series and a low flat spectrum. |
+| 22 | muscle | muscle | 0.5 | OK | Diffuse low-amplitude map with a spectrum that rises toward high frequencies and an erratic time series; high-frequency broadband pattern. |
+| 23 | muscle | muscle | 0.5 | OK | Rising high-frequency spectrum with an erratic time series and a dipolar-but-frontal map near muscle/jaw areas; high-frequency broadband favors muscle over brain. |
+| 24 | brain | brain | 0.5 | OK | Clean 1/f falling spectrum, no blink/saccade pattern in the time series, and a plausible frontal map; argues against muscle despite a somewhat broad topology. |
+| 25 | muscle | other_artifact | 0.5 | WRONG | Very low variance, nearly uniform quiet segments; diffuse low-amplitude map and low-power spectrum; looks like a late/low-variance residual rather than a clear source. |
+| 26 | muscle | other_artifact | 0.4 | WRONG | Small focal red spot on an otherwise diffuse map, quiet segments, and slightly rising high-frequency spectrum; ambiguous and not an unmistakable single-electrode island. |
+| 27 | brain | brain | 0.7 | OK | Clear frontal-posterior dipole topography with clean 1/f-like falling spectrum; noisy time series but no blink/saccade structure, consistent with a frontal brain component. |
+| 28 | muscle | muscle | 0.55 | OK | Frontal/frontal-lateral scalp flocality with broadband spectrum that rises and stays high rather than 1/f decay; not low-frequency-dominant, so eye is weak; spiky/erratic activity favors muscle. |
+| 29 | muscle | muscle | 0.6 | OK | Brain-like central dipole map is contradicted by a rising broadband high-frequency spectrum and spiky/erratic time series, the leading muscle cue. |
+| 30 | muscle | muscle | 0.6 | OK | Central dipolar map but spectrum rises to a broadband hump around 20-30 Hz rather than 1/f decay, with noisy/spiky activity; muscle spectral pattern dominates. |
 
 ## 11. Skew-normalized accuracy
 
-- **grok-4.6**: raw 83.9% → balanced **68.5%** (unweighted mean of per-class recalls; every class counts equally regardless of frequency)
+- **deepseek-v4-flash-vision-exp**: raw 54.8% → balanced **50.1%** (unweighted mean of per-class recalls; every class counts equally regardless of frequency)
 
 Balanced accuracy is the headline metric while the first-30 batch remains imbalanced (muscle-heavy). A stratified manifest would remove the need for normalization; both are supported by the skeleton.
 
@@ -214,5 +221,5 @@ Balanced accuracy is the headline metric while the first-30 batch remains imbala
 
 - Manifest: `experiments/manifests/stage0_true_first30.csv` (sha256[:16] `8da094ff3a5ffd46`)
 - Model registry: `experiments/models_registry.yaml` (sha256[:16] `d1580df675d545e9`)
-- Call audit logs: `logs/model__grok-4.6__tightened-v1__0137-first30_<model>.jsonl` (prompt sha, strip sha, raw responses, latency)
+- Call audit logs: `logs/model__deepseek-v4-flash-vision-exp__tightened-v1__0137-first30_<model>.jsonl` (prompt sha, strip sha, raw responses, latency)
 - Annotated renders: `annotated/<model>/IC*.png`; strips: `strips/`

@@ -2,7 +2,7 @@
 
 **Variable tested:** model: gpt-5.4-mini vs gpt-5.4-nano (same tightened_v1 prompt, same 31 components)
 
-Generated 2026-09-06 13:30 by `run_report.py`. All paths relative to repo root. This directory is self-contained: everything needed to audit or re-analyze this run lives here.
+Generated 2026-09-08 09:19 by `run_report.py`. All paths relative to repo root. This directory is self-contained: everything needed to audit or re-analyze this run lives here.
 
 
 ## 1. Recording(s) used
@@ -104,7 +104,7 @@ Respond with JSON array (one object per component, {n} objects total):
 | channel_noise | 0 | 0.0% |
 | other_artifact | 0 | 0.0% |
 
-> Raw accuracy on a skewed batch is dominated by the majority classes. See section 10 for the balanced metric.
+> Raw accuracy on a skewed batch is dominated by the majority classes. See section 11 for the balanced metric.
 
 
 ## 5. Number of runs
@@ -118,7 +118,13 @@ Respond with JSON array (one object per component, {n} objects total):
 - Components per strip: **9** (fixed by the strip protocol; final strip of a file may be smaller)
 - Strips per recording: 4 for 31 components
 
-## 7. Results breakdown
+## 7. Cost
+
+| Model | API calls | Cost | Basis |
+|-------|-----------|------|-------|
+| `gpt-5.4-mini` | 4 | ~$0.0288 | **estimated** (Zen pricing $0.75/$1M in, $4.5/$1M out × ~6000in/600out tokens per strip; images dominate input; actual cost not metered by this API path) |
+
+## 8. Results breakdown
 
 
 ### gpt-5.4-mini
@@ -145,7 +151,7 @@ Top confusions (truth → prediction):
 
 Dominant failure mode: **muscle read as brain** (7 cases). Model language across these errors leans on topography/spectrum cues that fit the predicted class template; see per-component reasoning below and annotated renders for the visual evidence.
 
-## 8. Most prevalent error modes
+## 9. Most prevalent error modes
 
 
 ### gpt-5.4-mini
@@ -165,7 +171,7 @@ Dominant failure mode: **muscle read as brain** (7 cases). Model language across
   - `eye`: +1
 - Weakest class recall: `muscle` at 1/17 (6%)
 
-## 9. Model justification per component
+## 10. Model justification per component
 
 
 ### gpt-5.4-mini
@@ -204,7 +210,7 @@ Dominant failure mode: **muscle read as brain** (7 cases). Model language across
 | 29 | muscle | channel_noise | 0.91 | WRONG | Topography is dominated by a very small, isolated single-electrode-like island near the frontal edge with little smooth spatial spread, which is the key cue for bad channel noise. |
 | 30 | muscle | muscle | 0.88 | OK | Left temporal/edge-focused map plus spiky irregular activity and a spectrum that is relatively elevated at higher frequencies compared with a clean brain-like 1/f shape, fitting muscle artifact. |
 
-## 10. Skew-normalized accuracy
+## 11. Skew-normalized accuracy
 
 - **gpt-5.4-mini**: raw 29.0% → balanced **51.5%** (unweighted mean of per-class recalls; every class counts equally regardless of frequency)
 
@@ -214,6 +220,6 @@ Balanced accuracy is the headline metric while the first-30 batch remains imbala
 ## Provenance
 
 - Manifest: `experiments/manifests/stage0_true_first30.csv` (sha256[:16] `8da094ff3a5ffd46`)
-- Model registry: `experiments/models_registry.yaml` (sha256[:16] `463a1800a9e69076`)
+- Model registry: `experiments/models_registry.yaml` (sha256[:16] `d1580df675d545e9`)
 - Call audit logs: `logs/model__gpt-5.4-mini__tightened-v1__0137-first30_<model>.jsonl` (prompt sha, strip sha, raw responses, latency)
 - Annotated renders: `annotated/<model>/IC*.png`; strips: `strips/`

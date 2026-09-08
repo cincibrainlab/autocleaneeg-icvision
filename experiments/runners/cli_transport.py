@@ -29,7 +29,7 @@ def classify_strip_cli(
     prompt: str,
     model: str,
     component_indices: List[int],
-    timeout: int = 600,
+    timeout: int = 900,
 ) -> Tuple[List[Dict[str, Any]], str]:
     config = {
         "agent": {

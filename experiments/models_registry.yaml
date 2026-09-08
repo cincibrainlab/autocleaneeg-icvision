@@ -114,6 +114,16 @@ models:
     vision: true
     tier: cheap
     gateway: opencode-go
+    protocol: opencode-cli
+    cli_model: opencode/grok-4.5
+    enabled: true
+  grok-build-0.1:
+    family: xai
+    vision: true
+    tier: cheap
+    gateway: opencode-go
+    protocol: opencode-cli
+    cli_model: opencode/grok-build-0.1
     enabled: true
 
   # ---- local baseline (no API cost) ----

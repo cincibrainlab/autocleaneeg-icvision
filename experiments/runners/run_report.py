@@ -16,6 +16,13 @@ from pathlib import Path
 
 VALID_LABELS = ("brain", "eye", "muscle", "heart", "channel_noise", "other_artifact")
 
+COST_RATES = {
+    "gpt-5.4-nano": {"input": 0.20, "output": 1.25},
+    "gpt-5.4-mini": {"input": 0.75, "output": 4.50},
+}
+
+ESTIMATED_TOKENS_PER_STRIP = {"input": 6000, "output": 600}
+
 
 def sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
@@ -69,6 +76,40 @@ def balanced_accuracy(stats: dict) -> float:
     return sum(recalls) / len(recalls) if recalls else 0.0
 
 
+def compute_cost(run_dir: Path, models: list, n_strips: int) -> list:
+    lines = []
+    for model in models:
+        jsonl = run_dir / "logs" / f"{run_dir.name}_{model}.jsonl"
+        actual = 0.0
+        calls = 0
+        if jsonl.exists():
+            for line in jsonl.read_text(encoding="utf-8").splitlines():
+                if not line.strip():
+                    continue
+                rec = json.loads(line)
+                if rec.get("status") != "ok":
+                    continue
+                calls += 1
+                for cli_line in rec.get("cli_raw_output", "").splitlines():
+                    try:
+                        ev = json.loads(cli_line)
+                    except json.JSONDecodeError:
+                        continue
+                    part = ev.get("part", {})
+                    if ev.get("type") == "step_finish" and isinstance(part.get("cost"), (int, float)):
+                        actual += part["cost"]
+        if actual:
+            lines.append(f"| `{model}` | {calls} | ${actual:.4f} | **actual** (summed from CLI step_finish cost events; Go-subscription models are covered by quota, Zen models are out-of-pocket) |")
+        else:
+            rate = COST_RATES.get(model)
+            if rate and calls:
+                est = calls * (ESTIMATED_TOKENS_PER_STRIP["input"] * rate["input"] + ESTIMATED_TOKENS_PER_STRIP["output"] * rate["output"]) / 1_000_000
+                lines.append(f"| `{model}` | {calls} | ~${est:.4f} | **estimated** (Zen pricing ${rate['input']}/$1M in, ${rate['output']}/$1M out × ~{ESTIMATED_TOKENS_PER_STRIP['input']}in/{ESTIMATED_TOKENS_PER_STRIP['output']}out tokens per strip; images dominate input; actual cost not metered by this API path) |")
+            else:
+                lines.append(f"| `{model}` | {calls} | n/a | cost not captured by transport |")
+    return lines
+
+
 def build_report(run_dir: Path, manifest_path: Path, models: list, registry_path: Path = None, base_dir: str = None, variable: str = "unspecified") -> Path:
     manifest_rows = list(csv.DictReader(manifest_path.open(newline="", encoding="utf-8")))
     by_file = defaultdict(list)
@@ -117,7 +158,7 @@ def build_report(run_dir: Path, manifest_path: Path, models: list, registry_path
     for label in VALID_LABELS:
         n = class_counts.get(label, 0)
         md.append(f"| {label} | {n} | {n / total:.1%} |" if n else f"| {label} | 0 | 0.0% |")
-    md.append("\n> Raw accuracy on a skewed batch is dominated by the majority classes. See section 10 for the balanced metric.\n")
+    md.append("\n> Raw accuracy on a skewed batch is dominated by the majority classes. See section 11 for the balanced metric.\n")
 
     n_strips = (total + 8) // 9
     md.append("\n## 5. Number of runs\n")
@@ -129,7 +170,12 @@ def build_report(run_dir: Path, manifest_path: Path, models: list, registry_path
     md.append(f"- Components per strip: **9** (fixed by the strip protocol; final strip of a file may be smaller)")
     md.append(f"- Strips per recording: {n_strips} for {total} components")
 
-    md.append("\n## 7. Results breakdown\n")
+    md.append("\n## 7. Cost\n")
+    md.append("| Model | API calls | Cost | Basis |")
+    md.append("|-------|-----------|------|-------|")
+    md.extend(compute_cost(run_dir, models, n_strips))
+
+    md.append("\n## 8. Results breakdown\n")
     for model in models:
         csv_path = run_dir / f"{run_dir.name}_{model}.csv"
         if not csv_path.exists():
@@ -156,7 +202,7 @@ def build_report(run_dir: Path, manifest_path: Path, models: list, registry_path
             reasons_txt = f"\nDominant failure mode: **{t} read as {p}** ({n} cases). Model language across these errors leans on topography/spectrum cues that fit the predicted class template; see per-component reasoning below and annotated renders for the visual evidence."
         md.append(reasons_txt)
 
-    md.append("\n## 8. Most prevalent error modes\n")
+    md.append("\n## 9. Most prevalent error modes\n")
     for model in models:
         csv_path = run_dir / f"{run_dir.name}_{model}.csv"
         if not csv_path.exists():
@@ -186,7 +232,7 @@ def build_report(run_dir: Path, manifest_path: Path, models: list, registry_path
         if not errors:
             md.append("- No error mode observed in this run.")
 
-    md.append("\n## 9. Model justification per component\n")
+    md.append("\n## 10. Model justification per component\n")
     for model in models:
         csv_path = run_dir / f"{run_dir.name}_{model}.csv"
         if not csv_path.exists():
@@ -201,7 +247,7 @@ def build_report(run_dir: Path, manifest_path: Path, models: list, registry_path
             reason = r["reason"].replace("|", "/").replace("\n", " ")
             md.append(f"| {r['component_index']} | {r['true_label_norm']} | {r['predicted_label']} | {r['confidence']} | {ok} | {reason} |")
 
-    md.append("\n## 10. Skew-normalized accuracy\n")
+    md.append("\n## 11. Skew-normalized accuracy\n")
     for model in models:
         csv_path = run_dir / f"{run_dir.name}_{model}.csv"
         if not csv_path.exists():
